@@ -265,9 +265,9 @@ tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
 @media(max-width:768px){.auth-left{display:none}.auth-right{width:100%;border-left:none;padding:40px 24px}}
 .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-dim);border:1.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold);cursor:pointer;flex-shrink:0;transition:all 0.15s;user-select:none}
 .user-avatar:hover{background:var(--gold-border)}
-.user-dropdown{display:none;position:absolute;top:44px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:6px;z-index:9999;min-width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.2)}
+.user-dropdown{display:none;position:absolute;top:44px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:6px;z-index:9999;min-width:280px;box-shadow:0 8px 24px rgba(0,0,0,0.2)}
 .user-dropdown-header{padding:10px 12px 10px;border-bottom:1px solid var(--border);margin-bottom:6px}
-.user-dropdown-email{font-size:13px;font-weight:600;color:var(--text);word-break:break-all}
+.user-dropdown-email{font-size:13px;font-weight:600;color:var(--text);word-break:break-all;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
 .user-dropdown-role{font-size:11px;color:var(--text3);margin-top:2px}
 .user-dropdown-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);transition:all 0.12s}
 .user-dropdown-item:hover{background:var(--bg-hover);color:var(--text)}
@@ -533,18 +533,6 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
   <div class="topbar-spacer"></div>
   <div class="topbar-actions" id="topbar-actions">
     <div style="position:relative;display:inline-block">
-      <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()" title="Mon compte">?</div>
-      <div class="user-dropdown" id="user-dropdown">
-        <div class="user-dropdown-header">
-          <div class="user-dropdown-email" id="user-email-display">—</div>
-          <div class="user-dropdown-role">Compte Tixsheet</div>
-        </div>
-        <div class="user-dropdown-item danger" onclick="doLogout()">
-          <i class="ti ti-logout" style="font-size:16px"></i> Déconnexion
-        </div>
-      </div>
-    </div>
-    <div style="position:relative;display:inline-block">
       <button class="btn ghost" id="theme-btn" onclick="toggleThemePicker()" style="font-weight:600;display:flex;align-items:center;gap:6px" title="Changer le thème"><i class="ti ti-palette" style="pointer-events:none"></i></button>
       <div id="theme-picker" style="display:none;position:absolute;top:42px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:8px;z-index:9999;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.2)">
         <div class="theme-option" data-theme="dark" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
@@ -563,6 +551,18 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
     </div>
     <button class="btn ghost" id="lang-btn" onclick="toggleLang()" style="font-weight:600;display:flex;align-items:center;gap:6px"><i class="ti ti-world" style="pointer-events:none"></i> FR</button>
     <button class="btn primary" id="btn-add-main" onclick="openAddModal()"><i class="ti ti-plus"></i> Ajouter</button>
+    <div style="position:relative;display:inline-block">
+      <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()" title="Mon compte">?</div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="user-dropdown-header">
+          <div class="user-dropdown-email" id="user-email-display">—</div>
+          <div class="user-dropdown-role">Compte Tixsheet</div>
+        </div>
+        <div class="user-dropdown-item danger" onclick="doLogout()">
+          <i class="ti ti-logout" style="font-size:16px"></i> Déconnexion
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
