@@ -440,6 +440,18 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
   <div class="topbar-spacer"></div>
   <div class="topbar-actions" id="topbar-actions">
     <div style="position:relative;display:inline-block">
+      <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()" title="Mon compte">?</div>
+      <div class="user-dropdown" id="user-dropdown">
+        <div class="user-dropdown-header">
+          <div class="user-dropdown-email" id="user-email-display">—</div>
+          <div class="user-dropdown-role">Compte Tixsheet</div>
+        </div>
+        <div class="user-dropdown-item danger" onclick="doLogout()">
+          <i class="ti ti-logout" style="font-size:16px"></i> Déconnexion
+        </div>
+      </div>
+    </div>
+    <div style="position:relative;display:inline-block">
       <button class="btn ghost" id="theme-btn" onclick="toggleThemePicker()" style="font-weight:600;display:flex;align-items:center;gap:6px" title="Changer le thème"><i class="ti ti-palette" style="pointer-events:none"></i></button>
       <div id="theme-picker" style="display:none;position:absolute;top:42px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:8px;z-index:9999;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.2)">
         <div class="theme-option" data-theme="dark" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
@@ -457,18 +469,1076 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
       </div>
     </div>
     <button class="btn ghost" id="lang-btn" onclick="toggleLang()" style="font-weight:600;display:flex;align-items:center;gap:6px"><i class="ti ti-world" style="pointer-events:none"></i> FR</button>
-    <button class="btn ghost" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
     <button class="btn primary" id="btn-add-main" onclick="openAddModal()"><i class="ti ti-plus"></i> Ajouter</button>
-    <div style="position:relative;display:inline-block">
-      <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()" title="Mon compte">?</div>
-      <div class="user-dropdown" id="user-dropdown">
-        <div class="user-dropdown-header">
-          <div class="user-dropdown-email" id="user-email-display">—</div>
-          <div class="user-dropdown-role">Compte Tixsheet</div>
-        </div>
-        <div class="user-dropdown-item danger" onclick="doLogout()">
-          <i class="ti ti-logout" style="font-size:16px"></i> Déconnexion
-        </div>
+  </div>
+</div>
+
+<div class="body">
+  <div class="sidebar">
+    <div class="sidebar-section-label" id="sidebar-label">Événements</div>
+    <div class="nav-list" id="nav-list"></div>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-bottom">
+      <button class="new-ev-btn" onclick="openEventModal()" id="new-ev-btn"><i class="ti ti-plus"></i> Nouvel événement</button>
+    </div>
+  </div>
+
+  <div class="main main-page">
+    <div class="page-top">
+      <div class="page-top-left">
+        <h1 id="page-title">Tous les billets</h1>
+        <p id="page-sub">Vue globale de tous vos événements</p>
+      </div>
+      <div class="page-top-right" id="ev-actions"></div>
+    </div>
+
+    <div id="mode-tabs" style="display:none;margin-bottom:20px">
+      <div style="display:flex;gap:4px;background:var(--bg-card2);border:1px solid var(--border);border-radius:12px;padding:5px;width:fit-content">
+        <button class="mode-tab active" id="tab-stock" data-mode="stock"><i class="ti ti-ticket"></i> Stock</button>
+        <button class="mode-tab" id="tab-aco" data-mode="aco"><i class="ti ti-currency-dollar"></i> ACO</button>
       </div>
     </div>
-  </div>>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="bulk-bar" id="bulk-bar"><span class="bulk-count" id="bulk-count">0 sélectionné(s)</span><button class="btn ghost sm" onclick="selectAllVisible()"><i class="ti ti-checkbox"></i> Tout sélectionner</button><button class="btn danger-ghost sm" onclick="deleteSelected()"><i class="ti ti-trash"></i> Supprimer la sélection</button><button class="btn ghost sm" onclick="clearSelection()"><i class="ti ti-x"></i> Annuler</button></div>
+    <!-- Filter bar -->
+    <div class="filter-bar" id="filter-bar"></div>
+    <div class="filter-builder" id="filter-builder" style="display:none">
+      <div><label>Colonne</label><select id="fb-col"></select></div>
+      <div><label>Condition</label>
+        <select id="fb-op">
+          <option value="contains">contient</option>
+          <option value="equals">égal à</option>
+          <option value="starts">commence par</option>
+          <option value="gt">supérieur à</option>
+          <option value="lt">inférieur à</option>
+        </select>
+      </div>
+      <div><label>Valeur</label><input id="fb-val" type="text" placeholder="valeur…" style="min-width:140px"></div>
+      <button class="btn primary" style="height:34px" onclick="applyColFilter()"><i class="ti ti-check"></i> Appliquer</button>
+      <button class="btn ghost" style="height:34px" onclick="document.getElementById('filter-builder').style.display='none'"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="toolbar" id="toolbar">
+      <input type="text" id="search" placeholder="Rechercher…" oninput="render()">
+      <button class="btn ghost" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+      <button class="btn ghost" onclick="openFilterBuilder()" id="btn-filter"><i class="ti ti-filter"></i> Filtrer</button>
+      <select id="f-status" onchange="render()"><option value="">Tous les statuts</option></select>
+      <select id="f-pay" onchange="render()"><option value="">Tous les paiements</option></select>
+    </div>
+
+    <div class="table-wrap">
+      <table id="main-table">
+        <thead id="thead-row"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="empty" class="empty" style="display:none">
+        <i class="ti ti-inbox empty-ic"></i>
+        <h3 id="empty-title">Aucune entrée</h3>
+        <p>Cliquez sur + Ajouter pour commencer</p>
+      </div>
+      <div class="pagination" id="pagination" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<!-- Ticket modal -->
+<div class="modal-bg" id="ticket-modal" style="display:none" onclick="bgClose(event,'ticket-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="ticket-modal-title">Ajouter un billet</h2>
+      <button class="icon-btn" onclick="closeModal('ticket-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Événement</label><select id="fe-ev"></select></div>
+      <div class="form-group full"><label>Siège</label><input id="fe-seat" type="text" placeholder="Siège 113 – Rang 10"></div>
+      <div class="form-group"><label>Email</label><input id="fe-email" type="email" placeholder="buyer@email.com"></div>
+      <div class="form-group"><label>Mot de passe</label><input id="fe-pwd" type="text" placeholder="password@123"></div>
+      <div class="form-group"><label>Prix achat (€)</label><input id="fe-buy" type="number" min="0" step="0.01" placeholder="43"></div>
+      <div class="form-group"><label>Prix vente (€)</label><input id="fe-sell" type="number" min="0" step="0.01" placeholder="118.80"></div>
+      <div class="form-group"><label>Date événement</label><input id="fe-evdate" type="date"></div>
+      <div class="form-group"><label>Quantité</label><input id="fe-qty" type="number" min="1" value="1"></div>
+      <div class="form-group"><label>Statut</label><select id="fe-status" onchange="handleStatusSelect(this)"><option value="">—</option></select></div>
+      <div class="form-group"><label>Paiement</label><select id="fe-pay" onchange="handlePaySelect(this,'stock')"><option value="">—</option></select></div>
+      <div class="form-group"><label>Client</label><input id="fe-client" type="text" placeholder="Kylian Mbappé"></div>
+      <div class="form-group"><label>Site</label><select id="fe-site" onchange="handleSiteSelect(this)"><option value="">—</option></select></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('ticket-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveTicket()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACO modal -->
+<div class="modal-bg" id="aco-modal" style="display:none" onclick="bgClose(event,'aco-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="aco-modal-title">Ajouter un ACO</h2>
+      <button class="icon-btn" onclick="closeModal('aco-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Catégorie</label><input id="fa-cat" type="text" placeholder="OR ALLEE"></div>
+      <div class="form-group"><label>Quantité</label><input id="fa-qty" type="number" min="1" value="1"></div>
+      <div class="form-group full"><label>Siège</label><input id="fa-seat" type="text" placeholder="Siège 113 – Rang 10"></div>
+      <div class="form-group"><label>Email</label><input id="fa-email" type="email" placeholder="email@icloud.com"></div>
+      <div class="form-group"><label>Mot de passe</label><input id="fa-pwd" type="text" placeholder="password@123"></div>
+      <div class="form-group"><label>Date événement</label><input id="fa-evdate" type="date"></div>
+      <div class="form-group"><label>ACO (€)</label><input id="fa-aco" type="number" min="0" step="0.01" placeholder="180"></div>
+      <div class="form-group"><label>État</label><select id="fa-etat" onchange="handleStatusSelect(this)"><option value="">—</option></select></div>
+      <div class="form-group"><label>Payment Method</label><select id="fa-pay" onchange="handlePaySelect(this,'aco')"><option value="">—</option></select></div>
+      <div class="form-group"><label>Client Name</label><input id="fa-client" type="text" placeholder="Kylian Mbappé"></div>
+      <div class="form-group"><label>Date ACO</label><input id="fa-acodate" type="date"></div>
+      <div class="form-group"><label>Site</label><select id="fa-site" onchange="handleSiteSelect(this)"><option value="">—</option></select></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('aco-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveAco()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Event modal -->
+<div class="modal-bg" id="event-modal" style="display:none" onclick="bgClose(event,'event-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Nouvel événement</h2><button class="icon-btn" onclick="closeModal('event-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group" style="margin-bottom:8px"><label>Nom</label><input id="ev-name" type="text" placeholder="PSG vs Barcelone – UCL"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('event-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveEvent()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rename modal -->
+<div class="modal-bg" id="rename-modal" style="display:none" onclick="bgClose(event,'rename-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Renommer l'événement</h2><button class="icon-btn" onclick="closeModal('rename-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group" style="margin-bottom:8px"><label>Nouveau nom</label><input id="rename-val" type="text"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('rename-modal')">Annuler</button>
+      <button class="btn primary" onclick="doConfirmRename()">Renommer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pay modal -->
+<div class="modal-bg" id="pay-modal" style="display:none" onclick="bgClose(event,'pay-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2 id="pay-modal-title">Nouveau paiement</h2><button class="icon-btn" onclick="closeModal('pay-modal')"><i class="ti ti-x"></i></button></div>
+    <input type="hidden" id="pay-modal-type">
+    <div class="form-group" style="margin-bottom:8px"><label>Nom du paiement</label><input id="f-new-pay" type="text" placeholder="ex: PayPal, Wise…"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('pay-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveNewPay()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Site modal -->
+<div class="modal-bg" id="site-modal" style="display:none" onclick="bgClose(event,'site-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Nouveau site</h2><button class="icon-btn" onclick="closeModal('site-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group" style="margin-bottom:8px"><label>Nom du site</label><input id="f-new-site" type="text" placeholder="ex: StubHub, Viagogo…"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('site-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveNewSite()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status modal -->
+<div class="modal-bg" id="status-modal" style="display:none" onclick="bgClose(event,'status-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Nouveau statut</h2><button class="icon-btn" onclick="closeModal('status-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group" style="margin-bottom:8px"><label>Nom du statut</label><input id="f-new-status" type="text" placeholder="ex: En cours, Livré…"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('status-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveNewStatus()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+// Pure fetch Supabase client
+const SUPA_URL = "https://ahysgnekipugsuwbwzee.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoeXNnbmVraXB1Z3N1d2J3emVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjE5MjgsImV4cCI6MjA5NjkzNzkyOH0.dKnJDqbGQCNY64G5Mxu7vljMFmAK11uVo31eA9C1jrI";
+let _authToken = null;
+
+function _headers() {
+  return {
+    "Content-Type": "application/json",
+    "apikey": SUPA_KEY,
+    "Authorization": "Bearer " + (_authToken || SUPA_KEY),
+    "Prefer": "return=representation"
+  };
+}
+
+async function _req(method, path, body, extraHeaders) {
+  const r = await fetch(SUPA_URL + path, {
+    method, headers: {..._headers(), ...extraHeaders},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const text = await r.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!r.ok) return {data: null, error: data};
+  return {data, error: null};
+}
+
+function _query(table) {
+  let filters = [], selectCols = "*", isSingle = false, orderStr = "";
+  let _mode = "select", _updateData = null;
+
+  const q = {
+    select(cols) { selectCols = cols||"*"; return q; },
+    eq(col, val) { filters.push(col + "=eq." + encodeURIComponent(val)); return q; },
+    order(col, opts) { orderStr = "&order=" + col + ((opts&&!opts.ascending)?".desc":""); return q; },
+    single() { isSingle = true; return q; },
+
+    update(data) { _mode = "update"; _updateData = data; return q; },
+
+    async insert(data) {
+      const body = Array.isArray(data) ? data : [data];
+      const res = await _req("POST", "/rest/v1/" + table, body);
+      return res;
+    },
+
+    async upsert(data) {
+      const body = Array.isArray(data) ? data : [data];
+      const res = await _req("POST", "/rest/v1/" + table, body,
+        {"Prefer": "return=representation,resolution=merge-duplicates"});
+      return res;
+    },
+
+    async delete() {
+      const qs = filters.length ? "?" + filters.join("&") : "";
+      return await _req("DELETE", "/rest/v1/" + table + qs, null, {"Prefer": ""});
+    },
+
+    then(resolve, reject) {
+      (async () => {
+        try {
+          if (_mode === "update") {
+            const qs = filters.length ? "?" + filters.join("&") : "";
+            const res = await _req("PATCH", "/rest/v1/" + table + qs, _updateData);
+            resolve(res);
+          } else {
+            const qs = "?select=" + selectCols + (filters.length ? "&" + filters.join("&") : "") + orderStr;
+            const res = await _req("GET", "/rest/v1/" + table + qs, null, {"Prefer": ""});
+            if (res.error) { resolve(res); return; }
+            if (isSingle) res.data = Array.isArray(res.data) ? (res.data[0]||null) : res.data;
+            resolve(res);
+          }
+        } catch(e) { reject(e); }
+      })();
+    }
+  };
+  return q;
+}
+
+const sb = {
+  auth: {
+    async signInWithPassword({email, password}) {
+      const r = await fetch(SUPA_URL + "/auth/v1/token?grant_type=password", {
+        method: "POST",
+        headers: {"Content-Type":"application/json","apikey":SUPA_KEY},
+        body: JSON.stringify({email, password})
+      });
+      const d = await r.json();
+      if (!r.ok || !d.access_token) return {error: {message: d.error_description || d.msg || "Erreur de connexion"}};
+      _authToken = d.access_token;
+      localStorage.setItem("sb_session", JSON.stringify({token: d.access_token, user: d.user}));
+      localStorage.setItem("sb-ahysgnekipugsuwbwzee-auth-token", JSON.stringify({access_token: d.access_token, user: d.user}));
+      return {data: {user: d.user}, error: null};
+    },
+    async signUp({email, password}) {
+      const r = await fetch(SUPA_URL + "/auth/v1/signup", {
+        method: "POST",
+        headers: {"Content-Type":"application/json","apikey":SUPA_KEY},
+        body: JSON.stringify({email, password})
+      });
+      const d = await r.json();
+      if (!r.ok) return {error: {message: d.msg || d.error_description || "Erreur"}};
+      return {data: d, error: null};
+    },
+    async signOut() {
+      _authToken = null;
+      localStorage.removeItem("sb_session");
+      return {error: null};
+    },
+    onAuthStateChange(cb) {
+      setTimeout(() => {
+        // Try our session first, then fall back to Supabase JS client session
+        const stored = localStorage.getItem("sb_session");
+        const supaStored = localStorage.getItem("sb-ahysgnekipugsuwbwzee-auth-token");
+        if (stored) {
+          try {
+            const s = JSON.parse(stored);
+            _authToken = s.token;
+            cb("SIGNED_IN", {user: s.user});
+            return;
+          } catch(e) {}
+        }
+        if (supaStored) {
+          try {
+            const s = JSON.parse(supaStored);
+            _authToken = s.access_token;
+            // Store in our format too
+            localStorage.setItem("sb_session", JSON.stringify({token: s.access_token, user: s.user}));
+            cb("SIGNED_IN", {user: s.user});
+            return;
+          } catch(e) {}
+        }
+        cb("SIGNED_OUT", null);
+      }, 50);
+    }
+  },
+  from(table) { return _query(table); }
+};
+console.log("Tixsheet client ready");
+
+
+// Supabase configured above
+
+
+// ── State ──
+let currentUser = null;
+let db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled"] };
+let editIdx = null, editAcoIdx = null, activeEv = "__all__", activeMode = "stock", page = 0;
+let colFilters = [], lang = "fr", renameT = null, selectedIds = new Set();
+const PER = 25;
+
+// ── Supabase helpers ──
+async function loadUserData(){
+  const uid = currentUser.id;
+  // Load settings
+  const { data: settings } = await sb.from("user_settings").eq("user_id", uid).select("*").single();
+  if(settings){
+    db.stockPays = settings.stock_pays || db.stockPays;
+    db.acoPays = settings.aco_pays || db.acoPays;
+    db.sites = settings.sites || db.sites;
+    db.statuses = settings.statuses || db.statuses;
+  } else {
+    await sb.from("user_settings").insert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses });
+  }
+  // Load events
+  const { data: evs } = await sb.from("events").eq("user_id", uid).select("name").order("created_at");
+  db.events = evs ? evs.map(e => e.name) : [];
+  // Load tickets
+  const { data: tix } = await sb.from("tickets").eq("user_id", uid).select("*").order("created_at", {ascending:false});
+  db.tickets = tix || [];
+  // Load acos
+  const { data: ac } = await sb.from("acos").eq("user_id", uid).select("*").order("created_at", {ascending:false});
+  db.acos = ac || [];
+}
+
+async function saveSettings(){
+  const uid = currentUser.id;
+  await sb.from("user_settings").upsert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses });
+}
+
+// ── Auth ──
+let authMode = "login";
+function switchAuthTab(mode){
+  authMode = mode;
+  document.querySelectorAll(".auth-tab").forEach((t,i) => t.classList.toggle("active", (mode==="login"&&i===0)||(mode==="signup"&&i===1)));
+  document.getElementById("auth-btn").textContent = mode==="login" ? "Se connecter" : "Créer un compte";
+  document.getElementById("auth-error").style.display = "none";
+  document.getElementById("auth-msg").style.display = "none";
+}
+
+async function handleAuth(){
+  const email = document.getElementById("auth-email").value.trim();
+  const pwd = document.getElementById("auth-pwd").value;
+  const btn = document.getElementById("auth-btn");
+  const errEl = document.getElementById("auth-error");
+  const msgEl = document.getElementById("auth-msg");
+  errEl.style.display = "none"; msgEl.style.display = "none";
+  if(!email || !pwd){ errEl.textContent = "Email et mot de passe requis"; errEl.style.display = "block"; return; }
+  btn.disabled = true; btn.textContent = "…";
+  if(authMode === "login"){
+    const result = await sb.auth.signInWithPassword({ email, password: pwd });
+    if(result.error){ errEl.textContent = result.error.message; errEl.style.display = "block"; btn.disabled=false; btn.textContent="Se connecter"; }
+    else {
+      currentUser = result.data.user;
+      document.getElementById("auth-page").style.display = "none";
+      document.getElementById("loading-screen").style.display = "none";
+      document.getElementById("app").style.display = "block";
+      document.getElementById("user-email-display").textContent = currentUser.email;
+      const initials = currentUser.email ? currentUser.email[0].toUpperCase() : '?';
+      document.getElementById("user-avatar").textContent = initials;
+      await loadUserData();
+      updatePaySelects(); updateSiteSelects(); updateStatusSelects(); applyLang(); render();
+    }
+  } else {
+    const { error } = await sb.auth.signUp({ email, password: pwd });
+    if(error){ errEl.textContent = error.message; errEl.style.display = "block"; btn.disabled=false; btn.textContent="Créer un compte"; }
+    else { msgEl.textContent = "Compte créé ! Vérifiez votre email pour confirmer."; msgEl.style.display="block"; btn.disabled=false; btn.textContent="Créer un compte"; }
+  }
+}
+
+async function handleLogout(){
+  await sb.auth.signOut();
+}
+function doLogout(){
+  sb.auth.signOut();
+  currentUser = null;
+  db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled"] };
+  document.getElementById("app").style.display = "none";
+  document.getElementById("auth-page").style.display = "block";
+  document.getElementById("auth-email").value = "";
+  document.getElementById("auth-pwd").value = "";
+}
+
+// ── Init ──
+sb.auth.onAuthStateChange(async (event, session) => {
+  document.getElementById("loading-screen").style.display = "none";
+  if(session?.user){
+    currentUser = session.user;
+    document.getElementById("auth-page").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    document.getElementById("user-email-display").textContent = currentUser.email;
+      const initials = currentUser.email ? currentUser.email[0].toUpperCase() : '?';
+      document.getElementById("user-avatar").textContent = initials;
+    await loadUserData();
+    updatePaySelects(); updateSiteSelects(); updateStatusSelects(); applyLang(); render();
+  } else {
+    currentUser = null;
+    db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled"] };
+    document.getElementById("app").style.display = "none";
+    document.getElementById("auth-page").style.display = "flex";
+    document.getElementById("auth-page").style.display = "block";
+  }
+});
+
+// Enter key on auth form
+document.addEventListener("keydown", e => {
+  if(e.key === "Enter" && document.getElementById("auth-page").style.display !== "none") handleAuth();
+});
+
+// ── Utilities ──
+function fmt(n){ return (Math.round(n*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €"; }
+function fmtDate(d){ if(!d) return "—"; const p=d.split("-"); return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:d; }
+function esc(s){
+  const d=document.createElement("div");
+  d.appendChild(document.createTextNode(String(s||"")));
+  return d.innerHTML.replace(/"/g,"&#34;");
+}
+function toast(m){ const e=document.getElementById("toast"); e.textContent=m; e.classList.add("show"); setTimeout(()=>e.classList.remove("show"),2200); }
+function closeModal(id){ document.getElementById(id).style.display="none"; }
+function bgClose(e,id){ if(e.target.id===id) closeModal(id); }
+
+// ── Picklists ──
+function updatePaySelects(){
+  const fa=document.getElementById("fa-pay"); const fe=document.getElementById("fe-pay");
+  if(fa){ const v=fa.value; fa.innerHTML='<option value="">—</option>'+db.acoPays.map(p=>'<option value="'+esc(p)+'" '+(v===p?"selected":"")+'>'+esc(p)+'</option>').join("")+'<option value="__add__" style="color:var(--gold);font-weight:700">+ Ajouter un paiement…</option>'; }
+  if(fe){ const v=fe.value; fe.innerHTML='<option value="">—</option>'+db.stockPays.map(p=>'<option value="'+esc(p)+'" '+(v===p?"selected":"")+'>'+esc(p)+'</option>').join("")+'<option value="__add__" style="color:var(--gold);font-weight:700">+ Ajouter un paiement…</option>'; }
+}
+function updateSiteSelects(){
+  ["fe-site","fa-site"].forEach(id=>{ const sel=document.getElementById(id); if(!sel) return; const v=sel.value; sel.innerHTML='<option value="">—</option>'+db.sites.map(s=>'<option value="'+esc(s)+'" '+(v===s?"selected":"")+'>'+esc(s)+'</option>').join("")+'<option value="__add__" style="color:var(--gold);font-weight:700">+ Nouveau site…</option>'; if(v) sel.value=v; });
+}
+function updateStatusSelects(){
+  ["fe-status","fa-etat"].forEach(id=>{ const sel=document.getElementById(id); if(!sel) return; const v=sel.value; sel.innerHTML='<option value="">—</option>'+db.statuses.map(s=>'<option value="'+esc(s)+'" '+(v===s?"selected":"")+'>'+esc(s)+'</option>').join("")+'<option value="__add__" style="color:var(--gold);font-weight:700">+ Nouveau statut…</option>'; if(v) sel.value=v; });
+}
+function handlePaySelect(sel,type){ if(sel.value==="__add__"){ sel.value=""; document.getElementById("pay-modal-type").value=type; document.getElementById("pay-modal-title").textContent=type==="aco"?"Nouveau paiement ACO":"Nouveau paiement Stock"; document.getElementById("f-new-pay").value=""; document.getElementById("pay-modal").style.display="flex"; setTimeout(()=>document.getElementById("f-new-pay").focus(),50); } }
+function handleSiteSelect(sel){ if(sel.value==="__add__"){ sel.value=""; document.getElementById("f-new-site").value=""; document.getElementById("site-modal").style.display="flex"; setTimeout(()=>document.getElementById("f-new-site").focus(),50); } }
+function handleStatusSelect(sel){ if(sel.value==="__add__"){ sel.value=""; document.getElementById("f-new-status").value=""; document.getElementById("status-modal").style.display="flex"; setTimeout(()=>document.getElementById("f-new-status").focus(),50); } }
+
+async function saveNewPay(){
+  const type=document.getElementById("pay-modal-type").value; const val=document.getElementById("f-new-pay").value.trim(); if(!val) return;
+  if(type==="aco"){ if(!db.acoPays.includes(val)) db.acoPays.push(val); } else { if(!db.stockPays.includes(val)) db.stockPays.push(val); }
+  await saveSettings(); closeModal("pay-modal"); updatePaySelects(); updatePayFilter(); toast(val+" ajouté ✓");
+}
+async function saveNewSite(){
+  const val=document.getElementById("f-new-site").value.trim(); if(!val) return;
+  if(!db.sites.includes(val)) db.sites.push(val);
+  await saveSettings(); closeModal("site-modal"); updateSiteSelects(); toast(val+" ajouté ✓");
+}
+async function saveNewStatus(){
+  const val=document.getElementById("f-new-status").value.trim(); if(!val) return;
+  if(!db.statuses.includes(val)) db.statuses.push(val);
+  await saveSettings(); closeModal("status-modal"); updateStatusSelects(); toast(val+" ajouté ✓");
+}
+
+// ── Nav ──
+function renderNav(){
+  const tc={}, ac={};
+  db.tickets.forEach(t=>{ tc[t.event]=(tc[t.event]||0)+1; });
+  db.acos.forEach(a=>{ ac[a.event]=(ac[a.event]||0)+1; });
+  let h='<div class="nav-item '+(activeEv==="__all__"?"active":"")+'" data-ev="__all__"><i class="ti ti-layout-list ni"></i><span class="nl">'+t_("all_tickets")+'</span><span class="nc">'+db.tickets.length+'</span></div>';
+  db.events.forEach(ev=>{ h+='<div class="nav-item '+(activeEv===ev?"active":"")+'" data-ev="'+esc(ev)+'"><i class="ti ti-ticket ni"></i><span class="nl">'+esc(ev)+'</span><span class="nc">'+(tc[ev]||0)+'</span></div>'; });
+  document.getElementById("nav-list").innerHTML=h;
+}
+
+function updateModeTabs(){
+  const show=activeEv!=="__all__";
+  document.getElementById("mode-tabs").style.display=show?"block":"none";
+  if(show){ document.getElementById("tab-aco").classList.toggle("active",activeMode==="aco"); document.getElementById("tab-stock").classList.toggle("active",activeMode==="stock"); }
+  const btn=document.getElementById("btn-add-main");
+  if(activeEv==="__all__") btn.innerHTML='<i class="ti ti-plus"></i> '+t_("add");
+  else if(activeMode==="aco") btn.innerHTML='<i class="ti ti-plus"></i> '+t_("add_aco");
+  else btn.innerHTML='<i class="ti ti-plus"></i> '+t_("add_ticket");
+}
+
+function updatePayFilter(){
+  const sel=document.getElementById("f-pay"); if(!sel) return;
+  const current=sel.value;
+  const showAco=activeEv!=="__all__"&&activeMode==="aco";
+  const opts=showAco?db.acoPays:db.stockPays;
+  sel.innerHTML='<option value="">'+t_("all_payments")+'</option>'+opts.map(p=>'<option value="'+esc(p)+'" '+(current===p?"selected":"")+'>'+esc(p)+'</option>').join("");
+  const fsEl=document.getElementById("f-status"); if(!fsEl) return;
+  const sv=fsEl.value;
+  fsEl.innerHTML='<option value="">'+t_("all_statuses")+'</option>'+db.statuses.map(s=>'<option value="'+esc(s)+'" '+(sv===s?"selected":"")+'>'+esc(s)+'</option>').join("");
+}
+
+function updateStats(src){
+  let html="";
+  if(activeMode==="stock"||activeEv==="__all__"){
+    const buy=src.reduce((s,t)=>s+t.buy*t.qty,0);
+    const sell=src.reduce((s,t)=>s+(t.sell>0?t.sell*t.qty:0),0);
+    const profit=sell-buy; const roi=buy>0?(profit/buy*100):0;
+    const roiStr=(roi>=0?"+":"")+roi.toFixed(1)+"%";
+    const comp=src.filter(t=>t.status==="Completed").length;
+    const pend=src.filter(t=>t.status==="Pending").length;
+    html='<div class="stat"><i class="ti ti-ticket stat-icon"></i><div class="stat-label">'+t_("stat_tickets")+'</div><div class="stat-val c-blue">'+src.length+'</div></div>'+
+      '<div class="stat"><i class="ti ti-arrow-down-circle stat-icon"></i><div class="stat-label">'+t_("stat_invested")+'</div><div class="stat-val">'+fmt(buy)+'</div></div>'+
+      '<div class="stat"><i class="ti ti-arrow-up-circle stat-icon"></i><div class="stat-label">'+t_("stat_revenue")+'</div><div class="stat-val">'+fmt(sell)+'</div></div>'+
+      '<div class="stat featured"><i class="ti ti-bolt stat-icon"></i><div class="stat-label">'+t_("stat_profit")+'</div><div class="stat-val c-gold">'+fmt(profit)+'</div></div>'+
+      '<div class="stat '+(roi>=0?"featured":"")+'" style="'+(roi>=0?"border-color:rgba(34,197,94,0.25)":"border-color:rgba(239,68,68,0.25)")+'"><i class="ti ti-trending-up stat-icon"></i><div class="stat-label">ROI %</div><div class="stat-val '+(roi>=0?"c-green":"c-red")+'">'+roiStr+'</div></div>'+
+      '<div class="stat"><i class="ti ti-circle-check stat-icon"></i><div class="stat-label">'+t_("stat_done")+'</div><div class="stat-val c-green">'+comp+'</div></div>'+
+      '<div class="stat"><i class="ti ti-clock stat-icon"></i><div class="stat-label">'+t_("stat_pending")+'</div><div class="stat-val">'+pend+'</div></div>';
+  } else {
+    const total=src.reduce((s,a)=>s+a.aco*a.qty,0);
+    const comp=src.filter(a=>a.etat==="Completed").length;
+    const pend=src.filter(a=>a.etat==="Pending").length;
+    html='<div class="stat"><i class="ti ti-user stat-icon"></i><div class="stat-label">'+t_("stat_accounts")+'</div><div class="stat-val c-blue">'+src.length+'</div></div>'+
+      '<div class="stat featured"><i class="ti ti-currency-dollar stat-icon"></i><div class="stat-label">'+t_("stat_total_aco")+'</div><div class="stat-val c-gold">'+fmt(total)+'</div></div>'+
+      '<div class="stat"><i class="ti ti-circle-check stat-icon"></i><div class="stat-label">'+t_("stat_paid")+'</div><div class="stat-val c-green">'+comp+'</div></div>'+
+      '<div class="stat"><i class="ti ti-clock stat-icon"></i><div class="stat-label">'+t_("stat_pending")+'</div><div class="stat-val">'+pend+'</div></div>';
+  }
+  document.getElementById("stats").innerHTML=html;
+  document.getElementById("page-title").textContent=activeEv==="__all__"?t_("all_tickets"):activeEv;
+  document.getElementById("page-sub").textContent=activeEv==="__all__"?t_("all_sub"):activeEv+" · "+(activeMode==="aco"?"ACO":t_("stat_tickets"));
+  const ea=document.getElementById("ev-actions");
+  if(activeEv!=="__all__"){
+    ea.innerHTML='<button class="btn ghost sm" id="btn-rename"><i class="ti ti-edit"></i> '+t_("rename")+'</button><button class="btn danger-ghost sm" id="btn-delete"><i class="ti ti-trash"></i> '+t_("delete")+'</button>';
+    document.getElementById("btn-rename").onclick=()=>openRename(activeEv);
+    document.getElementById("btn-delete").onclick=()=>deleteEv(activeEv).catch(e=>console.error(e));
+  } else ea.innerHTML="";
+}
+
+// ── Filter builder ──
+const STOCK_COLS=[{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"qty",label:"Quantité"},{key:"buy",label:"Prix achat"},{key:"sell",label:"Prix vente"},{key:"status",label:"Statut"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"site",label:"Site"}];
+const ACO_COLS=[{key:"cat",label:"Catégorie"},{key:"qty",label:"Quantité"},{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"aco",label:"ACO (€)"},{key:"etat",label:"État"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"acodate",label:"Date ACO"},{key:"site",label:"Site"}];
+
+function openFilterBuilder(){
+  const cols=(activeEv!=="__all__"&&activeMode==="aco")?ACO_COLS:STOCK_COLS;
+  document.getElementById("fb-col").innerHTML=cols.map(c=>'<option value="'+c.key+'">'+c.label+'</option>').join("");
+  document.getElementById("fb-val").value="";
+  document.getElementById("filter-builder").style.display="flex";
+  setTimeout(()=>document.getElementById("fb-val").focus(),50);
+}
+function applyColFilter(){
+  const col=document.getElementById("fb-col").value, op=document.getElementById("fb-op").value, val=document.getElementById("fb-val").value.trim();
+  if(!val) return;
+  const cols=(activeEv!=="__all__"&&activeMode==="aco")?ACO_COLS:STOCK_COLS;
+  const colLabel=cols.find(c=>c.key===col)?.label||col;
+  const opLabels={contains:"contient",equals:"=",starts:"commence par",gt:">",lt:"<"};
+  colFilters.push({col,op,val,label:colLabel+" "+opLabels[op]+" "+val});
+  document.getElementById("filter-builder").style.display="none"; page=0; render();
+}
+function removeColFilter(idx){ colFilters.splice(idx,1); page=0; render(); }
+function clearAllFilters(){ colFilters=[]; page=0; render(); }
+function renderFilterBar(){
+  const bar=document.getElementById("filter-bar"); if(!bar) return;
+  if(!colFilters.length){ bar.innerHTML=""; return; }
+  bar.innerHTML=colFilters.map((f,i)=>'<span class="filter-tag">'+esc(f.label)+'<button onclick="removeColFilter('+i+')" title="Supprimer"><i class="ti ti-x" style="font-size:12px"></i></button></span>').join("")+'<button class="btn ghost sm" onclick="clearAllFilters()"><i class="ti ti-x"></i> Tout effacer</button>';
+}
+function applyColFilters(rows){
+  return rows.filter(row=>colFilters.every(f=>{
+    const raw=String(row[f.col]||"").toLowerCase(), val=f.val.toLowerCase(), num=parseFloat(row[f.col]);
+    if(f.op==="contains") return raw.includes(val);
+    if(f.op==="equals") return raw===val;
+    if(f.op==="starts") return raw.startsWith(val);
+    if(f.op==="gt") return !isNaN(num)&&num>parseFloat(f.val);
+    if(f.op==="lt") return !isNaN(num)&&num<parseFloat(f.val);
+    return true;
+  }));
+}
+
+// ── Table rendering ──
+function filteredStock(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const fs=document.getElementById("f-status").value;
+  const fp=document.getElementById("f-pay").value;
+  const so="date";
+  let l=db.tickets.map((t,i)=>Object.assign({},t,{_i:i})).filter(t=>{
+    if(activeEv!=="__all__"&&t.event!==activeEv) return false;
+    if(q&&![t.event,t.seat,t.email,t.client,t.pwd].join(" ").toLowerCase().includes(q)) return false;
+    if(fs&&t.status!==fs) return false;
+    if(fp&&t.pay!==fp) return false;
+    return true;
+  });
+  l=applyColFilters(l);
+  if(so==="profit") l.sort((a,b)=>(b.sell-b.buy)*b.qty-(a.sell-a.buy)*a.qty);
+  else if(so==="amount") l.sort((a,b)=>b.sell*b.qty-a.sell*a.qty);
+  return l;
+}
+function filteredAco(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const fs=document.getElementById("f-status").value;
+  const fp=document.getElementById("f-pay").value;
+  let l=db.acos.map((a,i)=>Object.assign({},a,{_i:i})).filter(a=>{
+    if(activeEv!=="__all__"&&a.event!==activeEv) return false;
+    if(q&&![a.email,a.client,a.cat,a.pwd,a.seat].join(" ").toLowerCase().includes(q)) return false;
+    if(fs&&a.etat!==fs) return false;
+    if(fp&&a.pay!==fp) return false;
+    return true;
+  });
+  return applyColFilters(l);
+}
+
+function renderStockTable(paged,showEv){
+  var th='<tr>';
+  th+='<th>'+(showEv?t_("col_event"):t_("col_seat"))+'</th>';
+  th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th>';
+  th+='<th>'+t_("col_qty")+'</th><th>'+t_("col_buy")+'</th><th>'+t_("col_sell")+'</th>';
+  th+='<th>'+t_("col_profit")+'</th><th>'+t_("col_status")+'</th><th>'+t_("col_payment")+'</th>';
+  th+='<th>'+t_("col_client")+'</th><th>Site</th><th></th></tr>';
+  document.getElementById("thead-row").innerHTML=th;
+  document.getElementById("tbody").innerHTML=paged.map(t=>{
+    const pr=(t.sell-t.buy)*t.qty, cls=pr>=0?"profit-pos":"profit-neg", sign=pr>=0?"+":"";
+    const rid=t.id||t._i;
+    return '<tr>'+
+      '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
+      '<td>'+(showEv?'<div class="ev-name">'+esc(t.event)+'</div>':'')+'<div class="'+(showEv?"ev-seat":"ev-name")+'">'+esc(t.seat)+'</div></td>'+
+      '<td><div class="email-cell" title="Cliquer pour copier" data-email="'+esc(t.email)+'">'+esc(t.email)+'</div></td>'+
+      '<td><div class="pwd-cell" data-pwd="'+esc(t.pwd)+'">'+esc(t.pwd||"—")+'</div></td>'+
+      '<td style="font-size:12px;color:var(--text2)">'+fmtDate(t.evdate)+'</td>'+
+      '<td class="num" style="text-align:center">'+t.qty+'</td>'+
+      '<td class="num">'+fmt(t.buy*t.qty)+'</td>'+
+      '<td class="num">'+(t.sell>0?fmt(t.sell*t.qty):"—")+'</td>'+
+      '<td class="num '+cls+'">'+sign+fmt(pr)+'</td>'+
+      '<td><span class="badge '+(t.status||"")+'">'+esc(t.status||"—")+'</span></td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+esc(t.pay||"—")+'</td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+esc(t.client||"—")+'</td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+esc(t.site||"—")+'</td>'+
+      '<td><div class="actions"><button class="icon-btn edit-btn" data-idx="'+t._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del del-btn" data-idx="'+t._i+'"><i class="ti ti-trash"></i></button></div></td>'+
+      '</tr>';
+  }).join("");
+}
+
+function renderAcoTable(paged){
+  var th='<tr>';
+  th+='<th>'+t_("col_cat")+'</th><th>'+t_("col_qty")+'</th><th>'+t_("col_seat")+'</th>';
+  th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th>';
+  th+='<th>'+t_("col_aco")+'</th><th>'+t_("col_etat")+'</th><th>'+t_("col_payment")+'</th>';
+  th+='<th>'+t_("col_client")+'</th><th>'+t_("col_acodate")+'</th><th>Site</th><th></th></tr>';
+  document.getElementById("thead-row").innerHTML=th;
+  document.getElementById("tbody").innerHTML=paged.map(a=>{
+    const rid=a.id||a._i;
+    return '<tr>'+
+      '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
+      '<td><span style="font-size:11px;font-weight:700;color:var(--gold)">'+esc(a.cat||"—")+'</span></td>'+
+      '<td class="num" style="text-align:center">'+a.qty+'</td>'+
+      '<td><div class="ev-seat">'+esc(a.seat||"—")+'</div></td>'+
+      '<td><div class="email-cell" title="Cliquer pour copier" data-email="'+esc(a.email)+'">'+esc(a.email)+'</div></td>'+
+      '<td><div class="pwd-cell" data-pwd="'+esc(a.pwd)+'">'+esc(a.pwd||"—")+'</div></td>'+
+      '<td style="font-size:12px;color:var(--text2)">'+fmtDate(a.evdate)+'</td>'+
+      '<td class="num c-gold" style="font-weight:700">'+fmt(a.aco*a.qty)+'</td>'+
+      '<td><span class="badge '+(a.etat||"")+'">'+esc(a.etat||"—")+'</span></td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+esc(a.pay||"—")+'</td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+esc(a.client||"—")+'</td>'+
+      '<td style="font-size:12px;color:var(--text2)">'+fmtDate(a.acodate)+'</td>'+
+      '<td style="font-size:11px;color:var(--text2)">'+esc(a.site||"—")+'</td>'+
+      '<td><div class="actions"><button class="icon-btn aco-edit-btn" data-idx="'+a._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del aco-del-btn" data-idx="'+a._i+'"><i class="ti ti-trash"></i></button></div></td>'+
+      '</tr>';
+  }).join("");
+}
+
+function render(){
+  if(!currentUser) return;
+  if(selectedIds) selectedIds.clear();
+  renderNav(); updateModeTabs(); updatePayFilter(); renderFilterBar();
+  const showAco=activeEv!=="__all__"&&activeMode==="aco";
+  const list=showAco?filteredAco():filteredStock();
+  updateStats(list);
+  const total=list.length, maxP=Math.max(0,Math.ceil(total/PER)-1);
+  if(page>maxP) page=maxP;
+  const paged=list.slice(page*PER,page*PER+PER);
+  const empty=document.getElementById("empty"), pg=document.getElementById("pagination");
+  document.getElementById("tbody").innerHTML="";
+  document.getElementById("thead-row").innerHTML="";
+  if(!paged.length){ empty.style.display="block"; pg.style.display="none"; return; }
+  empty.style.display="none";
+  if(showAco) renderAcoTable(paged); else renderStockTable(paged,activeEv==="__all__");
+  if(total>PER){
+    pg.style.display="flex";
+    pg.innerHTML='<span>'+(page*PER+1)+'–'+Math.min((page+1)*PER,total)+' '+t_("sur")+' '+total+'</span><div class="page-btns"><button class="btn sm" id="pg-prev" '+(page===0?"disabled":"")+' ><i class="ti ti-chevron-left"></i></button><button class="btn sm" id="pg-next" '+(page>=maxP?"disabled":"")+' ><i class="ti ti-chevron-right"></i></button></div>';
+    if(page>0) document.getElementById("pg-prev").onclick=()=>{page--;render();};
+    if(page<maxP) document.getElementById("pg-next").onclick=()=>{page++;render();};
+  } else pg.style.display="none";
+}
+
+function setEv(ev){ activeEv=ev; activeMode=ev==="__all__"?"stock":activeMode; page=0; colFilters=[]; document.getElementById("search").value=""; document.getElementById("f-status").value=""; document.getElementById("f-pay").value=""; render(); }
+function setMode(mode){ activeMode=mode; page=0; colFilters=[]; document.getElementById("f-pay").value=""; render(); }
+function copyPwd(txt,el){ navigator.clipboard.writeText(txt).then(()=>{const o=el.textContent;el.textContent="Copié !";setTimeout(()=>{el.textContent=o;},1200);}); }
+
+// ── CRUD: Tickets ──
+function openTicketModal(idx){
+  editIdx=idx===undefined?null:idx;
+  const t=editIdx!==null?db.tickets[editIdx]:null;
+  document.getElementById("ticket-modal-title").textContent=t?"Modifier le billet":"Ajouter un billet";
+  const sel=document.getElementById("fe-ev");
+  sel.innerHTML=db.events.map(ev=>'<option value="'+esc(ev)+'" '+(t&&t.event===ev?"selected":"")+'>'+esc(ev)+'</option>').join("");
+  if(!t&&activeEv!=="__all__") sel.value=activeEv;
+  document.getElementById("fe-seat").value=t?t.seat:"";
+  document.getElementById("fe-email").value=t?t.email:"";
+  document.getElementById("fe-pwd").value=t?t.pwd:"";
+  document.getElementById("fe-buy").value=t?t.buy:"";
+  document.getElementById("fe-sell").value=t?t.sell:"";
+  document.getElementById("fe-evdate").value=t?t.evdate:"";
+  document.getElementById("fe-qty").value=t?t.qty:1;
+  document.getElementById("fe-client").value=t?t.client:"";
+  updatePaySelects(); updateSiteSelects(); updateStatusSelects();
+  document.getElementById("fe-pay").value=t?t.pay:"";
+  document.getElementById("fe-site").value=t?t.site:"";
+  document.getElementById("fe-status").value=t?t.status:"Pending";
+  document.getElementById("ticket-modal").style.display="flex";
+  setTimeout(()=>document.getElementById("fe-seat").focus(),50);
+}
+
+async function saveTicket(){
+  const payload={
+    user_id:currentUser.id, event:document.getElementById("fe-ev").value,
+    seat:document.getElementById("fe-seat").value.trim(), email:document.getElementById("fe-email").value.trim(),
+    pwd:document.getElementById("fe-pwd").value.trim(), buy:parseFloat(document.getElementById("fe-buy").value)||0,
+    sell:parseFloat(document.getElementById("fe-sell").value)||0, qty:parseInt(document.getElementById("fe-qty").value)||1,
+    status:document.getElementById("fe-status").value, pay:document.getElementById("fe-pay").value,
+    client:document.getElementById("fe-client").value.trim(), evdate:document.getElementById("fe-evdate").value||null,
+    site:document.getElementById("fe-site").value
+  };
+  if(!payload.event) return;
+  if(editIdx!==null){
+    const id=db.tickets[editIdx].id;
+    await sb.from("tickets").eq("id",id).update(payload);
+    db.tickets[editIdx]=Object.assign({},db.tickets[editIdx],payload);
+    toast("Billet modifié ✓");
+  } else {
+    const {data}=await sb.from("tickets").insert(payload);
+    if(data) db.tickets.unshift(data);
+    toast("Billet ajouté ✓");
+  }
+  closeModal("ticket-modal"); render();
+}
+
+async function delTicket(idx){
+  if(!confirm("Supprimer ce billet ?")) return;
+  const id=db.tickets[idx].id;
+  await sb.from("tickets").eq("id",id).delete();
+  db.tickets.splice(idx,1); toast("Supprimé"); render();
+}
+
+// ── CRUD: ACOs ──
+function openAcoModal(idx){
+  editAcoIdx=idx===undefined?null:idx;
+  const a=editAcoIdx!==null?db.acos[editAcoIdx]:null;
+  document.getElementById("aco-modal-title").textContent=a?"Modifier ACO":"Ajouter un ACO";
+  document.getElementById("fa-cat").value=a?a.cat:"";
+  document.getElementById("fa-qty").value=a?a.qty:1;
+  document.getElementById("fa-seat").value=a?a.seat:"";
+  document.getElementById("fa-email").value=a?a.email:"";
+  document.getElementById("fa-pwd").value=a?a.pwd:"";
+  document.getElementById("fa-evdate").value=a?a.evdate:"";
+  document.getElementById("fa-aco").value=a?a.aco:"";
+  document.getElementById("fa-client").value=a?a.client:"";
+  document.getElementById("fa-acodate").value=a?a.acodate:"";
+  updatePaySelects(); updateSiteSelects(); updateStatusSelects();
+  document.getElementById("fa-pay").value=a?a.pay:"";
+  document.getElementById("fa-site").value=a?a.site:"";
+  document.getElementById("fa-etat").value=a?a.etat:"Pending";
+  document.getElementById("aco-modal").style.display="flex";
+  setTimeout(()=>document.getElementById("fa-email").focus(),50);
+}
+
+async function saveAco(){
+  const payload={
+    user_id:currentUser.id, event:activeEv==="__all__"?document.getElementById("fe-ev")?.value||"":activeEv,
+    cat:document.getElementById("fa-cat").value.trim(), qty:parseInt(document.getElementById("fa-qty").value)||1,
+    seat:document.getElementById("fa-seat").value.trim(), email:document.getElementById("fa-email").value.trim(),
+    pwd:document.getElementById("fa-pwd").value.trim(), evdate:document.getElementById("fa-evdate").value||null,
+    aco:parseFloat(document.getElementById("fa-aco").value)||0, etat:document.getElementById("fa-etat").value,
+    pay:document.getElementById("fa-pay").value, client:document.getElementById("fa-client").value.trim(),
+    acodate:document.getElementById("fa-acodate").value||null, site:document.getElementById("fa-site").value
+  };
+  if(editAcoIdx!==null){
+    const id=db.acos[editAcoIdx].id;
+    await sb.from("acos").eq("id",id).update(payload);
+    db.acos[editAcoIdx]=Object.assign({},db.acos[editAcoIdx],payload);
+    toast("ACO modifié ✓");
+  } else {
+    const {data}=await sb.from("acos").insert(payload);
+    if(data) db.acos.unshift(data);
+    toast("ACO ajouté ✓");
+  }
+  closeModal("aco-modal"); render();
+}
+
+async function delAco(idx){
+  if(!confirm("Supprimer cet ACO ?")) return;
+  const id=db.acos[idx].id;
+  await sb.from("acos").eq("id",id).delete();
+  db.acos.splice(idx,1); toast("Supprimé"); render();
+}
+
+// ── CRUD: Events ──
+function openAddModal(){ if(activeEv==="__all__"||activeMode==="stock") openTicketModal(null); else openAcoModal(null); }
+function openEventModal(){ document.getElementById("ev-name").value=""; document.getElementById("event-modal").style.display="flex"; setTimeout(()=>document.getElementById("ev-name").focus(),50); }
+
+async function saveEvent(){
+  const name=document.getElementById("ev-name").value.trim();
+  if(!name){ console.log("NO NAME"); return; }
+  if(db.events.includes(name)){ toast("Événement déjà existant"); return; }
+  console.log("Inserting event:", name, "user:", currentUser?.id);
+  const result = await sb.from("events").insert({user_id:currentUser.id, name:name});
+  console.log("Insert result:", JSON.stringify(result));
+  if(result.error){ toast("Erreur: "+result.error.message); return; }
+  db.events.push(name);
+  closeModal("event-modal"); setEv(name); toast("Événement créé ✓");
+}
+
+function openRename(ev){ renameT=ev; document.getElementById("rename-val").value=ev; document.getElementById("rename-modal").style.display="flex"; setTimeout(()=>{const e=document.getElementById("rename-val");e.focus();e.select();},50); }
+
+async function confirmRename(){
+  const n=document.getElementById("rename-val").value.trim();
+  if(!n||n===renameT){ closeModal("rename-modal"); return; }
+  if(db.events.includes(n)){ toast("Nom déjà utilisé"); return; }
+  // Update event name in events table
+  await sb.from("events").update({name:n}).eq("user_id",currentUser.id).eq("name",renameT);
+  // Update all tickets and acos with this event name
+  await sb.from("tickets").update({event:n}).eq("user_id",currentUser.id).eq("event",renameT);
+  await sb.from("acos").update({event:n}).eq("user_id",currentUser.id).eq("event",renameT);
+  db.events=db.events.map(e=>e===renameT?n:e);
+  db.tickets.forEach(t=>{if(t.event===renameT)t.event=n;});
+  db.acos.forEach(a=>{if(a.event===renameT)a.event=n;});
+  if(activeEv===renameT) activeEv=n;
+  closeModal("rename-modal"); render(); toast("Renommé ✓");
+}
+
+async function deleteEv(ev){
+  const tc=db.tickets.filter(t=>t.event===ev).length, ac=db.acos.filter(a=>a.event===ev).length;
+  const total=tc+ac;
+  if(!confirm('Supprimer "'+ev+'" et ses '+total+' entrée(s) ?')) return;
+  await sb.from("events").eq("user_id",currentUser.id).eq("name",ev).delete();
+  await sb.from("tickets").eq("user_id",currentUser.id).eq("event",ev).delete();
+  await sb.from("acos").eq("user_id",currentUser.id).eq("event",ev).delete();
+  db.events=db.events.filter(e=>e!==ev);
+  db.tickets=db.tickets.filter(t=>t.event!==ev);
+  db.acos=db.acos.filter(a=>a.event!==ev);
+  activeEv="__all__"; render(); toast("Supprimé");
+}
+
+
+
+// Bulk select
+function selectAllVisible(){
+  document.querySelectorAll('.sel-cb').forEach(function(el){
+    el.checked=true;
+    selectedIds.add(String(el.dataset.id));
+  });
+  const saCb=document.getElementById('select-all-cb');
+  if(saCb) saCb.checked=true;
+  updateBulkBar();
+}
+function toggleRow(cb){
+  const id=String(cb.dataset.id);
+  if(cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+  updateBulkBar();
+}
+function toggleSelectAll(cb){
+  document.querySelectorAll('.sel-cb').forEach(function(el){
+    el.checked=cb.checked;
+    const id=String(el.dataset.id);
+    if(cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+  });
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const bar=document.getElementById('bulk-bar');
+  const count=document.getElementById('bulk-count');
+  if(selectedIds.size>0){ bar.classList.add('show'); count.textContent=selectedIds.size+' sélectionné(s)'; }
+  else bar.classList.remove('show');
+}
+function clearSelection(){
+  selectedIds.clear();
+  document.querySelectorAll('.sel-cb').forEach(function(el){el.checked=false;});
+  const saCb=document.getElementById('select-all-cb');
+  if(saCb) saCb.checked=false;
+  updateBulkBar();
+}
+async function deleteSelected(){
+  if(!selectedIds.size) return;
+  if(!confirm('Supprimer '+selectedIds.size+' entrée(s) ?')) return;
+  const showAco=activeEv!=="__all__"&&activeMode==="aco";
+  const ids=[...selectedIds];
+  await Promise.all(ids.map(function(id){
+    return showAco ? sb.from("acos").eq("id",id).delete() : sb.from("tickets").eq("id",id).delete();
+  }));
+  if(showAco) db.acos=db.acos.filter(function(a){return !selectedIds.has(String(a.id));});
+  else db.tickets=db.tickets.filter(function(t){return !selectedIds.has(String(t.id));});
+  selectedIds.clear(); updateBulkBar(); render();
+  toast(ids.length+' supprimé(s) ✓');
+}
+// ── Export ──
+function exportCSV(){
+  const showAco=activeEv!=="__all__"&&activeMode==="aco";
+  const src=showAco?(activeEv==="__all__"?db.acos:db.acos.filter(a=>a.event===activeEv)):(activeEv==="__all__"?db.tickets:db.tickets.filter(t=>t.event===activeEv));
+  let headers,rows;
+  if(showAco){
+    headers=["Événement","Catégorie","Qté","Siège","Email","Mot de passe","Date événement","ACO","État","Paiement","Client","Date ACO","Site"];
+    rows=src.map(a=>[a.event,a.cat,a.qty,a.seat,a.email,a.pwd,a.evdate,a.aco,a.etat,a.pay,a.client,a.acodate,a.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
+  } else {
+    headers=["Événement","Siège","Email","Mot de passe","Date événement","Qté","Achat","Vente","Profit","Statut","Paiement","Client","Site"];
+    rows=src.map(t=>[t.event,t.seat,t.email,t.pwd,t.evdate,t.qty,t.buy,t.sell,((t.sell-t.buy)*t.qty).toFixed(2),t.status,t.pay,t.client,t.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
+  }
+  const csv=[headers.join(",")].concat(rows).join("\n");
+  const a=document.createElement("a"); a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(csv);
+  a.download="tixsheet_"+new Date().toISOString().slice(0,10)+".csv"; a.click(); toast("Export CSV ✓");
+}
+
+// ── Language ──
+const T={
+  fr:{ all_tickets:"Tous les billets",all_sub:"Vue globale de tous vos événements",add:"Ajouter",add_aco:"Ajouter ACO",add_ticket:"Ajouter billet",all_statuses:"Tous les statuts",all_payments:"Tous les paiements",stat_tickets:"Billets",stat_invested:"Investi",stat_revenue:"Revenus",stat_profit:"Profit net",stat_done:"Terminés",stat_pending:"En attente",stat_accounts:"Comptes",stat_total_aco:"Total ACO",stat_paid:"Payés",rename:"Renommer",delete:"Supprimer",col_event:"Événement / Siège",col_seat:"Siège",col_email:"Email",col_pwd:"Mot de passe",col_evdate:"Date événement",col_qty:"Qté",col_buy:"Achat",col_sell:"Vente",col_profit:"Profit",col_status:"Statut",col_payment:"Paiement",col_client:"Client",col_cat:"Catégorie",col_aco:"ACO (€)",col_etat:"État",col_acodate:"Date ACO",col_site:"Site",sur:"sur",events_label:"ÉVÉNEMENTS",new_event:"Nouvel événement" },
+  en:{ all_tickets:"All tickets",all_sub:"Global view of all your events",add:"Add",add_aco:"Add ACO",add_ticket:"Add ticket",all_statuses:"All statuses",all_payments:"All payments",stat_tickets:"Tickets",stat_invested:"Invested",stat_revenue:"Revenue",stat_profit:"Net profit",stat_done:"Completed",stat_pending:"Pending",stat_accounts:"Accounts",stat_total_aco:"Total ACO",stat_paid:"Paid",rename:"Rename",delete:"Delete",col_event:"Event / Seat",col_seat:"Seat",col_email:"Email",col_pwd:"Password",col_evdate:"Event date",col_qty:"Qty",col_buy:"Buy price",col_sell:"Sell price",col_profit:"Profit",col_status:"Status",col_payment:"Payment",col_client:"Client",col_cat:"Category",col_aco:"ACO (€)",col_etat:"Status",col_acodate:"ACO date",col_site:"Site",sur:"of",events_label:"EVENTS",new_event:"New event" }
+};
+function t_(k){ return T[lang][k]||T.fr[k]||k; }
+function toggleLang(){ lang=lang==="fr"?"en":"fr"; const lb=document.getElementById("lang-btn"); if(lb) lb.innerHTML='<i class="ti ti-world"></i> '+(lang==="fr"?"FR":"EN"); applyLang(); render(); }
+function applyLang(){
+  const sl=document.getElementById("sidebar-label"); if(sl) sl.textContent=t_("events_label");
+  const ne=document.getElementById("new-ev-btn"); if(ne) ne.innerHTML='<i class="ti ti-plus"></i> '+t_("new_event");
+  const srch=document.getElementById("search"); if(srch) srch.placeholder=lang==="fr"?"Rechercher…":"Search…";
+}
+
+// ── Delegated events ──
+document.addEventListener("click",function(e){
+  const navItem=e.target.closest(".nav-item[data-ev]"); if(navItem){ setEv(navItem.dataset.ev); return; }
+  const modeTab=e.target.closest(".mode-tab[data-mode]"); if(modeTab){ setMode(modeTab.dataset.mode); return; }
+  const editBtn=e.target.closest(".edit-btn"); if(editBtn){ openTicketModal(parseInt(editBtn.dataset.idx)); return; }
+  const delBtn=e.target.closest(".del-btn"); if(delBtn){ delTicket(parseInt(delBtn.dataset.idx)).catch(e=>console.error(e)); return; }
+  const acoEdit=e.target.closest(".aco-edit-btn"); if(acoEdit){ openAcoModal(parseInt(acoEdit.dataset.idx)); return; }
+  const acoDel=e.target.closest(".aco-del-btn"); if(acoDel){ delAco(parseInt(acoDel.dataset.idx)).catch(e=>console.error(e)); return; }
+  const pwdCell=e.target.closest(".pwd-cell"); if(pwdCell){ copyPwd(pwdCell.dataset.pwd,pwdCell); return; }
+  const emailCell=e.target.closest(".email-cell"); if(emailCell){ copyPwd(emailCell.dataset.email,emailCell); return; }
+});  // end onAuthStateChange
+
+document.getElementById("fb-val").addEventListener("keydown",e=>{ if(e.key==="Enter") applyColFilter(); });
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") ["ticket-modal","aco-modal","event-modal","rename-modal","pay-modal","site-modal","status-modal"].forEach(id=>{
+    if(document.getElementById(id).style.display!=="none") closeModal(id);
+  });
+});
+
+// Wire buttons after app is shown
+// Sync wrappers for async functions (onclick-safe)
+function doSaveEvent(){ saveEvent().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doSaveTicket(){ saveTicket().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doSaveAco(){ saveAco().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doConfirmRename(){ confirmRename().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doDeleteEv(ev){ deleteEv(ev).catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doSaveNewPay(){ saveNewPay().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doSaveNewSite(){ saveNewSite().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+function doSaveNewStatus(){ saveNewStatus().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+
+
+
+function toggleUserMenu(){
+  const d = document.getElementById('user-dropdown');
+  d.style.display = d.style.display === 'none' || !d.style.display ? 'block' : 'none';
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#user-avatar') && !e.target.closest('#user-dropdown')){
+    const d = document.getElementById('user-dropdown');
+    if(d) d.style.display = 'none';
+  }
+});
+// Theme system
+let currentTheme = localStorage.getItem('tix_theme') || 'dark';
+function applyTheme(){
+  document.body.classList.remove('theme-white','theme-cream','theme-arctic');
+  if(currentTheme !== 'dark') document.body.classList.add('theme-'+currentTheme);
+  // Update active indicator in picker
+  document.querySelectorAll('.theme-option').forEach(function(el){
+    el.style.background = el.dataset.theme === currentTheme ? 'var(--gold-dim)' : '';
+    el.style.fontWeight = el.dataset.theme === currentTheme ? '700' : '500';
+  });
+}
+function setTheme(t){
+  currentTheme = t;
+  localStorage.setItem('tix_theme', t);
+  applyTheme();
+  document.getElementById('theme-picker').style.display = 'none';
+}
+function toggleThemePicker(){
+  const p = document.getElementById('theme-picker');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+// Close picker when clicking outside
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#theme-btn') && !e.target.closest('#theme-picker')){
+    const p = document.getElementById('theme-picker');
+    if(p) p.style.display = 'none';
+  }
+});
+applyTheme();
+
+// Expose functions to global scope (required for onclick in HTML)
+function setPeriod(){} // stub - no dashboard in this version
+window.openAddModal = openAddModal;
+window.openEventModal = openEventModal;
+window.openTicketModal = openTicketModal;
+window.openAcoModal = openAcoModal;
+window.closeModal = closeModal;
+window.bgClose = bgClose;
+window.doSaveEvent = doSaveEvent;
+window.doSaveTicket = doSaveTicket;
+window.doSaveAco = doSaveAco;
+window.doConfirmRename = doConfirmRename;
+window.doDeleteEv = doDeleteEv;
+window.doSaveNewPay = doSaveNewPay;
+window.doSaveNewSite = doSaveNewSite;
+window.doSaveNewStatus = doSaveNewStatus;
+window.saveNewPay = saveNewPay;
+window.saveNewSite = saveNewSite;
+window.saveNewStatus = saveNewStatus;
+window.handlePaySelect = handlePaySelect;
+window.handleSiteSelect = handleSiteSelect;
+window.handleStatusSelect = handleStatusSelect;
+window.toggleLang = toggleLang;
+window.doLogout = doLogout;
+window.exportCSV = exportCSV;
+window.setTheme = setTheme;
+window.toggleUserMenu = toggleUserMenu;
+window.toggleThemePicker = toggleThemePicker;
+window.deleteSelected = deleteSelected;
+window.clearSelection = clearSelection;
+window.selectAllVisible = selectAllVisible;
+window.toggleSelectAll = toggleSelectAll;
+window.toggleRow = toggleRow;
+window.openFilterBuilder = openFilterBuilder;
+window.applyColFilter = applyColFilter;
+window.removeColFilter = removeColFilter;
+window.clearAllFilters = clearAllFilters;
+window.render = render;
+window.confirmRename = confirmRename;
+window.openRename = openRename;
+
+
+</script>
+</body>
+</html>
