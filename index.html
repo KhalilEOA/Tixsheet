@@ -1270,8 +1270,8 @@ function updatePayFilter(){
 function updateStats(src){
   let html="";
   if(activeMode==="stock"||activeEv==="__all__"){
-    const buy=src.reduce((s,t)=>s+t.buy*t.qty,0);
-    const sell=src.reduce((s,t)=>s+(t.sell>0?t.sell*t.qty:0),0);
+    const buy=src.reduce((s,t)=>s+t.buy,0);
+    const sell=src.reduce((s,t)=>s+(t.sell>0?t.sell:0),0);
     const profit=sell-buy; const roi=buy>0?(profit/buy*100):0;
     const roiStr=(roi>=0?"+":"")+roi.toFixed(1)+"%";
     const comp=src.filter(t=>t.status==="Completed").length;
@@ -1400,7 +1400,7 @@ function renderStockTable(paged,showEv){
   th+='<th>'+t_("col_client")+'</th><th>'+t_("col_livraison")+'</th><th>POS</th><th></th></tr>';
   document.getElementById("thead-row").innerHTML=th;
   document.getElementById("tbody").innerHTML=paged.map(t=>{
-    const pr=(t.sell-t.buy)*t.qty, cls=pr>=0?"profit-pos":"profit-neg", sign=pr>=0?"+":"";
+    const pr=(t.sell-t.buy), cls=pr>=0?"profit-pos":"profit-neg", sign=pr>=0?"+":"";
     const rid=t.id||t._i;
     return '<tr class="data-row">'+
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
@@ -1644,8 +1644,8 @@ function renderDashboard(){
   const acos = filterEv === "__all__" ? db.acos : db.acos.filter(a=>a.event===filterEv);
 
   // KPI
-  const totalBuy = tickets.reduce((s,t)=>s+t.buy*t.qty,0);
-  const totalSell = tickets.reduce((s,t)=>s+(t.sell>0?t.sell*t.qty:0),0);
+  const totalBuy = tickets.reduce((s,t)=>s+t.buy,0);
+  const totalSell = tickets.reduce((s,t)=>s+(t.sell>0?t.sell:0),0);
   const profit = totalSell - totalBuy;
   const roi = totalBuy>0?(profit/totalBuy*100):0;
   const completed = tickets.filter(t=>t.status==="Completed").length;
@@ -1655,7 +1655,7 @@ function renderDashboard(){
   const avgProfit = (()=>{
     const sold = tickets.filter(t=>t.sell>0);
     if(!sold.length) return 0;
-    const totalProfit = sold.reduce((s,t)=>s+(t.sell-t.buy)*t.qty,0);
+    const totalProfit = sold.reduce((s,t)=>s+(t.sell-t.buy),0);
     const totalQtyS = sold.reduce((s,t)=>s+t.qty,0);
     return totalQtyS>0 ? totalProfit/totalQtyS : 0;
   })();
@@ -1672,7 +1672,7 @@ function renderDashboard(){
 
   // Profit by event (data only — chart rendered below with colors)
   const evProfits = {};
-  tickets.forEach(t=>{ const p=(t.sell-t.buy)*t.qty; evProfits[t.event]=(evProfits[t.event]||0)+p; });
+  tickets.forEach(t=>{ const p=(t.sell-t.buy); evProfits[t.event]=(evProfits[t.event]||0)+p; });
   const evEntries = Object.entries(evProfits).sort((a,b)=>b[1]-a[1]).slice(0,8);
 
   // Status donut
@@ -1696,7 +1696,7 @@ function renderDashboard(){
 
   // Payment method bar chart (colored per method)
   const payCount = {};
-  tickets.forEach(t=>{ if(t.pay) payCount[t.pay]=(payCount[t.pay]||0)+(t.sell-t.buy)*t.qty; });
+  tickets.forEach(t=>{ if(t.pay) payCount[t.pay]=(payCount[t.pay]||0)+(t.sell-t.buy); });
   const payEntries = Object.entries(payCount).sort((a,b)=>b[1]-a[1]);
   const maxPay = Math.max(...payEntries.map(e=>Math.abs(e[1])),1);
   document.getElementById("dash-pay-chart").innerHTML = payEntries.length ? payEntries.map(([pay,p])=>{
@@ -1741,7 +1741,7 @@ function renderDashboard(){
   document.getElementById("dash-ev-colors").innerHTML = db.events.map(ev => {
     const col = evColorMap[ev] || '#888';
     const evTickets = tickets.filter(t=>t.event===ev);
-    const evProfit = evTickets.reduce((s,t)=>(s+(t.sell-t.buy)*t.qty),0);
+    const evProfit = evTickets.reduce((s,t)=>(s+(t.sell-t.buy)),0);
     return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:160px">'
       +'<span style="width:10px;height:10px;border-radius:50%;background:'+col+';flex-shrink:0"></span>'
       +'<span style="font-weight:600;font-size:13px;color:var(--text)">'+esc(ev)+'</span>'
@@ -1760,8 +1760,8 @@ function renderDashboard(){
   document.getElementById("dash-recent").innerHTML = recent.length ?
     '<table class="dash-recent-table"><thead><tr><th>'+t_("dash_ev")+'</th><th>'+t_("dash_seat")+'</th><th>'+t_("dash_buy")+'</th><th>'+t_("dash_sell")+'</th><th>'+t_("dash_profit")+'</th><th>'+t_("col_status")+'</th></tr></thead><tbody>'+
     recent.map(t=>{
-      const p=(t.sell-t.buy)*t.qty;
-      return '<tr><td>'+esc(t.event)+'</td><td>'+esc(t.seat||"—")+'</td><td>'+fmt(t.buy*t.qty)+'</td><td>'+(t.sell>0?fmt(t.sell*t.qty):"—")+'</td><td class="'+(p>=0?"c-green":"c-red")+'">'+fmt(p)+'</td><td><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></td></tr>';
+      const p=(t.sell-t.buy);
+      return '<tr><td>'+esc(t.event)+'</td><td>'+esc(t.seat||"—")+'</td><td>'+fmt(t.buy)+'</td><td>'+(t.sell>0?fmt(t.sell):"—")+'</td><td class="'+(p>=0?"c-green":"c-red")+'">'+fmt(p)+'</td><td><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></td></tr>';
     }).join("")+'</tbody></table>'
     : '<div style="color:var(--text3);padding:20px 0">'+t_("dash_no_data")+'</div>';
 }
@@ -2092,7 +2092,7 @@ function exportCSV(){
     rows=src.map(a=>[a.event,a.cat,a.qty,a.seat,a.email,a.pwd,a.evdate,a.aco,a.etat,a.pay,a.client,a.acodate,a.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
   } else {
     headers=["Événement","Siège","Catégorie","Email","Mot de passe","Date événement","Site","Qté","Achat","Vente","Profit","Statut","Paiement","Client","Livraison","POS"];
-    rows=src.map(t=>[t.event,t.seat,t.cat,t.email,t.pwd,t.evdate,t.site,t.qty,t.buy,t.sell,((t.sell-t.buy)*t.qty).toFixed(2),t.status,t.pay,t.client,t.livraison,t.pos].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
+    rows=src.map(t=>[t.event,t.seat,t.cat,t.email,t.pwd,t.evdate,t.site,t.qty,t.buy,t.sell,(t.sell-t.buy).toFixed(2),t.status,t.pay,t.client,t.livraison,t.pos].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
   }
   const csv=[headers.join(",")].concat(rows).join("\n");
   const a=document.createElement("a"); a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(csv);
