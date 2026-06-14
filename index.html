@@ -172,7 +172,7 @@ tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
 .email-cell{font-size:13px;color:var(--text2);max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pwd-cell{font-size:13px;font-family:monospace;color:var(--text3);max-width:115px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;padding:3px 7px;border-radius:5px;border:1px solid var(--border);background:var(--bg-input);display:inline-block;transition:all 0.15s}
 .pwd-cell:hover{color:var(--text);border-color:var(--border3)}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:0.5px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
 .badge::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
 .badge.Completed{background:var(--green-dim);color:var(--green)}
 .badge.Pending{background:var(--amber-dim);color:var(--amber)}
@@ -289,93 +289,6 @@ tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
 @keyframes spin{to{transform:rotate(360deg)}}
 
 
-/* Soft Cream theme */
-body.theme-cream {
-  --bg-base:#faf8f4;--bg-sidebar:#ffffff;--bg-card:#ffffff;--bg-card2:#f5f2ec;
-  --bg-hover:#ede8e0;--bg-input:#f8f5f0;--border:rgba(0,0,0,0.07);
-  --border2:rgba(0,0,0,0.12);--border3:rgba(0,0,0,0.20);
-  --text:#1a1612;--text2:#8a8278;--text3:#b4afa8;
-  --gold:#c2a55a;--gold2:#a88a3a;--gold-dim:rgba(194,165,90,0.1);
-  --gold-border:rgba(194,165,90,0.28);--blue:#7c6030;--green:#5a7a3a;
-  --green-dim:rgba(90,122,58,0.1);--red:#c0392b;--red-dim:rgba(192,57,43,0.1);
-  --amber:#c2a55a;--amber-dim:rgba(194,165,90,0.1);
-}
-body.theme-cream,.theme-cream .topbar{background:var(--bg-base);color:var(--text)}
-body.theme-cream .topbar{background:#fff;border-bottom:1px solid var(--border2);box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-body.theme-cream .brand-name{background:linear-gradient(135deg,#1a1612 30%,#c2a55a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-body.theme-cream .sidebar{background:#fff;border-right:1px solid var(--border2)}
-body.theme-cream .nav-item{color:#8a8278}
-body.theme-cream .nav-item:hover{background:#f5f2ec;color:#1a1612}
-body.theme-cream .nav-item.active{background:rgba(194,165,90,0.1);color:#c2a55a;border-color:rgba(194,165,90,0.25)}
-body.theme-cream .nav-item .nc{background:#f5f2ec;color:#b4afa8}
-body.theme-cream .nav-item.active .nc{background:rgba(194,165,90,0.12);color:#c2a55a}
-body.theme-cream .new-ev-btn{border-color:rgba(194,165,90,0.35);color:#c2a55a}
-body.theme-cream .new-ev-btn:hover{background:rgba(194,165,90,0.06)}
-body.theme-cream .stat{background:#fff;border:1px solid var(--border2);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
-body.theme-cream .stat.featured{border-color:rgba(194,165,90,0.3)}
-body.theme-cream .stat-val.c-gold{color:#c2a55a}
-body.theme-cream .stat-val.c-blue{color:#2c5f8a}
-body.theme-cream .stat-val.c-green{color:#2d6a2d}
-body.theme-cream .stat-val.c-red{color:#c0392b}
-body.theme-cream .table-wrap{background:#fff;border:1px solid var(--border2);box-shadow:0 1px 4px rgba(0,0,0,0.04)}
-body.theme-cream thead th{background:#faf8f4;color:#8a8278;border-bottom:1px solid var(--border2)}
-body.theme-cream tbody tr{border-bottom:1px solid #f5f0e8}
-body.theme-cream tbody tr:hover{background:#faf8f4}
-body.theme-cream .ev-name{color:#1a1612}
-body.theme-cream .ev-seat{color:#b4afa8}
-body.theme-cream 
-.cell-with-copy{display:flex;align-items:center;gap:6px;max-width:180px}
-.copy-icon{flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;padding:0}
-.copy-icon:hover{background:var(--bg-hover);color:var(--text);border-color:var(--border3)}
-
-.inline-edit-row td { padding: 4px 6px !important; }
-tr.data-row:not(.inline-edit-row):hover { cursor:pointer; }
-tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
-.inline-input { width:100%;height:30px;padding:0 8px;border-radius:5px;border:1px solid var(--gold-border);background:var(--bg-input);color:var(--text);font-size:13px;font-family:"Inter",sans-serif;outline:none;min-width:60px; }
-.inline-input:focus { border-color:var(--gold);background:var(--bg-card); }
-.inline-select { width:100%;height:30px;padding:0 6px;border-radius:5px;border:1px solid var(--gold-border);background:var(--bg-input);color:var(--text);font-size:12px;outline:none; }
-.inline-select:focus { border-color:var(--gold); }
-.inline-save-btn { height:28px;padding:0 10px;border-radius:5px;border:none;background:var(--gold);color:#08080f;font-size:12px;font-weight:700;cursor:pointer;font-family:"Inter",sans-serif; }
-.inline-cancel-btn { height:28px;padding:0 8px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:"Inter",sans-serif;margin-left:4px; }
-.copy-icon.copied{background:var(--green-dim);color:var(--green);border-color:var(--green)}
-.email-cell{color:#8a8278}
-body.theme-cream .email-cell:hover{color:#1a1612}
-body.theme-cream .pwd-cell{background:#f8f5f0;border-color:#e8e2d9;color:#8a8278}
-body.theme-cream .pwd-cell:hover{color:#1a1612;border-color:#d4cec6}
-body.theme-cream .profit-pos{color:#2d6a2d}
-body.theme-cream .profit-neg{color:#c0392b}
-body.theme-cream .badge.Completed{background:#e8f5e8;color:#1a5c1a}
-body.theme-cream .badge.Pending{background:#fdf5e0;color:#7a5500}
-body.theme-cream .badge.Cancelled{background:#fde8e8;color:#a02020}
-body.theme-cream .btn{background:#fff;border-color:var(--border2);color:#4a4540}
-body.theme-cream .btn:hover{background:#f5f2ec;color:#1a1612}
-body.theme-cream .btn.primary{background:#c2a55a;color:#fff;border-color:#c2a55a}
-body.theme-cream .btn.primary:hover{background:#a88a3a;border-color:#a88a3a}
-body.theme-cream .btn.ghost{background:transparent;border-color:transparent;color:#8a8278}
-body.theme-cream .btn.ghost:hover{background:#f5f2ec;color:#1a1612}
-body.theme-cream .toolbar input,.theme-cream .toolbar select{background:#fff;border-color:#e8e2d9;color:#1a1612}
-body.theme-cream .mode-tab{color:#8a8278}
-body.theme-cream .mode-tab.active{background:#c2a55a;color:#fff}
-body.theme-cream .modal{background:#fff;border-color:#e8e2d9}
-body.theme-cream .form-group input,.theme-cream .form-group select{background:#f8f5f0;border-color:#e8e2d9;color:#1a1612}
-body.theme-cream .form-group input:focus,.theme-cream .form-group select:focus{border-color:#c2a55a;background:#fff}
-body.theme-cream .toast{background:#1a1612;color:#fff}
-body.theme-cream .icon-btn{color:#b4afa8}
-body.theme-cream .icon-btn:hover{background:#f5f2ec;color:#4a4540;border-color:#e8e2d9}
-body.theme-cream .icon-btn.del:hover{background:#fde8e8;color:#c0392b}
-body.theme-cream .sidebar-section-label{color:#b4afa8}
-body.theme-cream #theme-picker{background:#fff;border-color:#e8e2d9;box-shadow:0 8px 24px rgba(0,0,0,0.1)}
-body.theme-cream .theme-option:hover{background:#f5f2ec}
-body.theme-cream .bulk-bar{background:rgba(194,165,90,0.08);border-color:rgba(194,165,90,0.2)}
-body.theme-cream .bulk-count{color:#c2a55a}
-body.theme-cream .filter-bar .filter-tag{background:rgba(194,165,90,0.1);border-color:rgba(194,165,90,0.25);color:#c2a55a}
-body.theme-cream .filter-builder{background:#fff;border-color:#e8e2d9}
-body.theme-cream .auth-box{background:#fff;border-color:#e8e2d9;box-shadow:0 4px 24px rgba(0,0,0,0.08)}
-body.theme-cream .auth-tab.active{background:#f5f2ec;color:#1a1612}
-body.theme-cream .auth-field input{background:#f8f5f0;border-color:#e8e2d9;color:#1a1612}
-body.theme-cream .auth-submit{background:#c2a55a}
-body.theme-cream .logout-btn:hover{background:#fde8e8;color:#c0392b;border-color:rgba(192,57,43,0.3)}
-
 /* Arctic Blue theme */
 body.theme-arctic {
   --bg-base:#f0f4f8;--bg-sidebar:#ffffff;--bg-card:#ffffff;--bg-card2:#e8f0f8;
@@ -464,171 +377,6 @@ body.theme-arctic .auth-submit{background:#2563eb}
 body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-color:rgba(185,28,28,0.3)}
 
 
-/* Midnight Forest theme */
-body.theme-forest {
-  --bg-base:#0a1a12;--bg-sidebar:#0d1f17;--bg-card:#112218;--bg-card2:#162d1e;
-  --bg-hover:#1a3526;--bg-input:#112218;--border:rgba(255,255,255,0.06);
-  --border2:rgba(255,255,255,0.10);--border3:rgba(255,255,255,0.18);
-  --text:#e8f5ee;--text2:#7ab893;--text3:#4a7a5e;
-  --gold:#2ecc71;--gold2:#27ae60;--gold-dim:rgba(46,204,113,0.12);
-  --gold-border:rgba(46,204,113,0.28);--blue:#4ade80;--green:#2ecc71;
-  --green-dim:rgba(46,204,113,0.12);--red:#f87171;--red-dim:rgba(248,113,113,0.12);
-  --amber:#fbbf24;--amber-dim:rgba(251,191,36,0.12);
-}
-body.theme-forest,.theme-forest .topbar{background:var(--bg-base);color:var(--text)}
-body.theme-forest .topbar{background:#0d1f17;border-bottom:1px solid var(--border2);box-shadow:0 1px 12px rgba(0,0,0,0.4)}
-body.theme-forest .brand-name{background:linear-gradient(130deg,#e8f5ee 20%,#2ecc71 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-body.theme-forest .sidebar{background:linear-gradient(180deg,#0d1f17 0%,#091510 100%);border-right:1px solid var(--border2)}
-body.theme-forest .nav-item{color:#7ab893}
-body.theme-forest .nav-item:hover{background:#1a3526;color:#e8f5ee}
-body.theme-forest .nav-item.active{background:rgba(46,204,113,0.12);color:#2ecc71;border-color:rgba(46,204,113,0.28)}
-body.theme-forest .nav-item .nc{background:#162d1e;color:#4a7a5e}
-body.theme-forest .nav-item.active .nc{background:rgba(46,204,113,0.15);color:#2ecc71}
-body.theme-forest .new-ev-btn{border-color:rgba(46,204,113,0.3);color:#2ecc71}
-body.theme-forest .new-ev-btn:hover{background:rgba(46,204,113,0.08)}
-body.theme-forest .stat{background:#112218;border:1px solid var(--border2)}
-body.theme-forest .stat.featured{border-color:rgba(46,204,113,0.35);background:linear-gradient(140deg,#112218 50%,rgba(46,204,113,0.07))}
-body.theme-forest .stat-val.c-gold{color:#2ecc71}
-body.theme-forest .stat-val.c-blue{color:#4ade80}
-body.theme-forest .stat-val.c-green{color:#2ecc71}
-body.theme-forest .stat-val.c-red{color:#f87171}
-body.theme-forest .table-wrap{background:#112218;border:1px solid var(--border2)}
-body.theme-forest thead th{background:#0d1f17;color:#4a7a5e;border-bottom:1px solid var(--border2)}
-body.theme-forest tbody tr{border-bottom:1px solid rgba(255,255,255,0.04)}
-body.theme-forest tbody tr:hover{background:#1a3526}
-body.theme-forest .ev-name{color:#e8f5ee}
-body.theme-forest .ev-seat{color:#4a7a5e}
-body.theme-forest .email-cell{color:#7ab893}
-body.theme-forest .pwd-cell{background:#162d1e;border-color:rgba(255,255,255,0.1);color:#7ab893}
-body.theme-forest .profit-pos{color:#2ecc71}
-body.theme-forest .profit-neg{color:#f87171}
-body.theme-forest .badge.Completed{background:rgba(46,204,113,0.15);color:#2ecc71}
-body.theme-forest .badge.Pending{background:rgba(251,191,36,0.12);color:#fbbf24}
-body.theme-forest .badge.Cancelled{background:rgba(248,113,113,0.12);color:#f87171}
-body.theme-forest .badge.Available{background:rgba(74,222,128,0.12);color:#4ade80}
-body.theme-forest .badge.Sold{background:rgba(167,139,250,0.12);color:#a78bfa}
-body.theme-forest .btn{background:#162d1e;border-color:var(--border2);color:#7ab893}
-body.theme-forest .btn:hover{background:#1a3526;color:#e8f5ee}
-body.theme-forest .btn.primary{background:#2ecc71;color:#0a1a12;border-color:#2ecc71;font-weight:700}
-body.theme-forest .btn.primary:hover{background:#27ae60;border-color:#27ae60}
-body.theme-forest .btn.ghost{background:transparent;border-color:transparent;color:#7ab893}
-body.theme-forest .btn.ghost:hover{background:#1a3526;color:#e8f5ee}
-body.theme-forest .toolbar input,.theme-forest .toolbar select{background:#162d1e;border-color:var(--border2);color:#e8f5ee}
-body.theme-forest .mode-tab{color:#7ab893}
-body.theme-forest .mode-tab.active{background:#2ecc71;color:#0a1a12}
-body.theme-forest .modal{background:#112218;border-color:var(--border2)}
-body.theme-forest .form-group input,.theme-forest .form-group select{background:#162d1e;border-color:var(--border2);color:#e8f5ee}
-body.theme-forest .form-group input:focus,.theme-forest .form-group select:focus{border-color:#2ecc71;background:#1a3526}
-body.theme-forest .toast{background:#2ecc71;color:#0a1a12}
-body.theme-forest .icon-btn{color:#4a7a5e;background:#162d1e;border-color:var(--border2)}
-body.theme-forest .icon-btn:hover{background:#1a3526;color:#e8f5ee;border-color:var(--border3)}
-body.theme-forest .icon-btn.del:hover{background:rgba(248,113,113,0.12);color:#f87171}
-body.theme-forest .sidebar-section-label{color:#4a7a5e}
-body.theme-forest #theme-picker{background:#112218;border-color:var(--border2);box-shadow:0 8px 24px rgba(0,0,0,0.5)}
-body.theme-forest .theme-option:hover{background:#1a3526}
-body.theme-forest .bulk-bar{background:rgba(46,204,113,0.08);border-color:rgba(46,204,113,0.2)}
-body.theme-forest .bulk-count{color:#2ecc71}
-body.theme-forest .filter-bar .filter-tag{background:rgba(46,204,113,0.1);border-color:rgba(46,204,113,0.25);color:#2ecc71}
-body.theme-forest .filter-builder{background:#112218;border-color:var(--border2)}
-body.theme-forest .auth-box{background:#112218;border-color:var(--border2);box-shadow:0 8px 32px rgba(0,0,0,0.5)}
-body.theme-forest .auth-tab.active{background:#162d1e;color:#e8f5ee}
-body.theme-forest .auth-field input{background:#162d1e;border-color:var(--border2);color:#e8f5ee}
-body.theme-forest .auth-submit{background:#2ecc71}
-body.theme-forest .logout-btn:hover{background:rgba(248,113,113,0.12);color:#f87171;border-color:rgba(248,113,113,0.3)}
-body.theme-forest .dash-card{background:#112218;border-color:var(--border2)}
-body.theme-forest .dash-bar-track{background:#162d1e}
-body.theme-forest .dash-recent-table th{color:#4a7a5e;border-bottom-color:var(--border2)}
-body.theme-forest .dash-recent-table td{border-bottom-color:rgba(255,255,255,0.04);color:#e8f5ee}
-body.theme-forest .top-ev-rank{background:rgba(46,204,113,0.1);color:#2ecc71}
-body.theme-forest .dash-donut-row{border-bottom-color:rgba(255,255,255,0.04)}
-body.theme-forest .dash-card-title{color:#4a7a5e}
-body.theme-forest .editable-cell:hover{background:#1a3526;outline-color:rgba(46,204,113,0.3)}
-body.theme-forest .cell-select,.theme-forest .cell-input{background:#162d1e;border-color:rgba(46,204,113,0.35);color:#e8f5ee}
-body.theme-forest .cell-confirm-save{background:#2ecc71;color:#0a1a12}
-body.theme-forest .sidebar-toggle-btn{background:linear-gradient(180deg,#2ecc71 0%,#27ae60 100%);color:#0a1a12;box-shadow:3px 0 12px rgba(46,204,113,0.3)}
-
-/* Neon Purple theme */
-body.theme-neon {
-  --bg-base:#0d0d1a;--bg-sidebar:#110d1f;--bg-card:#160d24;--bg-card2:#1e1030;
-  --bg-hover:#251540;--bg-input:#160d24;--border:rgba(180,100,255,0.08);
-  --border2:rgba(180,100,255,0.14);--border3:rgba(180,100,255,0.25);
-  --text:#f0e6ff;--text2:#a47dc8;--text3:#6b4d8a;
-  --gold:#c084fc;--gold2:#a855f7;--gold-dim:rgba(192,132,252,0.12);
-  --gold-border:rgba(192,132,252,0.28);--blue:#818cf8;--green:#34d399;
-  --green-dim:rgba(52,211,153,0.12);--red:#fb7185;--red-dim:rgba(251,113,133,0.12);
-  --amber:#fbbf24;--amber-dim:rgba(251,191,36,0.12);
-}
-body.theme-neon,.theme-neon .topbar{background:var(--bg-base);color:var(--text)}
-body.theme-neon .topbar{background:#110d1f;border-bottom:1px solid var(--border2);box-shadow:0 1px 20px rgba(192,132,252,0.1)}
-body.theme-neon .brand-name{background:linear-gradient(130deg,#f0e6ff 0%,#c084fc 50%,#818cf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-body.theme-neon .sidebar{background:linear-gradient(180deg,#110d1f 0%,#0a0812 100%);border-right:1px solid var(--border2)}
-body.theme-neon .nav-item{color:#a47dc8}
-body.theme-neon .nav-item:hover{background:#251540;color:#f0e6ff}
-body.theme-neon .nav-item.active{background:rgba(192,132,252,0.12);color:#c084fc;border-color:rgba(192,132,252,0.3)}
-body.theme-neon .nav-item .nc{background:#1e1030;color:#6b4d8a}
-body.theme-neon .nav-item.active .nc{background:rgba(192,132,252,0.15);color:#c084fc}
-body.theme-neon .new-ev-btn{border-color:rgba(192,132,252,0.3);color:#c084fc}
-body.theme-neon .new-ev-btn:hover{background:rgba(192,132,252,0.08)}
-body.theme-neon .stat{background:#160d24;border:1px solid var(--border2)}
-body.theme-neon .stat.featured{border-color:rgba(192,132,252,0.4);background:linear-gradient(140deg,#160d24 50%,rgba(192,132,252,0.08))}
-body.theme-neon .stat-val.c-gold{color:#c084fc}
-body.theme-neon .stat-val.c-blue{color:#818cf8}
-body.theme-neon .stat-val.c-green{color:#34d399}
-body.theme-neon .stat-val.c-red{color:#fb7185}
-body.theme-neon .table-wrap{background:#160d24;border:1px solid var(--border2)}
-body.theme-neon thead th{background:#110d1f;color:#6b4d8a;border-bottom:1px solid var(--border2)}
-body.theme-neon tbody tr{border-bottom:1px solid rgba(180,100,255,0.06)}
-body.theme-neon tbody tr:hover{background:#251540}
-body.theme-neon .ev-name{color:#f0e6ff}
-body.theme-neon .ev-seat{color:#6b4d8a}
-body.theme-neon .email-cell{color:#a47dc8}
-body.theme-neon .pwd-cell{background:#1e1030;border-color:rgba(180,100,255,0.15);color:#a47dc8}
-body.theme-neon .profit-pos{color:#34d399}
-body.theme-neon .profit-neg{color:#fb7185}
-body.theme-neon .badge.Completed{background:rgba(52,211,153,0.12);color:#34d399}
-body.theme-neon .badge.Pending{background:rgba(251,191,36,0.12);color:#fbbf24}
-body.theme-neon .badge.Cancelled{background:rgba(251,113,133,0.12);color:#fb7185}
-body.theme-neon .badge.Available{background:rgba(129,140,248,0.12);color:#818cf8}
-body.theme-neon .badge.Sold{background:rgba(192,132,252,0.12);color:#c084fc}
-body.theme-neon .btn{background:#1e1030;border-color:var(--border2);color:#a47dc8}
-body.theme-neon .btn:hover{background:#251540;color:#f0e6ff}
-body.theme-neon .btn.primary{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a;border:none;font-weight:700}
-body.theme-neon .btn.primary:hover{background:linear-gradient(135deg,#a855f7,#6366f1)}
-body.theme-neon .btn.ghost{background:transparent;border-color:transparent;color:#a47dc8}
-body.theme-neon .btn.ghost:hover{background:#1e1030;color:#f0e6ff}
-body.theme-neon .toolbar input,.theme-neon .toolbar select{background:#1e1030;border-color:var(--border2);color:#f0e6ff}
-body.theme-neon .mode-tab{color:#a47dc8}
-body.theme-neon .mode-tab.active{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
-body.theme-neon .modal{background:#160d24;border-color:var(--border2)}
-body.theme-neon .form-group input,.theme-neon .form-group select{background:#1e1030;border-color:var(--border2);color:#f0e6ff}
-body.theme-neon .form-group input:focus,.theme-neon .form-group select:focus{border-color:#c084fc;background:#251540}
-body.theme-neon .toast{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
-body.theme-neon .icon-btn{color:#6b4d8a;background:#1e1030;border-color:var(--border2)}
-body.theme-neon .icon-btn:hover{background:#251540;color:#f0e6ff;border-color:var(--border3)}
-body.theme-neon .icon-btn.del:hover{background:rgba(251,113,133,0.12);color:#fb7185}
-body.theme-neon .sidebar-section-label{color:#6b4d8a}
-body.theme-neon #theme-picker{background:#160d24;border-color:var(--border2);box-shadow:0 8px 32px rgba(192,132,252,0.2)}
-body.theme-neon .theme-option:hover{background:#251540}
-body.theme-neon .bulk-bar{background:rgba(192,132,252,0.08);border-color:rgba(192,132,252,0.2)}
-body.theme-neon .bulk-count{color:#c084fc}
-body.theme-neon .filter-bar .filter-tag{background:rgba(192,132,252,0.1);border-color:rgba(192,132,252,0.25);color:#c084fc}
-body.theme-neon .filter-builder{background:#160d24;border-color:var(--border2)}
-body.theme-neon .auth-box{background:#160d24;border-color:var(--border2);box-shadow:0 8px 40px rgba(192,132,252,0.2)}
-body.theme-neon .auth-tab.active{background:#1e1030;color:#f0e6ff}
-body.theme-neon .auth-field input{background:#1e1030;border-color:var(--border2);color:#f0e6ff}
-body.theme-neon .auth-submit{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
-body.theme-neon .logout-btn:hover{background:rgba(251,113,133,0.12);color:#fb7185;border-color:rgba(251,113,133,0.3)}
-body.theme-neon .dash-card{background:#160d24;border-color:var(--border2)}
-body.theme-neon .dash-bar-track{background:#1e1030}
-body.theme-neon .dash-recent-table th{color:#6b4d8a;border-bottom-color:var(--border2)}
-body.theme-neon .dash-recent-table td{border-bottom-color:rgba(180,100,255,0.06);color:#f0e6ff}
-body.theme-neon .top-ev-rank{background:rgba(192,132,252,0.1);color:#c084fc}
-body.theme-neon .dash-donut-row{border-bottom-color:rgba(180,100,255,0.06)}
-body.theme-neon .dash-card-title{color:#6b4d8a}
-body.theme-neon .editable-cell:hover{background:#251540;outline-color:rgba(192,132,252,0.3)}
-body.theme-neon .cell-select,.theme-neon .cell-input{background:#1e1030;border-color:rgba(192,132,252,0.35);color:#f0e6ff}
-body.theme-neon .cell-confirm-save{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
-body.theme-neon .sidebar-toggle-btn{background:linear-gradient(180deg,#c084fc 0%,#818cf8 100%);color:#0d0d1a;box-shadow:3px 0 16px rgba(192,132,252,0.4)}
 
 .dash-card{background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px}
 .dash-card-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
@@ -729,13 +477,6 @@ body.sidebar-collapsed .sidebar .sidebar-nav-top { padding: 10px 4px 4px; }
 body.sidebar-collapsed .sidebar .nav-list { padding: 4px; }
 
 /* Dashboard theme adaptations */
-body.theme-cream .dash-card { background:#fff; border-color:#e8e2d9; }
-body.theme-cream .dash-bar-track { background:#f5f2ec; }
-body.theme-cream .dash-recent-table th { color:#8a8278; border-bottom-color:#e8e2d9; }
-body.theme-cream .dash-recent-table td { border-bottom-color:#f5f0e8; color:#1a1612; }
-body.theme-cream .top-ev-rank { background:rgba(194,165,90,0.1); color:#c2a55a; }
-body.theme-cream .dash-donut-row { border-bottom-color:#f0ebe0; }
-body.theme-cream .dash-card-title { color:#8a8278; }
 
 body.theme-arctic .dash-card { background:#fff; border-color:#d0dbe6; }
 body.theme-arctic .dash-bar-track { background:#e8f0f8; }
@@ -824,30 +565,16 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
   <div class="topbar-actions" id="topbar-actions">
     <div style="position:relative;display:inline-block">
       <button class="btn ghost" id="theme-btn" onclick="toggleThemePicker()" style="font-weight:600;display:flex;align-items:center;gap:6px;width:42px;justify-content:center" title="Changer le thème"><i class="ti ti-palette" style="pointer-events:none;font-size:20px"></i></button>
-      <div id="theme-picker" style="display:none;position:absolute;top:42px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:8px;z-index:9999;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.2)">
-        <div class="theme-option" data-theme="dark" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
-          <div style="width:18px;height:18px;border-radius:4px;background:#0c0c1e;border:1px solid #3a3a5c;flex-shrink:0"></div>
-          <span style="font-size:13px;font-weight:500">Midnight Navy</span>
+      <div id="theme-picker" style="display:none;position:absolute;top:46px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:10px;padding:4px;z-index:9999;min-width:160px;box-shadow:0 8px 20px rgba(0,0,0,0.18)">
+        <div class="theme-option" data-theme="dark" onclick="setTheme('dark')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:7px;cursor:pointer">
+          <span style="font-size:13px;color:var(--text)">Midnight Navy</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#f5c842;flex-shrink:0"></span>
         </div>
-        <div class="theme-option" data-theme="cream" onclick="setTheme('cream')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
-          <div style="width:18px;height:18px;border-radius:4px;background:#faf8f4;border:1px solid #e8e2d9;flex-shrink:0"></div>
-          <span style="font-size:13px;font-weight:500">Soft Cream</span>
+        <div class="theme-option" data-theme="arctic" onclick="setTheme('arctic')" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:7px;cursor:pointer">
+          <span style="font-size:13px;color:var(--text)">Arctic Blue</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#2563eb;flex-shrink:0"></span>
         </div>
-        <div class="theme-option" data-theme="arctic" onclick="setTheme('arctic')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
-        </div>
-        <div class="theme-option" data-theme="forest" onclick="setTheme('forest')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-top:2px">
-          <span style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#0a1a12,#2ecc71);border:2px solid #2ecc71;flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:500">🌿 Forest</span>
-        </div>
-        <div class="theme-option" data-theme="neon" onclick="setTheme('neon')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-top:2px">
-          <span style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#818cf8);border:2px solid #c084fc;flex-shrink:0"></span>
-          <span style="font-size:13px;font-weight:500">💜 Neon</span>
-        </div>
-        <div class="theme-option" data-theme="forest" onclick="setTheme('forest')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer">
-          <div style="width:18px;height:18px;border-radius:4px;background:#f0f4f8;border:1px solid #d0dbe6;flex-shrink:0"></div>
-          <span style="font-size:13px;font-weight:500">Arctic Blue</span>
-        </div>
-      </div>
+      </div>      </div>
     </div>
     <button class="btn ghost" id="lang-btn" onclick="toggleLang()" style="font-weight:600;display:flex;align-items:center;gap:7px"><i class="ti ti-world" style="pointer-events:none;font-size:20px"></i> FR</button>
     <button class="btn primary" id="btn-add-main" onclick="openAddModal()" style="display:flex;align-items:center;gap:7px"><i class="ti ti-plus" style="font-size:18px"></i> Ajouter</button>
@@ -1188,9 +915,15 @@ async function _req(method, path, body, extraHeaders) {
   let res = await doFetch();
   // Auto-refresh on JWT expired
   if (!res.ok && res.status === 401) {
-    console.log("JWT expired, refreshing...");
     const ref = await sb.auth.refreshSession();
-    if (!ref.error) res = await doFetch();
+    if (!ref.error) {
+      res = await doFetch();
+    } else {
+      // Refresh failed — session truly expired, log out cleanly
+      toast(lang==="fr" ? "Session expirée, reconnexion…" : "Session expired, logging out…");
+      setTimeout(() => doLogout(), 1500);
+      return {data: null, error: {message: lang==="fr" ? "Session expirée" : "Session expired"}};
+    }
   }
   if (!res.ok) return {data: null, error: res.data};
   return {data: res.data, error: null};
@@ -1274,8 +1007,8 @@ const sb = {
     },
     async signOut() {
       _authToken = null;
-      localStorage.removeItem("sb_session");
-      localStorage.removeItem("sb-ahysgnekipugsuwbwzee-auth-token");
+      try { localStorage.removeItem("sb_session"); } catch(e){}
+      try { localStorage.removeItem("sb-ahysgnekipugsuwbwzee-auth-token"); } catch(e){}
       return {error: null};
     },
     async refreshSession() {
@@ -1313,8 +1046,8 @@ const sb = {
           try {
             const s = JSON.parse(supaStored);
             _authToken = s.access_token;
-            // Store in our format too
-            localStorage.setItem("sb_session", JSON.stringify({token: s.access_token, user: s.user}));
+            // Store in our format, preserving refresh_token
+            try { localStorage.setItem("sb_session", JSON.stringify({token: s.access_token, refresh_token: s.refresh_token, user: s.user})); } catch(e){}
             cb("SIGNED_IN", {user: s.user});
             return;
           } catch(e) {}
@@ -1682,7 +1415,7 @@ function renderStockTable(paged,showEv){
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'status\',\'select\')"><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pay\',\'select\')">'+esc(t.pay||"—")+'</span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'client\',\'text\')">'+esc(t.client||"—")+'</span></td>'+
-      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'livraison\',\'select\')"><span class="badge '+(t.livraison==="Livré"?"Completed":t.livraison==="Non livré"?"Cancelled":"")+'">'+(t.livraison?tStatus(t.livraison):"—")+'</span></span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'livraison\',\'select\')">'+( t.livraison ? '<span class="badge '+(t.livraison==="Livré"?"Completed":"Cancelled")+'">'+tStatus(t.livraison)+'</span>' : '—' )+'</span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pos\',\'select\')">'+esc(t.pos||"—")+'</span></td>'+
       '<td><div class="actions"><button class="icon-btn edit-btn" data-idx="'+t._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del del-btn" data-idx="'+t._i+'"><i class="ti ti-trash"></i></button></div></td>'+
       '</tr>';
@@ -2431,9 +2164,8 @@ if(localStorage.getItem('sidebar_collapsed') === '1') {
 // Theme system
 let currentTheme = localStorage.getItem('tix_theme') || 'dark';
 function applyTheme(){
-  document.body.classList.remove('theme-white','theme-cream','theme-arctic','theme-forest','theme-neon');
+  document.body.classList.remove('theme-dark','theme-arctic','theme-cream','theme-forest','theme-neon','theme-white');
   if(currentTheme !== 'dark') document.body.classList.add('theme-'+currentTheme);
-  // Update active indicator in picker
   document.querySelectorAll('.theme-option').forEach(function(el){
     el.style.background = el.dataset.theme === currentTheme ? 'var(--gold-dim)' : '';
     el.style.fontWeight = el.dataset.theme === currentTheme ? '700' : '500';
@@ -2486,6 +2218,22 @@ window.toggleLang = toggleLang;
 window.doLogout = doLogout;
 window.exportCSV = exportCSV;
 window.importCSV = importCSV;
+function downloadTemplate(type) {
+  let headers, rows;
+  if(type === 'stock') {
+    headers = ["Événement","Siège","Email","Mot de passe","Date événement","Site","Qté","Achat","Vente","Statut","Paiement","Client","Livraison","POS"];
+    rows = [["PSG Arsenal Watch Party","Rang 100","email@example.com","motdepasse123","2026-07-10","Ticketmaster","2","50","150","Pending","Revolut","John Doe","Non livré","Viagogo"]];
+  } else {
+    headers = ["Catégorie","Qté","Siège","Email","Mot de passe","Date événement","ACO (€)","État","Paiement","Client","Date ACO","Site"];
+    rows = [["Carré Or","2","Rang 100","email@example.com","motdepasse123","2026-07-10","80","Pending","Revolut","John Doe","2026-06-01","Ticketmaster"]];
+  }
+  const csv = [headers, ...rows].map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = "data:text/csv;charset=utf-8,\uFEFF" + encodeURIComponent(csv);
+  a.download = "template_" + type + ".csv";
+  a.click();
+  toast("Template téléchargé ✓");
+}
 window.downloadTemplate = downloadTemplate;
 window.toggleSidebar = toggleSidebar;
 window.openDashboard = openDashboard;
@@ -2518,10 +2266,15 @@ window.openRename = openRename;
 
 
 
-// Auto-refresh JWT every 10 minutes
+// Auto-refresh JWT every 4 minutes to prevent expiry
 setInterval(async function() {
-  if(currentUser) { await sb.auth.refreshSession(); }
-}, 10 * 60 * 1000);
+  if(currentUser) {
+    const ref = await sb.auth.refreshSession();
+    if(ref.error) {
+      console.warn("Token refresh failed:", ref.error);
+    }
+  }
+}, 4 * 60 * 1000);
 
 </script>
 </body>
