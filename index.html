@@ -1067,7 +1067,7 @@ console.log("Tixsheet client ready");
 
 // ── State ──
 let currentUser = null;
-let db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"] };
+let db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"], pos:["Discord","Viagogo","Whatsapp"], livraison:["Livré","Non livré"] };
 let editIdx = null, editAcoIdx = null, activeEv = "__all__", activeMode = "stock", page = 0;
 let colFilters = [], lang = "fr", renameT = null, selectedIds = new Set(), activePage = "tickets";
 const PER = 25;
@@ -1079,11 +1079,12 @@ async function loadUserData(){
   const { data: settings } = await sb.from("user_settings").eq("user_id", uid).select("*").single();
   if(settings){
     db.stockPays = settings.stock_pays || db.stockPays;
+    db.pos = settings.pos_list || db.pos;
     db.acoPays = settings.aco_pays || db.acoPays;
     db.sites = settings.sites || db.sites;
     db.statuses = settings.statuses || db.statuses;
   } else {
-    await sb.from("user_settings").insert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses });
+    await sb.from("user_settings").insert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses, pos_list: db.pos });
   }
   // Load events
   const { data: evs } = await sb.from("events").eq("user_id", uid).select("name").order("created_at");
@@ -1098,7 +1099,13 @@ async function loadUserData(){
 
 async function saveSettings(){
   const uid = currentUser.id;
-  await sb.from("user_settings").upsert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses });
+  const payload = { stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses, pos_list: db.pos };
+  // Always update — row was created on first login
+  const {error} = await sb.from("user_settings").eq("user_id", uid).update(payload);
+  if(error) {
+    // Row doesn't exist yet, insert it
+    await sb.from("user_settings").insert({user_id: uid, ...payload});
+  }
 }
 
 // ── Auth ──
@@ -1151,7 +1158,7 @@ async function handleLogout(){
 function doLogout(){
   sb.auth.signOut();
   currentUser = null;
-  db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"] };
+  db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"], pos:["Discord","Viagogo","Whatsapp"], livraison:["Livré","Non livré"] };
   document.getElementById("app").style.display = "none";
   document.getElementById("auth-page").style.display = "block";
   document.getElementById("auth-email").value = "";
@@ -1172,7 +1179,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
     updatePaySelects(); updateSiteSelects(); updateStatusSelects(); applyLang(); render();
   } else {
     currentUser = null;
-    db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"] };
+    db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"], pos:["Discord","Viagogo","Whatsapp"], livraison:["Livré","Non livré"] };
     document.getElementById("app").style.display = "none";
     document.getElementById("auth-page").style.display = "flex";
     document.getElementById("auth-page").style.display = "block";
@@ -1215,25 +1222,52 @@ function handleStatusSelect(sel){ if(sel.value==="__add__"){ sel.value=""; docum
 async function saveNewPay(){
   const type=document.getElementById("pay-modal-type").value; const val=document.getElementById("f-new-pay").value.trim(); if(!val) return;
   if(type==="aco"){ if(!db.acoPays.includes(val)) db.acoPays.push(val); } else { if(!db.stockPays.includes(val)) db.stockPays.push(val); }
-  await saveSettings(); closeModal("pay-modal"); updatePaySelects(); updatePayFilter(); toast(val+" ajouté ✓");
+  await saveSettings(); closeModal("pay-modal"); updatePaySelects(); updatePayFilter(); toast(val+" ajouté ✓"); reopenPendingCell(val);
 }
 async function saveNewSite(){
   const val=document.getElementById("f-new-site").value.trim(); if(!val) return;
   if(!db.sites.includes(val)) db.sites.push(val);
-  await saveSettings(); closeModal("site-modal"); updateSiteSelects(); toast(val+" ajouté ✓");
+  await saveSettings(); closeModal("site-modal"); updateSiteSelects(); toast(val+" ajouté ✓"); reopenPendingCell(val);
 }
 async function saveNewPos(){
   const val=document.getElementById("f-new-pos").value.trim(); if(!val) return;
   if(!db.pos) db.pos=["Discord","Viagogo","Whatsapp"];
-  if(!db.pos.includes(val)) db.pos.push(val);
+  if(!db.pos.includes(val)) { db.pos.push(val); }
+  // Direct fetch to Supabase
+  const uid = currentUser.id;
+  await fetch(SUPA_URL+"/rest/v1/user_settings?user_id=eq."+uid, {
+    method:"PATCH",
+    headers:{"Content-Type":"application/json","apikey":SUPA_KEY,"Authorization":"Bearer "+(_authToken||SUPA_KEY),"Prefer":"return=minimal"},
+    body:JSON.stringify({pos_list: db.pos})
+  });
   closeModal("pos-modal"); toast(val+" ajouté ✓");
+  reopenPendingCell(val);
+}
+function reopenPendingCell(newVal){
+  if(!_pendingCell) return;
+  const {idx, isAco, field} = _pendingCell;
+  _pendingCell = null;
+  if(!newVal) { render(); return; }
+  // Directly save the new value to the item
+  const item = isAco ? db.acos[idx] : db.tickets[idx];
+  if(!item) { render(); return; }
+  const original = item[field];
+  item[field] = newVal;
+  const update = {}; update[field] = newVal;
+  // Auto-status if livraison
+  if(!isAco && field==='livraison' && newVal==='Livré') { item.status='Completed'; update.status='Completed'; }
+  sb.from(isAco?'acos':'tickets').eq('id',item.id).update(update).then(({error})=>{
+    if(error){ item[field]=original; toast('Erreur: '+error.message); }
+    else toast('Modifié ✓');
+    render();
+  });
 }
 function doSaveNewPos(){ saveNewPos().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
 
 async function saveNewStatus(){
   const val=document.getElementById("f-new-status").value.trim(); if(!val) return;
   if(!db.statuses.includes(val)) db.statuses.push(val);
-  await saveSettings(); closeModal("status-modal"); updateStatusSelects(); toast(val+" ajouté ✓");
+  await saveSettings(); closeModal("status-modal"); updateStatusSelects(); toast(val+" ajouté ✓"); reopenPendingCell(val);
 }
 
 // ── Nav ──
@@ -1304,7 +1338,7 @@ function updateStats(src){
 }
 
 // ── Filter builder ──
-const STOCK_COLS=[{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"qty",label:"Quantité"},{key:"buy",label:"Prix achat"},{key:"sell",label:"Prix vente"},{key:"status",label:"Statut"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"site",label:"Site"}];
+const STOCK_COLS=[{key:"cat",label:"Catégorie"},{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"qty",label:"Quantité"},{key:"buy",label:"Prix achat"},{key:"sell",label:"Prix vente"},{key:"status",label:"Statut"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"site",label:"Site"},{key:"livraison",label:"Livraison"},{key:"pos",label:"POS"}];
 const ACO_COLS=[{key:"cat",label:"Catégorie"},{key:"qty",label:"Quantité"},{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"aco",label:"ACO (€)"},{key:"etat",label:"État"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"acodate",label:"Date ACO"},{key:"site",label:"Site"}];
 
 function openFilterBuilder(){
@@ -1394,8 +1428,8 @@ function renderStockTable(paged,showEv){
   var th='<tr>';
   th+='<th class="cb-col"><input type="checkbox" class="row-cb" id="select-all-cb" onchange="toggleSelectAll(this)"></th>';
   th+='<th>'+(showEv?t_("col_event"):t_("col_seat"))+'</th>';
-  th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th><th>Site</th>';
-  th+='<th>'+t_("col_qty")+'</th><th>'+t_("col_buy")+'</th><th>'+t_("col_sell")+'</th>';
+  th+='<th>'+t_("col_cat")+'</th><th>'+t_("col_qty")+'</th><th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th><th>Site</th>';
+  th+='<th>'+t_("col_buy")+'</th><th>'+t_("col_sell")+'</th>';
   th+='<th>'+t_("col_profit")+'</th><th>'+t_("col_status")+'</th><th>'+t_("col_payment")+'</th>';
   th+='<th>'+t_("col_client")+'</th><th>'+t_("col_livraison")+'</th><th>POS</th><th></th></tr>';
   document.getElementById("thead-row").innerHTML=th;
@@ -1406,11 +1440,12 @@ function renderStockTable(paged,showEv){
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
       '<td>'+(showEv?'<span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'event\',\'select\')"><div class="ev-name">'+esc(t.event)+'</div></span>':'')+
       '<span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'seat\',\'text\')"><div class="'+(showEv?'ev-seat':'ev-name')+'">'+esc(t.seat||'—')+'</div></span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'cat\',\'text\')">'+esc(t.cat||'—')+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'qty\',\'number\')">'+t.qty+'</span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'email\',\'text\')"><div class="cell-with-copy"><div class="email-cell">'+esc(t.email||"—")+'</div>'+(t.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pwd\',\'text\')"><div class="cell-with-copy"><div class="pwd-cell">'+esc(t.pwd||"—")+'</div>'+(t.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'evdate\',\'date\')">'+fmtDate(t.evdate)+'</span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'site\',\'select\')">'+esc(t.site||"—")+'</span></td>'+
-      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'qty\',\'number\')">'+t.qty+'</span></td>'+
       '<td class="num"><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'buy\',\'number\')">'+fmt(t.buy)+'</span></td>'+
       '<td class="num"><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'sell\',\'number\')">'+fmt(t.sell)+'</span></td>'+
       '<td class="num '+cls+'">'+sign+fmt(pr)+'</td>'+
@@ -1452,6 +1487,7 @@ function renderAcoTable(paged){
       '</tr>';
   }).join("");
 }
+
 
 function render(){
   if(!currentUser) return;
@@ -1869,6 +1905,7 @@ async function deleteSelected(){
 
 // ── Per-cell inline editing ──
 let _editingCell = null;
+let _pendingCell = null;
 function editCell(e, idx, isAco, field, type) {
   e.stopPropagation();
   if(_editingCell) {
@@ -1889,7 +1926,7 @@ function editCell(e, idx, isAco, field, type) {
       : field==='pay' ? (isAco ? db.acoPays : db.stockPays)
       : field==='event' ? db.events
       : field==='livraison' ? ['Livré','Non livré']
-      : field==='pos' ? ['Discord','Viagogo','Whatsapp']
+      : field==='pos' ? (db.pos||['Discord','Viagogo','Whatsapp'])
       : db.sites;
 
     input = document.createElement('select');
@@ -1918,8 +1955,8 @@ function editCell(e, idx, isAco, field, type) {
     input.addEventListener('change', function() {
       if(input.value === '__add__') {
         input.value = val; // reset
+        _pendingCell = {idx, isAco, field, type}; // remember cell to reopen
         cancelCellEdit();
-        // Open the appropriate modal
         if(field==='site') { document.getElementById('f-new-site').value=''; document.getElementById('site-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-site').focus(),50); }
         else if(field==='pay') { document.getElementById('pay-modal-type').value=isAco?'aco':'stock'; document.getElementById('pay-modal-title').textContent=isAco?'Nouveau paiement ACO':'Nouveau paiement Stock'; document.getElementById('f-new-pay').value=''; document.getElementById('pay-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-pay').focus(),50); }
         else if(field==='status') { document.getElementById('f-new-status').value=''; document.getElementById('status-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-status').focus(),50); }
@@ -2071,7 +2108,7 @@ function importCSV(input){
         const payload={user_id:currentUser.id,event:evName,cat:row.cat||'',qty:parseInt(row.qty)||1,seat:row.seat||'',email:row.email||'',pwd:row.pwd||'',evdate:row.evdate||null,aco:parseFloat(row.aco)||0,etat:row.etat||row.status||'Pending',pay:row.pay||'',client:row.client||'',acodate:row.acodate||null,site:row.site||''};
         promises.push(sb.from("acos").insert(payload).then(r=>{ if(r.error)errors++; else{ if(r.data) db.acos.unshift(Array.isArray(r.data)?r.data[0]:r.data); imported++; } }));
       } else {
-        const payload={user_id:currentUser.id,event:evName,seat:row.seat||'',cat:row.cat||'',email:row.email||'',pwd:row.pwd||'',buy:parseFloat(row.buy)||0,sell:parseFloat(row.sell)||0,qty:parseInt(row.qty)||1,status:row.status||'Pending',pay:row.pay||'',client:row.client||'',evdate:row.evdate||null,site:row.site||''};
+        const payload={user_id:currentUser.id,event:evName,seat:row.seat||'',cat:row.cat||'',email:row.email||'',pwd:row.pwd||'',buy:parseFloat(row.buy)||0,sell:parseFloat(row.sell)||0,qty:parseInt(row.qty)||1,status:row.status||'Pending',pay:row.pay||'',client:row.client||'',evdate:row.evdate||null,site:row.site||'',livraison:row.livraison||'',pos:row.pos||''};
         promises.push(sb.from("tickets").insert(payload).then(r=>{ if(r.error)errors++; else{ if(r.data) db.tickets.unshift(Array.isArray(r.data)?r.data[0]:r.data); imported++; } }));
       }
     }
