@@ -772,6 +772,7 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
       <div class="form-group"><label>Quantité</label><input id="fe-qty" type="number" min="1" value="1"></div>
       <div class="form-group"><label>Statut</label><select id="fe-status" onchange="handleStatusSelect(this)"><option value="">—</option></select></div>
       <div class="form-group"><label>Paiement</label><select id="fe-pay" onchange="handlePaySelect(this,'stock')"><option value="">—</option></select></div>
+      <div class="form-group"><label>Catégorie</label><input id="fe-cat" type="text" placeholder="ex: Carré Or, Tribune..."></div>
       <div class="form-group"><label>Client</label><input id="fe-client" type="text" placeholder="Kylian Mbappé"></div>
       <div class="form-group"><label>Site</label><select id="fe-site" onchange="handleSiteSelect(this)"><option value="">—</option></select></div>
       <div class="form-group"><label id="fe-livraison-label">Livraison</label><select id="fe-livraison"><option value="">—</option><option value="Livré" id="opt-livre">Livré</option><option value="Non livré" id="opt-nonlivre">Non livré</option></select></div>
@@ -943,7 +944,7 @@ function _query(table) {
 
     async insert(data) {
       const body = Array.isArray(data) ? data : [data];
-      const res = await _req("POST", "/rest/v1/" + table, body);
+      const res = await _req("POST", "/rest/v1/" + table, body, {"Prefer": "return=representation"});
       return res;
     },
 
@@ -1392,7 +1393,7 @@ function tStatus(s){
 function renderStockTable(paged,showEv){
   var th='<tr>';
   th+='<th class="cb-col"><input type="checkbox" class="row-cb" id="select-all-cb" onchange="toggleSelectAll(this)"></th>';
-  th+='<th>'+t_("col_event")+'</th>';
+  th+='<th>'+(showEv?t_("col_event"):t_("col_seat"))+'</th>';
   th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th><th>Site</th>';
   th+='<th>'+t_("col_qty")+'</th><th>'+t_("col_buy")+'</th><th>'+t_("col_sell")+'</th>';
   th+='<th>'+t_("col_profit")+'</th><th>'+t_("col_status")+'</th><th>'+t_("col_payment")+'</th>';
@@ -1403,7 +1404,8 @@ function renderStockTable(paged,showEv){
     const rid=t.id||t._i;
     return '<tr class="data-row">'+
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
-      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'event\',\'select\')"><div class="ev-name">'+esc(t.event)+'</div></span><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'seat\',\'text\')"><div class="ev-seat">'+esc(t.seat||'—')+'</div></span></td>'+
+      '<td>'+(showEv?'<span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'event\',\'select\')"><div class="ev-name">'+esc(t.event)+'</div></span>':'')+
+      '<span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'seat\',\'text\')"><div class="'+(showEv?'ev-seat':'ev-name')+'">'+esc(t.seat||'—')+'</div></span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'email\',\'text\')"><div class="cell-with-copy"><div class="email-cell">'+esc(t.email||"—")+'</div>'+(t.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pwd\',\'text\')"><div class="cell-with-copy"><div class="pwd-cell">'+esc(t.pwd||"—")+'</div>'+(t.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'evdate\',\'date\')">'+fmtDate(t.evdate)+'</span></td>'+
@@ -1497,6 +1499,7 @@ function openTicketModal(idx){
   document.getElementById("fe-qty").value=t?t.qty:1;
   document.getElementById("fe-client").value=t?t.client:"";
   updatePaySelects(); updateSiteSelects(); updateStatusSelects();
+  document.getElementById("fe-cat").value=t?(t.cat||""):"";
   document.getElementById("fe-pay").value=t?t.pay:"";
   document.getElementById("fe-site").value=t?t.site:"";
   document.getElementById("fe-status").value=t?t.status:"Pending";
@@ -1514,6 +1517,7 @@ async function saveTicket(){
     sell:parseFloat(document.getElementById("fe-sell").value)||0, qty:parseInt(document.getElementById("fe-qty").value)||1,
     status:document.getElementById("fe-status").value, pay:document.getElementById("fe-pay").value,
     client:document.getElementById("fe-client").value.trim(), evdate:document.getElementById("fe-evdate").value||null,
+    cat:document.getElementById("fe-cat").value,
     site:document.getElementById("fe-site").value,
     livraison:document.getElementById("fe-livraison").value,
     pos:document.getElementById("fe-pos").value
@@ -1528,8 +1532,9 @@ async function saveTicket(){
   } else {
     const {data,error}=await sb.from("tickets").insert(payload);
     if(error){ toast("Erreur: "+error.message); return; }
-    const newTicket = Array.isArray(data)?data[0]:data;
-    if(newTicket) db.tickets.unshift(newTicket);
+    // Add optimistically — assign a temp id if server didn't return one
+    const newTicket = (Array.isArray(data)?data[0]:data) || {...payload, id: Date.now(), _i: db.tickets.length};
+    db.tickets.unshift(newTicket);
     toast("Billet ajouté ✓");
   }
   closeModal("ticket-modal"); render();
@@ -1580,8 +1585,10 @@ async function saveAco(){
     db.acos[editAcoIdx]=Object.assign({},db.acos[editAcoIdx],payload);
     toast("ACO modifié ✓");
   } else {
-    const {data}=await sb.from("acos").insert(payload);
-    if(data) db.acos.unshift(data);
+    const {data,error}=await sb.from("acos").insert(payload);
+    if(error){ toast("Erreur: "+error.message); return; }
+    const newAco = (Array.isArray(data)?data[0]:data) || {...payload, id: Date.now(), _i: db.acos.length};
+    db.acos.unshift(newAco);
     toast("ACO ajouté ✓");
   }
   closeModal("aco-modal"); render();
@@ -2038,8 +2045,10 @@ function importCSV(input){
       'paiement':'pay','payment':'pay',
       'client':'client',
       'site':'site',
+      'catégorie':'cat','categorie':'cat','cat':'cat','category':'cat',
+      'livraison':'livraison','delivery':'livraison',
+      'pos':'pos',
       // ACO fields
-      'catégorie':'cat','categorie':'cat','cat':'cat',
       'aco (€)':'aco','aco':'aco',
       'état':'etat','etat':'etat',
       'date aco':'acodate','acodate':'acodate',
@@ -2062,7 +2071,7 @@ function importCSV(input){
         const payload={user_id:currentUser.id,event:evName,cat:row.cat||'',qty:parseInt(row.qty)||1,seat:row.seat||'',email:row.email||'',pwd:row.pwd||'',evdate:row.evdate||null,aco:parseFloat(row.aco)||0,etat:row.etat||row.status||'Pending',pay:row.pay||'',client:row.client||'',acodate:row.acodate||null,site:row.site||''};
         promises.push(sb.from("acos").insert(payload).then(r=>{ if(r.error)errors++; else{ if(r.data) db.acos.unshift(Array.isArray(r.data)?r.data[0]:r.data); imported++; } }));
       } else {
-        const payload={user_id:currentUser.id,event:evName,seat:row.seat||'',email:row.email||'',pwd:row.pwd||'',buy:parseFloat(row.buy)||0,sell:parseFloat(row.sell)||0,qty:parseInt(row.qty)||1,status:row.status||'Pending',pay:row.pay||'',client:row.client||'',evdate:row.evdate||null,site:row.site||''};
+        const payload={user_id:currentUser.id,event:evName,seat:row.seat||'',cat:row.cat||'',email:row.email||'',pwd:row.pwd||'',buy:parseFloat(row.buy)||0,sell:parseFloat(row.sell)||0,qty:parseInt(row.qty)||1,status:row.status||'Pending',pay:row.pay||'',client:row.client||'',evdate:row.evdate||null,site:row.site||''};
         promises.push(sb.from("tickets").insert(payload).then(r=>{ if(r.error)errors++; else{ if(r.data) db.tickets.unshift(Array.isArray(r.data)?r.data[0]:r.data); imported++; } }));
       }
     }
@@ -2082,8 +2091,8 @@ function exportCSV(){
     headers=["Événement","Catégorie","Qté","Siège","Email","Mot de passe","Date événement","ACO","État","Paiement","Client","Date ACO","Site"];
     rows=src.map(a=>[a.event,a.cat,a.qty,a.seat,a.email,a.pwd,a.evdate,a.aco,a.etat,a.pay,a.client,a.acodate,a.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
   } else {
-    headers=["Événement","Siège","Email","Mot de passe","Date événement","Qté","Achat","Vente","Profit","Statut","Paiement","Client","Site"];
-    rows=src.map(t=>[t.event,t.seat,t.email,t.pwd,t.evdate,t.qty,t.buy,t.sell,((t.sell-t.buy)*t.qty).toFixed(2),t.status,t.pay,t.client,t.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
+    headers=["Événement","Siège","Catégorie","Email","Mot de passe","Date événement","Site","Qté","Achat","Vente","Profit","Statut","Paiement","Client","Livraison","POS"];
+    rows=src.map(t=>[t.event,t.seat,t.cat,t.email,t.pwd,t.evdate,t.site,t.qty,t.buy,t.sell,((t.sell-t.buy)*t.qty).toFixed(2),t.status,t.pay,t.client,t.livraison,t.pos].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
   }
   const csv=[headers.join(",")].concat(rows).join("\n");
   const a=document.createElement("a"); a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(csv);
@@ -2221,11 +2230,17 @@ window.importCSV = importCSV;
 function downloadTemplate(type) {
   let headers, rows;
   if(type === 'stock') {
-    headers = ["Événement","Siège","Email","Mot de passe","Date événement","Site","Qté","Achat","Vente","Statut","Paiement","Client","Livraison","POS"];
-    rows = [["PSG Arsenal Watch Party","Rang 100","email@example.com","motdepasse123","2026-07-10","Ticketmaster","2","50","150","Pending","Revolut","John Doe","Non livré","Viagogo"]];
+    headers = ["Événement","Siège","Catégorie","Email","Mot de passe","Date événement","Site","Qté","Achat","Vente","Statut","Paiement","Client","Livraison","POS"];
+    rows = [
+      ["PSG vs Arsenal","Siège 113 - Rang 10 Tribune BOULOGNE","5","email@example.com","Password@123","2026-09-15","Ticketmaster","2","50","150","Pending","Revolut","Jean Dupont","Non livré","Viagogo"],
+      ["Céline Dion","Siège 37 - Rang 24 Tribune BORELLI","3","autre@gmail.com","MonPass2026%","2026-08-20","Fnac","1","43","120","Pending","Paypal","Marie Martin","","Discord"]
+    ];
   } else {
     headers = ["Catégorie","Qté","Siège","Email","Mot de passe","Date événement","ACO (€)","État","Paiement","Client","Date ACO","Site"];
-    rows = [["Carré Or","2","Rang 100","email@example.com","motdepasse123","2026-07-10","80","Pending","Revolut","John Doe","2026-06-01","Ticketmaster"]];
+    rows = [
+      ["5","2","Siège 113 - Rang 10 Tribune BOULOGNE","email@example.com","Password@123","2026-09-15","80","Pending","Revolut","Jean Dupont","2026-06-01","Ticketmaster"],
+      ["3","1","Siège 37 - Rang 24 Tribune BORELLI","autre@gmail.com","MonPass2026%","2026-08-20","43","Pending","Paypal","Marie Martin","2026-06-10","Fnac"]
+    ];
   }
   const csv = [headers, ...rows].map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
   const a = document.createElement("a");
