@@ -38,17 +38,17 @@
   --amber-dim:rgba(245,166,35,0.12);
   --radius:8px;
   --radius-lg:12px;
-  --sidebar-w:300px;
-  --topbar-h:58px;
+  --sidebar-w:260px;
+  --topbar-h:68px;
 }
-body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden}
+body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);min-height:100vh;font-size:13px}
 
 /* Topbar */
-.topbar{height:var(--topbar-h);background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;position:fixed;top:0;left:0;right:0;z-index:20000}
+.topbar{height:var(--topbar-h);background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:fixed;top:0;left:0;right:0;z-index:20000}
 .brand{display:flex;align-items:center;gap:10px;width:var(--sidebar-w);flex-shrink:0;text-decoration:none}
-.brand-logo{width:34px;height:34px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1px solid var(--border2)}
+.brand-logo{width:40px;height:40px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1px solid var(--border2)}
 .brand-logo img{width:100%;height:100%;object-fit:cover}
-.brand-name{font-size:20px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(130deg,#fff 20%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.brand-name{font-size:21px;font-weight:800;letter-spacing:-0.4px;background:linear-gradient(130deg,#fff 20%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .topbar-spacer{flex:1}
 .topbar-actions{display:flex;gap:8px;position:relative;z-index:300;align-items:center}
 
@@ -56,13 +56,21 @@ body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);
 .body{display:flex;padding-top:var(--topbar-h);min-height:100vh}
 
 /* Sidebar */
-.sidebar{width:var(--sidebar-w);background:var(--bg-sidebar);border-right:1px solid var(--border);position:fixed;top:var(--topbar-h);bottom:0;left:0;display:flex;flex-direction:column}
-.sidebar-section-label{padding:20px 16px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3)}
+.sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,var(--bg-card) 0%,var(--bg-sidebar) 100%);border-right:1px solid var(--border2);position:fixed;top:var(--topbar-h);bottom:0;left:0;display:flex;flex-direction:column;overflow:hidden}
+.sidebar-section-label{padding:14px 16px 4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3)}.sidebar-section-label{:1.2px;color:var(--text3)}
 .nav-list{flex:1;overflow-y:auto;padding:4px 8px}
 .nav-list::-webkit-scrollbar{width:3px}
 .nav-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.sidebar-nav-top{padding:10px 8px 4px}
+.sidebar-nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all 0.12s;border:none;background:transparent;width:100%;text-align:left;font-family:"Inter",sans-serif;letter-spacing:0.1px}
+.sidebar-nav-item:hover{background:var(--bg-hover);color:var(--text)}
+.sidebar-nav-item.active{background:var(--gold-dim);color:var(--gold);font-weight:600}
+.sidebar-nav-item i{font-size:16px;width:18px;text-align:center}
+.sidebar-divider{height:1px;background:var(--border);margin:4px 12px}
+.sidebar-label-main{padding:12px 16px 4px !important}
 .nav-sep{height:1px;background:var(--border);margin:6px 8px;}
-.nav-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:14px;font-weight:400;transition:all 0.12s;margin-bottom:3px;border:1px solid transparent}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:14px;font-weight:400;transition:all 0.12s;margin-bottom:3px;border:1px solid transparent}
 .nav-item:hover{background:var(--bg-hover);color:var(--text)}
 .nav-item.active{background:var(--gold-dim);color:var(--gold);border-color:var(--gold-border);font-weight:500}
 .nav-item .ni{font-size:17px;flex-shrink:0;width:19px;text-align:center}
@@ -74,10 +82,10 @@ body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);
 
 .sidebar-templates{padding:12px 8px 4px;border-top:1px solid var(--border);margin-top:8px}
 .sidebar-templates-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);padding:0 8px;margin-bottom:8px}
-.template-link{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius);color:var(--text2);font-size:12px;font-weight:500;text-decoration:none;transition:all 0.12s;cursor:pointer;border:none;background:transparent;width:100%;font-family:"Inter",sans-serif}
+.template-link{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--radius);color:var(--text3);font-size:12px;font-weight:500;text-decoration:none;transition:all 0.12s;cursor:pointer;border:none;background:transparent;width:100%;font-family:"Inter",sans-serif}
 .template-link:hover{background:var(--bg-hover);color:var(--text)}
 .template-link i{font-size:14px;color:var(--gold);opacity:0.8}
-.new-ev-btn{width:100%;height:36px;border-radius:var(--radius);border:1px dashed var(--gold-border);background:transparent;color:var(--gold);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:"Inter",sans-serif;transition:all 0.15s;letter-spacing:0.2px}
+.new-ev-btn{width:100%;height:38px;border-radius:var(--radius);border:1px dashed var(--gold-border);background:rgba(245,200,66,0.03);color:var(--gold);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:"Inter",sans-serif;transition:all 0.15s;letter-spacing:0.2px}
 .new-ev-btn:hover{background:var(--gold-dim);border-color:rgba(245,200,66,0.5)}
 
 /* Main */
@@ -124,10 +132,10 @@ body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);
 .toolbar select option{background:#171728}
 
 /* Buttons */
-.btn{height:36px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-card);color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:"Inter",sans-serif;white-space:nowrap;transition:all 0.15s;letter-spacing:0.1px}
+.btn{height:40px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-card);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:"Inter",sans-serif;white-space:nowrap;transition:all 0.15s;letter-spacing:0.1px}
 .btn:hover{background:var(--bg-hover);color:var(--text);border-color:var(--border3)}
 .btn:disabled{opacity:0.3;cursor:default}
-.btn.primary{background:var(--gold);color:#08080f;border-color:var(--gold);font-weight:700}
+.btn.primary{background:var(--gold);color:#08080f;border-color:var(--gold);font-weight:700;box-shadow:0 2px 8px rgba(245,200,66,0.25);height:40px;padding:0 18px;font-size:14px}
 .btn.primary:hover{background:#ffd44a;border-color:#ffd44a}
 .btn.sm{height:30px;padding:0 10px;font-size:11px}
 .btn.ghost{background:transparent;border-color:transparent;color:var(--text2)}
@@ -136,7 +144,7 @@ body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);
 .btn.danger-ghost:hover{background:var(--red-dim);color:var(--red);border-color:rgba(239,68,68,0.3)}
 
 /* Table */
-.table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto}
+.table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow-x:auto;overflow-y:visible}
 table{width:100%;border-collapse:collapse;font-size:14px;min-width:1080px}
 thead th{background:var(--bg-card2);color:var(--text3);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.6px;padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
 tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
@@ -144,7 +152,7 @@ tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--bg-hover)}
 td{padding:11px 14px;vertical-align:middle}
 td.num{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:500}
-.ev-name{font-weight:600;font-size:14px;line-height:1.3}
+.ev-name{font-weight:600;font-size:14px;line-height:1.3;white-space:nowrap}
 .ev-seat{font-size:12px;color:var(--text3);margin-top:2px}
 
 .cell-with-copy{display:flex;align-items:center;gap:6px;max-width:180px}
@@ -173,8 +181,8 @@ tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
 .badge.Sold{background:rgba(139,92,246,0.12);color:#8b5cf6}
 .profit-pos{color:var(--green);font-weight:700}
 .profit-neg{color:var(--red);font-weight:700}
-.actions{display:flex;gap:3px}
-.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid transparent;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;transition:all 0.12s}
+.actions{display:flex;gap:3px;opacity:1}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;transition:all 0.12s}
 .icon-btn:hover{background:var(--bg-hover);color:var(--text);border-color:var(--border2)}
 .icon-btn.del:hover{background:var(--red-dim);color:var(--red);border-color:rgba(239,68,68,0.3)}
 .empty{text-align:center;padding:5rem 2rem;color:var(--text3)}
@@ -264,7 +272,7 @@ tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
 .auth-divider{height:1px;background:var(--border);margin:4px 0}
 .auth-footer{text-align:center;font-size:11px;color:var(--text3);margin-top:20px}
 @media(max-width:768px){.auth-left{display:none}.auth-right{width:100%;border-left:none;padding:40px 24px}}
-.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--gold-dim);border:1.5px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold);cursor:pointer;flex-shrink:0;transition:all 0.15s;user-select:none}
+.user-avatar{width:38px;height:38px;border-radius:50%;background:var(--gold-dim);border:2px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold);cursor:pointer;flex-shrink:0;transition:all 0.15s;user-select:none}
 .user-avatar:hover{background:var(--gold-border)}
 .user-dropdown{display:none;position:absolute;top:44px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:6px;z-index:9999;min-width:280px;box-shadow:0 8px 24px rgba(0,0,0,0.2)}
 .user-dropdown-header{padding:10px 12px 10px;border-bottom:1px solid var(--border);margin-bottom:6px}
@@ -456,6 +464,172 @@ body.theme-arctic .auth-submit{background:#2563eb}
 body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-color:rgba(185,28,28,0.3)}
 
 
+/* Midnight Forest theme */
+body.theme-forest {
+  --bg-base:#0a1a12;--bg-sidebar:#0d1f17;--bg-card:#112218;--bg-card2:#162d1e;
+  --bg-hover:#1a3526;--bg-input:#112218;--border:rgba(255,255,255,0.06);
+  --border2:rgba(255,255,255,0.10);--border3:rgba(255,255,255,0.18);
+  --text:#e8f5ee;--text2:#7ab893;--text3:#4a7a5e;
+  --gold:#2ecc71;--gold2:#27ae60;--gold-dim:rgba(46,204,113,0.12);
+  --gold-border:rgba(46,204,113,0.28);--blue:#4ade80;--green:#2ecc71;
+  --green-dim:rgba(46,204,113,0.12);--red:#f87171;--red-dim:rgba(248,113,113,0.12);
+  --amber:#fbbf24;--amber-dim:rgba(251,191,36,0.12);
+}
+body.theme-forest,.theme-forest .topbar{background:var(--bg-base);color:var(--text)}
+body.theme-forest .topbar{background:#0d1f17;border-bottom:1px solid var(--border2);box-shadow:0 1px 12px rgba(0,0,0,0.4)}
+body.theme-forest .brand-name{background:linear-gradient(130deg,#e8f5ee 20%,#2ecc71 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.theme-forest .sidebar{background:linear-gradient(180deg,#0d1f17 0%,#091510 100%);border-right:1px solid var(--border2)}
+body.theme-forest .nav-item{color:#7ab893}
+body.theme-forest .nav-item:hover{background:#1a3526;color:#e8f5ee}
+body.theme-forest .nav-item.active{background:rgba(46,204,113,0.12);color:#2ecc71;border-color:rgba(46,204,113,0.28)}
+body.theme-forest .nav-item .nc{background:#162d1e;color:#4a7a5e}
+body.theme-forest .nav-item.active .nc{background:rgba(46,204,113,0.15);color:#2ecc71}
+body.theme-forest .new-ev-btn{border-color:rgba(46,204,113,0.3);color:#2ecc71}
+body.theme-forest .new-ev-btn:hover{background:rgba(46,204,113,0.08)}
+body.theme-forest .stat{background:#112218;border:1px solid var(--border2)}
+body.theme-forest .stat.featured{border-color:rgba(46,204,113,0.35);background:linear-gradient(140deg,#112218 50%,rgba(46,204,113,0.07))}
+body.theme-forest .stat-val.c-gold{color:#2ecc71}
+body.theme-forest .stat-val.c-blue{color:#4ade80}
+body.theme-forest .stat-val.c-green{color:#2ecc71}
+body.theme-forest .stat-val.c-red{color:#f87171}
+body.theme-forest .table-wrap{background:#112218;border:1px solid var(--border2)}
+body.theme-forest thead th{background:#0d1f17;color:#4a7a5e;border-bottom:1px solid var(--border2)}
+body.theme-forest tbody tr{border-bottom:1px solid rgba(255,255,255,0.04)}
+body.theme-forest tbody tr:hover{background:#1a3526}
+body.theme-forest .ev-name{color:#e8f5ee}
+body.theme-forest .ev-seat{color:#4a7a5e}
+body.theme-forest .email-cell{color:#7ab893}
+body.theme-forest .pwd-cell{background:#162d1e;border-color:rgba(255,255,255,0.1);color:#7ab893}
+body.theme-forest .profit-pos{color:#2ecc71}
+body.theme-forest .profit-neg{color:#f87171}
+body.theme-forest .badge.Completed{background:rgba(46,204,113,0.15);color:#2ecc71}
+body.theme-forest .badge.Pending{background:rgba(251,191,36,0.12);color:#fbbf24}
+body.theme-forest .badge.Cancelled{background:rgba(248,113,113,0.12);color:#f87171}
+body.theme-forest .badge.Available{background:rgba(74,222,128,0.12);color:#4ade80}
+body.theme-forest .badge.Sold{background:rgba(167,139,250,0.12);color:#a78bfa}
+body.theme-forest .btn{background:#162d1e;border-color:var(--border2);color:#7ab893}
+body.theme-forest .btn:hover{background:#1a3526;color:#e8f5ee}
+body.theme-forest .btn.primary{background:#2ecc71;color:#0a1a12;border-color:#2ecc71;font-weight:700}
+body.theme-forest .btn.primary:hover{background:#27ae60;border-color:#27ae60}
+body.theme-forest .btn.ghost{background:transparent;border-color:transparent;color:#7ab893}
+body.theme-forest .btn.ghost:hover{background:#1a3526;color:#e8f5ee}
+body.theme-forest .toolbar input,.theme-forest .toolbar select{background:#162d1e;border-color:var(--border2);color:#e8f5ee}
+body.theme-forest .mode-tab{color:#7ab893}
+body.theme-forest .mode-tab.active{background:#2ecc71;color:#0a1a12}
+body.theme-forest .modal{background:#112218;border-color:var(--border2)}
+body.theme-forest .form-group input,.theme-forest .form-group select{background:#162d1e;border-color:var(--border2);color:#e8f5ee}
+body.theme-forest .form-group input:focus,.theme-forest .form-group select:focus{border-color:#2ecc71;background:#1a3526}
+body.theme-forest .toast{background:#2ecc71;color:#0a1a12}
+body.theme-forest .icon-btn{color:#4a7a5e;background:#162d1e;border-color:var(--border2)}
+body.theme-forest .icon-btn:hover{background:#1a3526;color:#e8f5ee;border-color:var(--border3)}
+body.theme-forest .icon-btn.del:hover{background:rgba(248,113,113,0.12);color:#f87171}
+body.theme-forest .sidebar-section-label{color:#4a7a5e}
+body.theme-forest #theme-picker{background:#112218;border-color:var(--border2);box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+body.theme-forest .theme-option:hover{background:#1a3526}
+body.theme-forest .bulk-bar{background:rgba(46,204,113,0.08);border-color:rgba(46,204,113,0.2)}
+body.theme-forest .bulk-count{color:#2ecc71}
+body.theme-forest .filter-bar .filter-tag{background:rgba(46,204,113,0.1);border-color:rgba(46,204,113,0.25);color:#2ecc71}
+body.theme-forest .filter-builder{background:#112218;border-color:var(--border2)}
+body.theme-forest .auth-box{background:#112218;border-color:var(--border2);box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+body.theme-forest .auth-tab.active{background:#162d1e;color:#e8f5ee}
+body.theme-forest .auth-field input{background:#162d1e;border-color:var(--border2);color:#e8f5ee}
+body.theme-forest .auth-submit{background:#2ecc71}
+body.theme-forest .logout-btn:hover{background:rgba(248,113,113,0.12);color:#f87171;border-color:rgba(248,113,113,0.3)}
+body.theme-forest .dash-card{background:#112218;border-color:var(--border2)}
+body.theme-forest .dash-bar-track{background:#162d1e}
+body.theme-forest .dash-recent-table th{color:#4a7a5e;border-bottom-color:var(--border2)}
+body.theme-forest .dash-recent-table td{border-bottom-color:rgba(255,255,255,0.04);color:#e8f5ee}
+body.theme-forest .top-ev-rank{background:rgba(46,204,113,0.1);color:#2ecc71}
+body.theme-forest .dash-donut-row{border-bottom-color:rgba(255,255,255,0.04)}
+body.theme-forest .dash-card-title{color:#4a7a5e}
+body.theme-forest .editable-cell:hover{background:#1a3526;outline-color:rgba(46,204,113,0.3)}
+body.theme-forest .cell-select,.theme-forest .cell-input{background:#162d1e;border-color:rgba(46,204,113,0.35);color:#e8f5ee}
+body.theme-forest .cell-confirm-save{background:#2ecc71;color:#0a1a12}
+body.theme-forest .sidebar-toggle-btn{background:linear-gradient(180deg,#2ecc71 0%,#27ae60 100%);color:#0a1a12;box-shadow:3px 0 12px rgba(46,204,113,0.3)}
+
+/* Neon Purple theme */
+body.theme-neon {
+  --bg-base:#0d0d1a;--bg-sidebar:#110d1f;--bg-card:#160d24;--bg-card2:#1e1030;
+  --bg-hover:#251540;--bg-input:#160d24;--border:rgba(180,100,255,0.08);
+  --border2:rgba(180,100,255,0.14);--border3:rgba(180,100,255,0.25);
+  --text:#f0e6ff;--text2:#a47dc8;--text3:#6b4d8a;
+  --gold:#c084fc;--gold2:#a855f7;--gold-dim:rgba(192,132,252,0.12);
+  --gold-border:rgba(192,132,252,0.28);--blue:#818cf8;--green:#34d399;
+  --green-dim:rgba(52,211,153,0.12);--red:#fb7185;--red-dim:rgba(251,113,133,0.12);
+  --amber:#fbbf24;--amber-dim:rgba(251,191,36,0.12);
+}
+body.theme-neon,.theme-neon .topbar{background:var(--bg-base);color:var(--text)}
+body.theme-neon .topbar{background:#110d1f;border-bottom:1px solid var(--border2);box-shadow:0 1px 20px rgba(192,132,252,0.1)}
+body.theme-neon .brand-name{background:linear-gradient(130deg,#f0e6ff 0%,#c084fc 50%,#818cf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.theme-neon .sidebar{background:linear-gradient(180deg,#110d1f 0%,#0a0812 100%);border-right:1px solid var(--border2)}
+body.theme-neon .nav-item{color:#a47dc8}
+body.theme-neon .nav-item:hover{background:#251540;color:#f0e6ff}
+body.theme-neon .nav-item.active{background:rgba(192,132,252,0.12);color:#c084fc;border-color:rgba(192,132,252,0.3)}
+body.theme-neon .nav-item .nc{background:#1e1030;color:#6b4d8a}
+body.theme-neon .nav-item.active .nc{background:rgba(192,132,252,0.15);color:#c084fc}
+body.theme-neon .new-ev-btn{border-color:rgba(192,132,252,0.3);color:#c084fc}
+body.theme-neon .new-ev-btn:hover{background:rgba(192,132,252,0.08)}
+body.theme-neon .stat{background:#160d24;border:1px solid var(--border2)}
+body.theme-neon .stat.featured{border-color:rgba(192,132,252,0.4);background:linear-gradient(140deg,#160d24 50%,rgba(192,132,252,0.08))}
+body.theme-neon .stat-val.c-gold{color:#c084fc}
+body.theme-neon .stat-val.c-blue{color:#818cf8}
+body.theme-neon .stat-val.c-green{color:#34d399}
+body.theme-neon .stat-val.c-red{color:#fb7185}
+body.theme-neon .table-wrap{background:#160d24;border:1px solid var(--border2)}
+body.theme-neon thead th{background:#110d1f;color:#6b4d8a;border-bottom:1px solid var(--border2)}
+body.theme-neon tbody tr{border-bottom:1px solid rgba(180,100,255,0.06)}
+body.theme-neon tbody tr:hover{background:#251540}
+body.theme-neon .ev-name{color:#f0e6ff}
+body.theme-neon .ev-seat{color:#6b4d8a}
+body.theme-neon .email-cell{color:#a47dc8}
+body.theme-neon .pwd-cell{background:#1e1030;border-color:rgba(180,100,255,0.15);color:#a47dc8}
+body.theme-neon .profit-pos{color:#34d399}
+body.theme-neon .profit-neg{color:#fb7185}
+body.theme-neon .badge.Completed{background:rgba(52,211,153,0.12);color:#34d399}
+body.theme-neon .badge.Pending{background:rgba(251,191,36,0.12);color:#fbbf24}
+body.theme-neon .badge.Cancelled{background:rgba(251,113,133,0.12);color:#fb7185}
+body.theme-neon .badge.Available{background:rgba(129,140,248,0.12);color:#818cf8}
+body.theme-neon .badge.Sold{background:rgba(192,132,252,0.12);color:#c084fc}
+body.theme-neon .btn{background:#1e1030;border-color:var(--border2);color:#a47dc8}
+body.theme-neon .btn:hover{background:#251540;color:#f0e6ff}
+body.theme-neon .btn.primary{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a;border:none;font-weight:700}
+body.theme-neon .btn.primary:hover{background:linear-gradient(135deg,#a855f7,#6366f1)}
+body.theme-neon .btn.ghost{background:transparent;border-color:transparent;color:#a47dc8}
+body.theme-neon .btn.ghost:hover{background:#1e1030;color:#f0e6ff}
+body.theme-neon .toolbar input,.theme-neon .toolbar select{background:#1e1030;border-color:var(--border2);color:#f0e6ff}
+body.theme-neon .mode-tab{color:#a47dc8}
+body.theme-neon .mode-tab.active{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
+body.theme-neon .modal{background:#160d24;border-color:var(--border2)}
+body.theme-neon .form-group input,.theme-neon .form-group select{background:#1e1030;border-color:var(--border2);color:#f0e6ff}
+body.theme-neon .form-group input:focus,.theme-neon .form-group select:focus{border-color:#c084fc;background:#251540}
+body.theme-neon .toast{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
+body.theme-neon .icon-btn{color:#6b4d8a;background:#1e1030;border-color:var(--border2)}
+body.theme-neon .icon-btn:hover{background:#251540;color:#f0e6ff;border-color:var(--border3)}
+body.theme-neon .icon-btn.del:hover{background:rgba(251,113,133,0.12);color:#fb7185}
+body.theme-neon .sidebar-section-label{color:#6b4d8a}
+body.theme-neon #theme-picker{background:#160d24;border-color:var(--border2);box-shadow:0 8px 32px rgba(192,132,252,0.2)}
+body.theme-neon .theme-option:hover{background:#251540}
+body.theme-neon .bulk-bar{background:rgba(192,132,252,0.08);border-color:rgba(192,132,252,0.2)}
+body.theme-neon .bulk-count{color:#c084fc}
+body.theme-neon .filter-bar .filter-tag{background:rgba(192,132,252,0.1);border-color:rgba(192,132,252,0.25);color:#c084fc}
+body.theme-neon .filter-builder{background:#160d24;border-color:var(--border2)}
+body.theme-neon .auth-box{background:#160d24;border-color:var(--border2);box-shadow:0 8px 40px rgba(192,132,252,0.2)}
+body.theme-neon .auth-tab.active{background:#1e1030;color:#f0e6ff}
+body.theme-neon .auth-field input{background:#1e1030;border-color:var(--border2);color:#f0e6ff}
+body.theme-neon .auth-submit{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
+body.theme-neon .logout-btn:hover{background:rgba(251,113,133,0.12);color:#fb7185;border-color:rgba(251,113,133,0.3)}
+body.theme-neon .dash-card{background:#160d24;border-color:var(--border2)}
+body.theme-neon .dash-bar-track{background:#1e1030}
+body.theme-neon .dash-recent-table th{color:#6b4d8a;border-bottom-color:var(--border2)}
+body.theme-neon .dash-recent-table td{border-bottom-color:rgba(180,100,255,0.06);color:#f0e6ff}
+body.theme-neon .top-ev-rank{background:rgba(192,132,252,0.1);color:#c084fc}
+body.theme-neon .dash-donut-row{border-bottom-color:rgba(180,100,255,0.06)}
+body.theme-neon .dash-card-title{color:#6b4d8a}
+body.theme-neon .editable-cell:hover{background:#251540;outline-color:rgba(192,132,252,0.3)}
+body.theme-neon .cell-select,.theme-neon .cell-input{background:#1e1030;border-color:rgba(192,132,252,0.35);color:#f0e6ff}
+body.theme-neon .cell-confirm-save{background:linear-gradient(135deg,#c084fc,#818cf8);color:#0d0d1a}
+body.theme-neon .sidebar-toggle-btn{background:linear-gradient(180deg,#c084fc 0%,#818cf8 100%);color:#0d0d1a;box-shadow:3px 0 16px rgba(192,132,252,0.4)}
+
 .dash-card{background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:20px}
 .dash-card-title{font-size:13px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .dash-card-title i{color:var(--gold)}
@@ -478,6 +652,98 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
 .dash-recent-table th{color:var(--text3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:8px 10px;border-bottom:1px solid var(--border);text-align:left}
 .dash-recent-table td{padding:10px;border-bottom:1px solid var(--border);color:var(--text)}
 .dash-recent-table tr:last-child td{border-bottom:none}
+
+.editable-cell{cursor:pointer;border-radius:4px;padding:2px 4px;transition:background 0.12s;display:inline-block;min-width:20px}
+.editable-cell:hover{background:var(--bg-hover);outline:1px dashed var(--border3)}
+.cell-editor-wrap{position:relative;display:inline-block}
+.cell-input{height:28px;padding:0 8px;border-radius:5px;border:1px solid var(--gold);background:var(--bg-input);color:var(--text);font-size:13px;font-family:"Inter",sans-serif;outline:none;min-width:80px;box-shadow:0 0 0 3px var(--gold-dim)}
+.cell-select{padding:4px 0;border-radius:8px;border:1px solid var(--gold-border);background:var(--bg-card);color:var(--text);font-size:13px;outline:none;min-width:160px;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.cell-select option{padding:8px 14px;font-size:13px;cursor:pointer}
+
+.cell-confirm{display:inline-flex;align-items:center;gap:4px;margin-left:6px;vertical-align:middle}
+.cell-confirm-save{height:24px;width:24px;border-radius:4px;border:none;background:var(--gold);color:#08080f;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cell-confirm-cancel{height:24px;width:24px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cell-confirm-save:hover{opacity:0.85}
+.cell-confirm-cancel:hover{background:var(--red-dim);color:var(--red);border-color:var(--red)}
+
+:root { --sidebar-collapsed-w: 56px; }
+body.sidebar-collapsed .sidebar { width: var(--sidebar-collapsed-w); overflow: hidden; }
+body.sidebar-collapsed .main { margin-left: var(--sidebar-collapsed-w); }
+
+body.sidebar-collapsed #dashboard-page { margin-left: var(--sidebar-collapsed-w); }
+body.sidebar-collapsed .sidebar-toggle-btn { left: 12px; }
+.sidebar { transition: width 0.25s ease; overflow: hidden; }
+.main { transition: margin-left 0.25s ease; }
+.main-page { overflow-x: auto; }
+#dashboard-page { transition: margin-left 0.25s ease; }
+.sidebar-toggle-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(var(--sidebar-w) - 16px);
+  width: 28px;
+  height: 56px;
+  background: linear-gradient(180deg, #f5c842 0%, #e8a800 100%);
+  border: none;
+  border-radius: 0 12px 12px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1999;
+  color: #08080f;
+  transition: left 0.25s ease, width 0.15s, box-shadow 0.15s;
+  font-size: 14px;
+  box-shadow: 3px 0 12px rgba(245,200,66,0.3);
+}
+.sidebar-toggle-btn:hover {
+  width: 32px;
+  box-shadow: 4px 0 18px rgba(245,200,66,0.5);
+}
+body.sidebar-collapsed .sidebar-toggle-btn { left: calc(var(--sidebar-collapsed-w) - 16px); }
+
+body.sidebar-collapsed .sidebar .sidebar-section-label,
+body.sidebar-collapsed .sidebar .nl,
+body.sidebar-collapsed .sidebar .nc,
+body.sidebar-collapsed .sidebar .sidebar-templates,
+body.sidebar-collapsed .sidebar .sidebar-bottom,
+body.sidebar-collapsed .sidebar .sidebar-nav-top .sidebar-label-main,
+body.sidebar-collapsed .sidebar .sidebar-divider { display: none; }
+
+body.sidebar-collapsed .sidebar .nav-item {
+  justify-content: center;
+  padding: 10px 0;
+}
+body.sidebar-collapsed .sidebar .nav-item .ni {
+  font-size: 22px;
+  width: auto;
+  opacity: 1;
+}
+body.sidebar-collapsed .sidebar .sidebar-nav-item {
+  justify-content: center;
+  padding: 10px 0;
+}
+body.sidebar-collapsed .sidebar .sidebar-nav-item span { display: none; }
+body.sidebar-collapsed .sidebar .sidebar-nav-item i { font-size: 20px; width: auto; }
+body.sidebar-collapsed .sidebar .sidebar-nav-top { padding: 10px 4px 4px; }
+body.sidebar-collapsed .sidebar .nav-list { padding: 4px; }
+
+/* Dashboard theme adaptations */
+body.theme-cream .dash-card { background:#fff; border-color:#e8e2d9; }
+body.theme-cream .dash-bar-track { background:#f5f2ec; }
+body.theme-cream .dash-recent-table th { color:#8a8278; border-bottom-color:#e8e2d9; }
+body.theme-cream .dash-recent-table td { border-bottom-color:#f5f0e8; color:#1a1612; }
+body.theme-cream .top-ev-rank { background:rgba(194,165,90,0.1); color:#c2a55a; }
+body.theme-cream .dash-donut-row { border-bottom-color:#f0ebe0; }
+body.theme-cream .dash-card-title { color:#8a8278; }
+
+body.theme-arctic .dash-card { background:#fff; border-color:#d0dbe6; }
+body.theme-arctic .dash-bar-track { background:#e8f0f8; }
+body.theme-arctic .dash-recent-table th { color:#5a7a9a; border-bottom-color:#d0dbe6; }
+body.theme-arctic .dash-recent-table td { border-bottom-color:#e8f0f8; color:#0f1f3d; }
+body.theme-arctic .top-ev-rank { background:rgba(37,99,235,0.08); color:#2563eb; }
+body.theme-arctic .dash-donut-row { border-bottom-color:#e8f0f8; }
+body.theme-arctic .dash-card-title { color:#5a7a9a; }
 </style>
 </head>
 <body>
@@ -557,7 +823,7 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
   <div class="topbar-spacer"></div>
   <div class="topbar-actions" id="topbar-actions">
     <div style="position:relative;display:inline-block">
-      <button class="btn ghost" id="theme-btn" onclick="toggleThemePicker()" style="font-weight:600;display:flex;align-items:center;gap:6px" title="Changer le thème"><i class="ti ti-palette" style="pointer-events:none"></i></button>
+      <button class="btn ghost" id="theme-btn" onclick="toggleThemePicker()" style="font-weight:600;display:flex;align-items:center;gap:6px;width:42px;justify-content:center" title="Changer le thème"><i class="ti ti-palette" style="pointer-events:none;font-size:20px"></i></button>
       <div id="theme-picker" style="display:none;position:absolute;top:42px;right:0;background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:8px;z-index:9999;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.2)">
         <div class="theme-option" data-theme="dark" onclick="setTheme('dark')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
           <div style="width:18px;height:18px;border-radius:4px;background:#0c0c1e;border:1px solid #3a3a5c;flex-shrink:0"></div>
@@ -567,14 +833,24 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
           <div style="width:18px;height:18px;border-radius:4px;background:#faf8f4;border:1px solid #e8e2d9;flex-shrink:0"></div>
           <span style="font-size:13px;font-weight:500">Soft Cream</span>
         </div>
-        <div class="theme-option" data-theme="arctic" onclick="setTheme('arctic')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer">
+        <div class="theme-option" data-theme="arctic" onclick="setTheme('arctic')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-bottom:2px">
+        </div>
+        <div class="theme-option" data-theme="forest" onclick="setTheme('forest')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-top:2px">
+          <span style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#0a1a12,#2ecc71);border:2px solid #2ecc71;flex-shrink:0"></span>
+          <span style="font-size:13px;font-weight:500">🌿 Forest</span>
+        </div>
+        <div class="theme-option" data-theme="neon" onclick="setTheme('neon')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;margin-top:2px">
+          <span style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#c084fc,#818cf8);border:2px solid #c084fc;flex-shrink:0"></span>
+          <span style="font-size:13px;font-weight:500">💜 Neon</span>
+        </div>
+        <div class="theme-option" data-theme="forest" onclick="setTheme('forest')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer">
           <div style="width:18px;height:18px;border-radius:4px;background:#f0f4f8;border:1px solid #d0dbe6;flex-shrink:0"></div>
           <span style="font-size:13px;font-weight:500">Arctic Blue</span>
         </div>
       </div>
     </div>
-    <button class="btn ghost" id="lang-btn" onclick="toggleLang()" style="font-weight:600;display:flex;align-items:center;gap:6px"><i class="ti ti-world" style="pointer-events:none"></i> FR</button>
-    <button class="btn primary" id="btn-add-main" onclick="openAddModal()"><i class="ti ti-plus"></i> Ajouter</button>
+    <button class="btn ghost" id="lang-btn" onclick="toggleLang()" style="font-weight:600;display:flex;align-items:center;gap:7px"><i class="ti ti-world" style="pointer-events:none;font-size:20px"></i> FR</button>
+    <button class="btn primary" id="btn-add-main" onclick="openAddModal()" style="display:flex;align-items:center;gap:7px"><i class="ti ti-plus" style="font-size:18px"></i> Ajouter</button>
     <div style="position:relative;display:inline-block">
       <div class="user-avatar" id="user-avatar" onclick="toggleUserMenu()" title="Mon compte">?</div>
       <div class="user-dropdown" id="user-dropdown">
@@ -592,6 +868,16 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
 
 <div class="body">
   <div class="sidebar">
+    <!-- Navigation section -->
+    <div class="sidebar-nav-top">
+      <div class="sidebar-section-label sidebar-label-main">Navigation</div>
+      <div class="sidebar-nav-item" id="nav-dashboard" data-page="dashboard" onclick="openDashboard()">
+        <i class="ti ti-chart-pie"></i>
+        <span>Dashboard</span>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <!-- Events section -->
     <div class="sidebar-section-label" id="sidebar-label">Événements</div>
     <div class="nav-list" id="nav-list"></div>
     <div class="sidebar-sep"></div>
@@ -604,6 +890,8 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
         <button class="new-ev-btn" onclick="openEventModal()" id="new-ev-btn"><i class="ti ti-plus"></i> Nouvel événement</button>
       </div>
   </div>
+
+  <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle menu"><i class="ti ti-bolt" style="pointer-events:none"></i></button>
 
   <div class="main main-page" id="tickets-page">
     <div class="page-top">
@@ -644,8 +932,8 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
 
     <div class="toolbar" id="toolbar">
       <input type="text" id="search" placeholder="Rechercher…" oninput="render()">
-      <button class="btn ghost" onclick="exportCSV()"><i class="ti ti-download"></i> Export CSV</button>
-      <button class="btn ghost" onclick="document.getElementById('import-input').click()"><i class="ti ti-upload"></i> Import CSV</button>
+      <button class="btn ghost" onclick="exportCSV()" style="display:flex;align-items:center;gap:7px"><i class="ti ti-download" style="font-size:18px"></i> Export CSV</button>
+      <button class="btn ghost" onclick="document.getElementById('import-input').click()" style="display:flex;align-items:center;gap:7px"><i class="ti ti-upload" style="font-size:18px"></i> Import CSV</button>
       <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(this)">
       <button class="btn ghost" onclick="openFilterBuilder()" id="btn-filter"><i class="ti ti-filter"></i> Filtrer</button>
       <select id="f-status" onchange="render()"><option value="">Tous les statuts</option></select>
@@ -684,30 +972,47 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
   <!-- KPI cards -->
   <div class="stats" id="dash-stats" style="margin-bottom:24px"></div>
 
-  <!-- Charts grid -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-    <!-- Profit by event -->
+  <!-- Row 1: Profit by event + Status -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
     <div class="dash-card">
       <div class="dash-card-title" id="dash-title-profit"></div>
       <div id="dash-profit-chart" class="dash-chart-area"></div>
     </div>
-    <!-- Status breakdown -->
     <div class="dash-card">
       <div class="dash-card-title" id="dash-title-status"></div>
       <div id="dash-status-chart" class="dash-chart-area"></div>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
-    <!-- Top events by profit -->
+  <!-- Row 2: Payment methods (colored) + POS breakdown -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="dash-card">
+      <div class="dash-card-title" id="dash-title-pay"></div>
+      <div id="dash-pay-chart" class="dash-chart-area"></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title" id="dash-title-pos"><i class="ti ti-device-mobile"></i> POS</div>
+      <div id="dash-pos-chart" class="dash-chart-area"></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Livraison + Top events -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+    <div class="dash-card">
+      <div class="dash-card-title" id="dash-title-livraison"><i class="ti ti-package"></i> Livraison</div>
+      <div id="dash-livraison-chart" class="dash-chart-area"></div>
+    </div>
     <div class="dash-card">
       <div class="dash-card-title" id="dash-title-top"></div>
       <div id="dash-top-events"></div>
     </div>
-    <!-- Payment methods -->
+  </div>
+
+  <!-- Row 4: Events with colors -->
+  <div style="margin-bottom:20px">
     <div class="dash-card">
-      <div class="dash-card-title" id="dash-title-pay"></div>
-      <div id="dash-pay-chart" class="dash-chart-area"></div>
+      <div class="dash-card-title" id="dash-title-ev-colors"><i class="ti ti-palette"></i> Profit par événement</div>
+      <div id="dash-ev-colors" style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0"></div>
     </div>
   </div>
 
@@ -742,6 +1047,8 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
       <div class="form-group"><label>Paiement</label><select id="fe-pay" onchange="handlePaySelect(this,'stock')"><option value="">—</option></select></div>
       <div class="form-group"><label>Client</label><input id="fe-client" type="text" placeholder="Kylian Mbappé"></div>
       <div class="form-group"><label>Site</label><select id="fe-site" onchange="handleSiteSelect(this)"><option value="">—</option></select></div>
+      <div class="form-group"><label id="fe-livraison-label">Livraison</label><select id="fe-livraison"><option value="">—</option><option value="Livré" id="opt-livre">Livré</option><option value="Non livré" id="opt-nonlivre">Non livré</option></select></div>
+      <div class="form-group"><label>POS</label><select id="fe-pos"><option value="">—</option><option value="Discord">Discord</option><option value="Viagogo">Viagogo</option><option value="Whatsapp">Whatsapp</option></select></div>
     </div>
     <div class="form-actions">
       <button class="btn ghost" onclick="closeModal('ticket-modal')">Annuler</button>
@@ -835,6 +1142,17 @@ body.theme-arctic .logout-btn:hover{background:#fee2e2;color:#b91c1c;border-colo
     <div class="form-actions">
       <button class="btn ghost" onclick="closeModal('status-modal')">Annuler</button>
       <button class="btn primary" onclick="doSaveNewStatus()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="pos-modal" style="display:none" onclick="bgClose(event,'pos-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Nouveau POS</h2><button class="icon-btn" onclick="closeModal('pos-modal')"><i class="ti ti-x"></i></button></div>
+    <div class="form-group" style="margin-bottom:8px"><label>Nom du POS</label><input id="f-new-pos" type="text" placeholder="ex: Telegram, Facebook…"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('pos-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSaveNewPos()">Ajouter</button>
     </div>
   </div>
 </div>
@@ -1170,6 +1488,14 @@ async function saveNewSite(){
   if(!db.sites.includes(val)) db.sites.push(val);
   await saveSettings(); closeModal("site-modal"); updateSiteSelects(); toast(val+" ajouté ✓");
 }
+async function saveNewPos(){
+  const val=document.getElementById("f-new-pos").value.trim(); if(!val) return;
+  if(!db.pos) db.pos=["Discord","Viagogo","Whatsapp"];
+  if(!db.pos.includes(val)) db.pos.push(val);
+  closeModal("pos-modal"); toast(val+" ajouté ✓");
+}
+function doSaveNewPos(){ saveNewPos().catch(e=>{ console.error(e); toast("Erreur: "+e.message); }); }
+
 async function saveNewStatus(){
   const val=document.getElementById("f-new-status").value.trim(); if(!val) return;
   if(!db.statuses.includes(val)) db.statuses.push(val);
@@ -1181,9 +1507,7 @@ function renderNav(){
   const tc={}, ac={};
   db.tickets.forEach(t=>{ tc[t.event]=(tc[t.event]||0)+1; });
   db.acos.forEach(a=>{ ac[a.event]=(ac[a.event]||0)+1; });
-  let h='<div class="nav-item '+(activePage==="dashboard"?"active":"")+'" data-page="dashboard"><i class="ti ti-chart-pie ni"></i><span class="nl">Dashboard</span></div>';
-  h+='<div class="nav-sep"></div>';
-  h+='<div class="nav-item '+(activeEv==="__all__"&&activePage!=="dashboard"?"active":"")+'" data-ev="__all__"><i class="ti ti-layout-list ni"></i><span class="nl">'+t_("all_tickets")+'</span><span class="nc">'+db.tickets.length+'</span></div>';
+  let h='<div class="nav-item '+(activeEv==="__all__"&&activePage!=="dashboard"?"active":"")+'" data-ev="__all__"><i class="ti ti-layout-list ni"></i><span class="nl">'+t_("all_tickets")+'</span><span class="nc">'+db.tickets.length+'</span></div>';
   db.events.forEach(ev=>{ h+='<div class="nav-item '+(activeEv===ev?"active":"")+'" data-ev="'+esc(ev)+'"><i class="ti ti-ticket ni"></i><span class="nl">'+esc(ev)+'</span><span class="nc">'+(tc[ev]||0)+'</span></div>'; });
   document.getElementById("nav-list").innerHTML=h;
 }
@@ -1327,37 +1651,39 @@ function copyVal(e, val){
   });
 }
 function tStatus(s){
-  const fr={Pending:"En attente",Completed:"Terminé",Cancelled:"Annulé",Available:"Disponible",Sold:"Vendu"};
-  const en={Pending:"Pending",Completed:"Completed",Cancelled:"Cancelled",Available:"Available",Sold:"Sold"};
+  const fr={Pending:"En attente",Completed:"Terminé",Cancelled:"Annulé",Available:"Disponible",Sold:"Vendu","Livré":"Livré","Non livré":"Non livré"};
+  const en={Pending:"Pending",Completed:"Completed",Cancelled:"Cancelled",Available:"Available",Sold:"Sold","Livré":"Delivered","Non livré":"Not delivered"};
   const map = lang==="fr" ? fr : en;
   return map[s]||s||"—";
 }
 function renderStockTable(paged,showEv){
   var th='<tr>';
   th+='<th class="cb-col"><input type="checkbox" class="row-cb" id="select-all-cb" onchange="toggleSelectAll(this)"></th>';
-  th+='<th>'+(showEv?t_("col_event"):t_("col_seat"))+'</th>';
-  th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th>';
+  th+='<th>'+t_("col_event")+'</th>';
+  th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th><th>Site</th>';
   th+='<th>'+t_("col_qty")+'</th><th>'+t_("col_buy")+'</th><th>'+t_("col_sell")+'</th>';
   th+='<th>'+t_("col_profit")+'</th><th>'+t_("col_status")+'</th><th>'+t_("col_payment")+'</th>';
-  th+='<th>'+t_("col_client")+'</th><th>Site</th><th></th></tr>';
+  th+='<th>'+t_("col_client")+'</th><th>'+t_("col_livraison")+'</th><th>POS</th><th></th></tr>';
   document.getElementById("thead-row").innerHTML=th;
   document.getElementById("tbody").innerHTML=paged.map(t=>{
     const pr=(t.sell-t.buy)*t.qty, cls=pr>=0?"profit-pos":"profit-neg", sign=pr>=0?"+":"";
     const rid=t.id||t._i;
-    return '<tr class="data-row" data-idx="'+t._i+'" data-type="stock" onclick="rowClick(event,'+t._i+',false)">'+
+    return '<tr class="data-row">'+
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
-      '<td>'+(showEv?'<div class="ev-name">'+esc(t.event)+'</div>':'')+'<div class="'+(showEv?"ev-seat":"ev-name")+'">'+esc(t.seat)+'</div></td>'+
-      '<td><div class="cell-with-copy"><div class="email-cell">'+esc(t.email||"—")+'</div>'+(t.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
-      '<td><div class="cell-with-copy"><div class="pwd-cell">'+esc(t.pwd||"—")+'</div>'+(t.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
-      '<td style="font-size:12px;color:var(--text2)">'+fmtDate(t.evdate)+'</td>'+
-      '<td class="num" style="text-align:center">'+t.qty+'</td>'+
-      '<td class="num">'+fmt(t.buy*t.qty)+'</td>'+
-      '<td class="num">'+(t.sell>0?fmt(t.sell*t.qty):"—")+'</td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'event\',\'select\')"><div class="ev-name">'+esc(t.event)+'</div></span><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'seat\',\'text\')"><div class="ev-seat">'+esc(t.seat||'—')+'</div></span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'email\',\'text\')"><div class="cell-with-copy"><div class="email-cell">'+esc(t.email||"—")+'</div>'+(t.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pwd\',\'text\')"><div class="cell-with-copy"><div class="pwd-cell">'+esc(t.pwd||"—")+'</div>'+(t.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'evdate\',\'date\')">'+fmtDate(t.evdate)+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'site\',\'select\')">'+esc(t.site||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'qty\',\'number\')">'+t.qty+'</span></td>'+
+      '<td class="num"><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'buy\',\'number\')">'+fmt(t.buy)+'</span></td>'+
+      '<td class="num"><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'sell\',\'number\')">'+fmt(t.sell)+'</span></td>'+
       '<td class="num '+cls+'">'+sign+fmt(pr)+'</td>'+
-      '<td><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+esc(t.pay||"—")+'</td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+esc(t.client||"—")+'</td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+esc(t.site||"—")+'</td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'status\',\'select\')"><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pay\',\'select\')">'+esc(t.pay||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'client\',\'text\')">'+esc(t.client||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'livraison\',\'select\')"><span class="badge '+(t.livraison==="Livré"?"Completed":t.livraison==="Non livré"?"Cancelled":"")+'">'+(t.livraison?tStatus(t.livraison):"—")+'</span></span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'pos\',\'select\')">'+esc(t.pos||"—")+'</span></td>'+
       '<td><div class="actions"><button class="icon-btn edit-btn" data-idx="'+t._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del del-btn" data-idx="'+t._i+'"><i class="ti ti-trash"></i></button></div></td>'+
       '</tr>';
   }).join("");
@@ -1365,6 +1691,7 @@ function renderStockTable(paged,showEv){
 
 function renderAcoTable(paged){
   var th='<tr>';
+  th+='<th class="cb-col"><input type="checkbox" class="row-cb" id="select-all-cb" onchange="toggleSelectAll(this)"></th>';
   th+='<th>'+t_("col_cat")+'</th><th>'+t_("col_qty")+'</th><th>'+t_("col_seat")+'</th>';
   th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th>';
   th+='<th>'+t_("col_aco")+'</th><th>'+t_("col_etat")+'</th><th>'+t_("col_payment")+'</th>';
@@ -1374,18 +1701,18 @@ function renderAcoTable(paged){
     const rid=a.id||a._i;
     return '<tr>'+
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
-      '<td><span style="font-size:11px;font-weight:700;color:var(--gold)">'+esc(a.cat||"—")+'</span></td>'+
-      '<td class="num" style="text-align:center">'+a.qty+'</td>'+
-      '<td><div class="ev-seat">'+esc(a.seat||"—")+'</div></td>'+
-      '<td><div class="cell-with-copy"><div class="email-cell">'+esc(a.email||"—")+'</div>'+(a.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
-      '<td><div class="cell-with-copy"><div class="pwd-cell">'+esc(a.pwd||"—")+'</div>'+(a.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
-      '<td style="font-size:12px;color:var(--text2)">'+fmtDate(a.evdate)+'</td>'+
-      '<td class="num c-gold" style="font-weight:700">'+fmt(a.aco*a.qty)+'</td>'+
-      '<td><span class="badge '+(a.etat||"")+'">'+esc(tStatus(a.etat)||"—")+'</span></td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+esc(a.pay||"—")+'</td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+esc(a.client||"—")+'</td>'+
-      '<td style="font-size:12px;color:var(--text2)">'+fmtDate(a.acodate)+'</td>'+
-      '<td style="font-size:11px;color:var(--text2)">'+esc(a.site||"—")+'</td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'cat\',\'text\')" style="font-size:11px;font-weight:700;color:var(--gold)">'+esc(a.cat||"—")+'</span></td>'+
+      '<td class="num" style="text-align:center"><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'qty\',\'number\')">'+a.qty+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'seat\',\'text\')">'+esc(a.seat||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'email\',\'text\')"><div class="cell-with-copy"><div class="email-cell">'+esc(a.email||"—")+'</div>'+(a.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'pwd\',\'text\')"><div class="cell-with-copy"><div class="pwd-cell">'+esc(a.pwd||"—")+'</div>'+(a.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></span></td>"+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'evdate\',\'date\')">'+fmtDate(a.evdate)+'</span></td>'+
+      '<td class="num c-gold"><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'aco\',\'number\')">'+fmt(a.aco)+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'etat\',\'select\')"><span class="badge '+(a.etat||"")+'">'+esc(tStatus(a.etat)||"—")+'</span></span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'pay\',\'select\')">'+esc(a.pay||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'client\',\'text\')">'+esc(a.client||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'acodate\',\'date\')">'+fmtDate(a.acodate)+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'site\',\'select\')">'+esc(a.site||"—")+'</span></td>'+
       '<td><div class="actions"><button class="icon-btn aco-edit-btn" data-idx="'+a._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del aco-del-btn" data-idx="'+a._i+'"><i class="ti ti-trash"></i></button></div></td>'+
       '</tr>';
   }).join("");
@@ -1394,6 +1721,7 @@ function renderAcoTable(paged){
 function render(){
   if(!currentUser) return;
   if(selectedIds) selectedIds.clear();
+  _editingCell = null;
   renderNav(); updateModeTabs(); updatePayFilter(); renderFilterBar();
   const showAco=activeEv!=="__all__"&&activeMode==="aco";
   const list=showAco?filteredAco():filteredStock();
@@ -1439,6 +1767,8 @@ function openTicketModal(idx){
   document.getElementById("fe-pay").value=t?t.pay:"";
   document.getElementById("fe-site").value=t?t.site:"";
   document.getElementById("fe-status").value=t?t.status:"Pending";
+  document.getElementById("fe-livraison").value=t?(t.livraison||""):"";
+  document.getElementById("fe-pos").value=t?(t.pos||""):"";
   document.getElementById("ticket-modal").style.display="flex";
   setTimeout(()=>document.getElementById("fe-seat").focus(),50);
 }
@@ -1451,8 +1781,11 @@ async function saveTicket(){
     sell:parseFloat(document.getElementById("fe-sell").value)||0, qty:parseInt(document.getElementById("fe-qty").value)||1,
     status:document.getElementById("fe-status").value, pay:document.getElementById("fe-pay").value,
     client:document.getElementById("fe-client").value.trim(), evdate:document.getElementById("fe-evdate").value||null,
-    site:document.getElementById("fe-site").value
+    site:document.getElementById("fe-site").value,
+    livraison:document.getElementById("fe-livraison").value,
+    pos:document.getElementById("fe-pos").value
   };
+  if(payload.livraison==='Livré') payload.status='Completed';
   if(!payload.event) return;
   if(editIdx!==null){
     const id=db.tickets[editIdx].id;
@@ -1533,6 +1866,7 @@ async function delAco(idx){
 function openDashboard(){
   activePage = "dashboard";
   activeEv = "__all__";
+  document.querySelectorAll('.sidebar-nav-item').forEach(el=>el.classList.toggle('active', el.id==='nav-dashboard'));
   document.getElementById("tickets-page").style.display = "none";
   document.getElementById("dashboard-page").style.display = "block";
   renderNav();
@@ -1541,6 +1875,7 @@ function openDashboard(){
 
 function openTicketsPage(){
   activePage = "tickets";
+  document.querySelectorAll('.sidebar-nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById("dashboard-page").style.display = "none";
   document.getElementById("tickets-page").style.display = "block";
   renderNav();
@@ -1550,6 +1885,7 @@ function openTicketsPage(){
 function renderDashboard(){
   const evFilter = document.getElementById("dash-ev-filter");
   if(!evFilter) return;
+  const style = getComputedStyle(document.documentElement);
   // Set card titles
   const _tp=document.getElementById("dash-title-profit"); if(_tp) _tp.innerHTML='<i class="ti ti-chart-bar"></i> '+t_("dash_profit_ev");
   const _ts=document.getElementById("dash-title-status"); if(_ts) _ts.innerHTML='<i class="ti ti-chart-donut"></i> '+t_("dash_status");
@@ -1576,7 +1912,13 @@ function renderDashboard(){
   const pending = tickets.filter(t=>t.status==="Pending").length;
   const totalAco = acos.reduce((s,a)=>s+a.aco*a.qty,0);
   const totalQty = tickets.reduce((s,t)=>s+t.qty,0);
-  const avgProfit = completed>0?(tickets.filter(t=>t.status==="Completed").reduce((s,t)=>s+(t.sell-t.buy)*t.qty,0)/completed):0;
+  const avgProfit = (()=>{
+    const sold = tickets.filter(t=>t.sell>0);
+    if(!sold.length) return 0;
+    const totalProfit = sold.reduce((s,t)=>s+(t.sell-t.buy)*t.qty,0);
+    const totalQtyS = sold.reduce((s,t)=>s+t.qty,0);
+    return totalQtyS>0 ? totalProfit/totalQtyS : 0;
+  })();
 
   document.getElementById("dash-stats").innerHTML =
     '<div class="stat"><i class="ti ti-ticket stat-icon"></i><div class="stat-label">'+t_("dash_total")+'</div><div class="stat-val c-blue">'+totalQty+'</div></div>'+
@@ -1588,40 +1930,90 @@ function renderDashboard(){
     '<div class="stat"><i class="ti ti-currency-dollar stat-icon"></i><div class="stat-label">'+t_("dash_aco")+'</div><div class="stat-val c-gold">'+fmt(totalAco)+'</div></div>'+
     '<div class="stat"><i class="ti ti-chart-line stat-icon"></i><div class="stat-label">'+t_("dash_avg")+'</div><div class="stat-val">'+fmt(avgProfit)+'</div></div>';
 
-  // Profit by event bar chart
+  // Profit by event (data only — chart rendered below with colors)
   const evProfits = {};
   tickets.forEach(t=>{ const p=(t.sell-t.buy)*t.qty; evProfits[t.event]=(evProfits[t.event]||0)+p; });
   const evEntries = Object.entries(evProfits).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const maxProfit = Math.max(...evEntries.map(e=>Math.abs(e[1])),1);
-  document.getElementById("dash-profit-chart").innerHTML = evEntries.length ? evEntries.map(([ev,p])=>{
-    const w = Math.round(Math.abs(p)/maxProfit*100);
-    const col = p>=0?"#f5c842":"#ef4444";
-    return '<div class="dash-bar-row"><div class="dash-bar-label">'+esc(ev)+'</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+w+'%;background:'+col+'">'+( w>20?fmt(p):'' )+'</div></div><div class="dash-bar-val">'+fmt(p)+'</div></div>';
-  }).join("") : '<div style="color:var(--text3);text-align:center;padding:40px 0">'+t_("dash_no_data")+'</div>';
 
   // Status donut
   const statusCount = {};
   tickets.forEach(t=>{ statusCount[t.status]=(statusCount[t.status]||0)+1; });
-  const statusColors = {Completed:"#22c55e",Pending:"#f59e0b",Cancelled:"#ef4444",Available:"#3b82f6",Sold:"#8b5cf6"};
+  const statusColors = {Completed:'#22c55e',Pending:'#f59e0b',Cancelled:'#ef4444',Available:'#3b82f6',Sold:'#8b5cf6'};
   const total = tickets.length;
   document.getElementById("dash-status-chart").innerHTML = total ? Object.entries(statusCount).sort((a,b)=>b[1]-a[1]).map(([s,n])=>
     '<div class="dash-donut-row"><div class="dash-donut-dot" style="background:'+(statusColors[s]||"#888")+'"></div><div class="dash-donut-label">'+esc(tStatus(s))+'</div><div class="dash-donut-val">'+n+'</div><div class="dash-donut-pct">'+Math.round(n/total*100)+'%</div></div>'
   ).join("") : '<div style="color:var(--text3);text-align:center;padding:40px 0">'+t_("dash_no_data")+'</div>';
 
-  // Top events
-  document.getElementById("dash-top-events").innerHTML = evEntries.length ? evEntries.slice(0,5).map(([ev,p],i)=>
-    '<div class="top-ev-row"><div class="top-ev-rank">'+(i+1)+'</div><div class="top-ev-name">'+esc(ev)+'</div><div class="top-ev-profit '+(p>=0?"c-green":"c-red")+'">'+fmt(p)+'</div></div>'
-  ).join("") : '<div style="color:var(--text3);padding:20px 0">'+t_("dash_no_data")+'</div>';
 
-  // Payment method bar chart
+
+  // Color palette for events and payment methods
+  const PALETTE = ['#f5c842','#7aa3ff','#22c55e','#f97316','#a78bfa','#ec4899','#06b6d4','#84cc16','#fb923c','#e879f9','#34d399','#60a5fa'];
+  const evColorMap = {};
+  db.events.forEach((ev,i) => { evColorMap[ev] = PALETTE[i % PALETTE.length]; });
+  const PAY_COLORS = {'Paypal':'#0070ba','PayPal':'#0070ba','paypal':'#0070ba','Bank':'#f5c842','bank':'#f5c842','Virement':'#f5c842','virement':'#f5c842','SG':'#f5c842','BNP':'#f5c842','Revolut':'#9ca3af','revolut':'#9ca3af','REVO':'#9ca3af','Revo':'#9ca3af'};
+  const payColorMap = {};
+  [...new Set(tickets.map(t=>t.pay).filter(Boolean))].forEach((p,i) => { payColorMap[p] = PAY_COLORS[p] || PALETTE[(i+3) % PALETTE.length]; });
+
+  // Payment method bar chart (colored per method)
   const payCount = {};
   tickets.forEach(t=>{ if(t.pay) payCount[t.pay]=(payCount[t.pay]||0)+(t.sell-t.buy)*t.qty; });
   const payEntries = Object.entries(payCount).sort((a,b)=>b[1]-a[1]);
   const maxPay = Math.max(...payEntries.map(e=>Math.abs(e[1])),1);
   document.getElementById("dash-pay-chart").innerHTML = payEntries.length ? payEntries.map(([pay,p])=>{
     const w = Math.round(Math.abs(p)/maxPay*100);
-    return '<div class="dash-bar-row"><div class="dash-bar-label">'+esc(pay)+'</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+w+'%;background:#7aa3ff">'+( w>20?fmt(p):'' )+'</div></div><div class="dash-bar-val">'+fmt(p)+'</div></div>';
+    const col = payColorMap[pay] || '#7aa3ff';
+    return '<div class="dash-bar-row"><div class="dash-bar-label">'+esc(pay)+'</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+w+'%;background:'+col+'">'+(w>20?fmt(p):'')+'</div></div><div class="dash-bar-val" style="color:'+col+'">'+fmt(p)+'</div></div>';
   }).join("") : '<div style="color:var(--text3);text-align:center;padding:40px 0">'+t_("dash_no_data")+'</div>';
+
+  // POS breakdown
+  const posCount = {};
+  tickets.forEach(t=>{ if(t.pos) posCount[t.pos]=(posCount[t.pos]||0)+1; });
+  const posEntries = Object.entries(posCount).sort((a,b)=>b[1]-a[1]);
+  const posColors = {'Discord':'#38bdf8','Viagogo':'#22c55e','Whatsapp':'#25d366'};
+  const posTotal = posEntries.reduce((s,[,n])=>s+n,0);
+  document.getElementById("dash-pos-chart").innerHTML = posEntries.length ? posEntries.map(([pos,n])=>{
+    const col = posColors[pos] || PALETTE[posEntries.indexOf(posEntries.find(e=>e[0]===pos)) % PALETTE.length];
+    const w = Math.round(n/posTotal*100);
+    return '<div class="dash-donut-row"><div class="dash-donut-dot" style="background:'+col+'"></div><div class="dash-donut-label">'+esc(pos)+'</div><div class="dash-donut-val">'+n+'</div><div class="dash-donut-pct">'+w+'%</div></div>';
+  }).join("") : '<div style="color:var(--text3);text-align:center;padding:40px 0">'+t_("dash_no_data")+'</div>';
+
+  // Livraison breakdown
+  const livrCount = {};
+  tickets.forEach(t=>{ const l=t.livraison||'Non livré'; livrCount[l]=(livrCount[l]||0)+1; });
+  const livrColors = {'Livré':'#22c55e','Non livré':'#f59e0b','Delivered':'#22c55e','Not delivered':'#f59e0b'};
+  const livrTotal = tickets.length;
+  document.getElementById("dash-livraison-chart").innerHTML = livrTotal ? Object.entries(livrCount).sort((a,b)=>b[1]-a[1]).map(([l,n])=>{
+    const col = livrColors[l] || '#888';
+    const w = Math.round(n/livrTotal*100);
+    return '<div class="dash-donut-row"><div class="dash-donut-dot" style="background:'+col+'"></div><div class="dash-donut-label">'+esc(tStatus(l))+'</div><div class="dash-donut-val">'+n+'</div><div class="dash-donut-pct">'+w+'%</div></div>';
+  }).join("") : '<div style="color:var(--text3);text-align:center;padding:40px 0">'+t_("dash_no_data")+'</div>';
+
+  // Profit by event bar chart (each event gets its own color)
+  const evEntries2 = Object.entries(evProfits).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxProfit2 = Math.max(...evEntries2.map(e=>Math.abs(e[1])),1);
+  document.getElementById("dash-profit-chart").innerHTML = evEntries2.length ? evEntries2.map(([ev,p])=>{
+    const w = Math.round(Math.abs(p)/maxProfit2*100);
+    const col = evColorMap[ev] || (p>=0?'#f5c842':'#ef4444');
+    return '<div class="dash-bar-row"><div class="dash-bar-label">'+esc(ev)+'</div><div class="dash-bar-track"><div class="dash-bar-fill" style="width:'+w+'%;background:'+col+'">'+(w>20?fmt(p):'')+'</div></div><div class="dash-bar-val" style="color:'+col+'">'+fmt(p)+'</div></div>';
+  }).join("") : '<div style="color:var(--text3);text-align:center;padding:40px 0">'+t_("dash_no_data")+'</div>';
+
+  // Event color badges
+  document.getElementById("dash-ev-colors").innerHTML = db.events.map(ev => {
+    const col = evColorMap[ev] || '#888';
+    const evTickets = tickets.filter(t=>t.event===ev);
+    const evProfit = evTickets.reduce((s,t)=>(s+(t.sell-t.buy)*t.qty),0);
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:160px">'
+      +'<span style="width:10px;height:10px;border-radius:50%;background:'+col+';flex-shrink:0"></span>'
+      +'<span style="font-weight:600;font-size:13px;color:var(--text)">'+esc(ev)+'</span>'
+      +'<span style="font-size:12px;font-weight:700;color:'+(evProfit>=0?'#22c55e':'#ef4444')+';">'+(evProfit>=0?'+':'')+fmt(evProfit)+'</span>'
+      +'</div>';
+  }).join("") || '<div style="color:var(--text3);padding:20px 0">'+t_("dash_no_data")+'</div>';
+
+  // Top events (colored)
+  document.getElementById("dash-top-events").innerHTML = evEntries.length ? evEntries.slice(0,5).map(([ev,p],i)=>{
+    const col = evColorMap[ev] || PALETTE[i];
+    return '<div class="top-ev-row"><div class="top-ev-rank" style="background:'+col+'20;color:'+col+'">'+(i+1)+'</div><div class="top-ev-name">'+esc(ev)+'</div><div class="top-ev-profit '+(p>=0?"c-green":"c-red")+'">'+fmt(p)+'</div></div>';
+  }).join("") : '<div style="color:var(--text3);padding:20px 0">'+t_("dash_no_data")+'</div>';
 
   // Recent tickets
   const recent = [...tickets].slice(0,8);
@@ -1734,142 +2126,148 @@ async function deleteSelected(){
 
 
 
-function rowClick(e, idx, isAco){
-  // Ignore if clicking on buttons, checkboxes, inputs, icons
-  if(e.target.closest('button')||e.target.closest('input')||e.target.closest('.copy-icon')||e.target.closest('.actions')) return;
-  // Ignore if already in inline edit mode for this row
-  if(_inlineRow !== null && _inlineRow.idx === idx && _inlineRow.isAco === isAco) return;
-  openInlineEdit(idx, isAco);
-}
-// ── Inline editing ──
-let _inlineRow = null;
 
-function openInlineEdit(idx, isAco) {
-  // Close any open inline editor first
-  if(_inlineRow !== null) cancelInlineEdit();
-  _inlineRow = {idx, isAco};
-  
+// ── Per-cell inline editing ──
+let _editingCell = null;
+function editCell(e, idx, isAco, field, type) {
+  e.stopPropagation();
+  if(_editingCell) {
+    if(_editingCell.idx===idx && _editingCell.isAco===isAco && _editingCell.field===field) return;
+    cancelCellEdit();
+  }
+
+  const span = e.currentTarget;
   const item = isAco ? db.acos[idx] : db.tickets[idx];
-  const tbody = document.getElementById('tbody');
-  const rows = tbody.querySelectorAll('tr');
-  
-  // Find the row with matching idx
-  let targetRow = null;
-  rows.forEach(row => {
-    const btn = row.querySelector(isAco ? '.aco-edit-btn' : '.edit-btn');
-    if(btn && parseInt(btn.dataset.idx) === idx) targetRow = row;
-  });
-  if(!targetRow) return;
-  
-  targetRow.classList.add('inline-edit-row');
-  
-  if(!isAco) {
-    // Stock inline edit
-    const statusOpts = db.statuses.map(s=>'<option value="'+esc(s)+'" '+(item.status===s?'selected':'')+'>'+esc(tStatus(s))+'</option>').join('');
-    const siteOpts = db.sites.map(s=>'<option value="'+esc(s)+'" '+(item.site===s?'selected':'')+'>'+esc(s)+'</option>').join('');
-    const payOpts = db.stockPays.map(p=>'<option value="'+esc(p)+'" '+(item.pay===p?'selected':'')+'>'+esc(p)+'</option>').join('');
-    
-    targetRow.innerHTML =
-      '<td class="cb-col"></td>' +
-      '<td><input class="inline-input" id="ie-seat" value="'+esc(item.seat||'')+'" style="min-width:130px"></td>' +
-      '<td><input class="inline-input" id="ie-email" value="'+esc(item.email||'')+'" style="min-width:130px"></td>' +
-      '<td><input class="inline-input" id="ie-pwd" value="'+esc(item.pwd||'')+'" style="min-width:100px"></td>' +
-      '<td><input class="inline-input" id="ie-evdate" type="date" value="'+esc(item.evdate||'')+'" style="min-width:120px"></td>' +
-      '<td><input class="inline-input" id="ie-qty" type="number" value="'+esc(item.qty||1)+'" style="min-width:50px"></td>' +
-      '<td><input class="inline-input" id="ie-buy" type="number" step="0.01" value="'+esc(item.buy||0)+'" style="min-width:65px"></td>' +
-      '<td><input class="inline-input" id="ie-sell" type="number" step="0.01" value="'+esc(item.sell||0)+'" style="min-width:65px"></td>' +
-      '<td>—</td>' +
-      '<td><select class="inline-select" id="ie-status">'+statusOpts+'</select></td>' +
-      '<td><select class="inline-select" id="ie-pay">'+payOpts+'</select></td>' +
-      '<td><input class="inline-input" id="ie-client" value="'+esc(item.client||'')+'" style="min-width:90px"></td>' +
-      '<td><select class="inline-select" id="ie-site">'+siteOpts+'</select></td>' +
-      '<td><button class="inline-save-btn" onclick="saveInlineEdit()"><i class="ti ti-check"></i></button><button class="inline-cancel-btn" onclick="cancelInlineEdit()"><i class="ti ti-x"></i></button></td>';
+  const val = item[field] != null ? item[field] : '';
+  const originalHTML = span.innerHTML;
+  _editingCell = {span, idx, isAco, field, original: val, originalHTML, input: null};
+
+  let input;
+  if(type === 'select') {
+    const list = field==='status' ? db.statuses
+      : field==='etat' ? (db.acoStatuses||['Pending','Completed','Cancelled'])
+      : field==='pay' ? (isAco ? db.acoPays : db.stockPays)
+      : field==='event' ? db.events
+      : field==='livraison' ? ['Livré','Non livré']
+      : field==='pos' ? ['Discord','Viagogo','Whatsapp']
+      : db.sites;
+
+    input = document.createElement('select');
+    input.className = 'cell-select';
+    input.style.minWidth = Math.max(span.getBoundingClientRect().width, 160) + 'px';
+    list.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt;
+      o.textContent = (field==='status'||field==='etat'||field==='livraison') ? tStatus(opt) : opt;
+      if(opt === String(val)) o.selected = true;
+      input.appendChild(o);
+    });
+    // Add "+ Ajouter" option for editable lists
+    const addableFields = ['pay','site','status','pos'];
+    if(addableFields.includes(field)) {
+      const oAdd = document.createElement('option');
+      oAdd.value = '__add__';
+      oAdd.textContent = '+ Ajouter…';
+      oAdd.style.color = 'var(--gold)';
+      oAdd.style.fontWeight = '700';
+      input.appendChild(oAdd);
+    }
+    input.addEventListener('keydown', function(ev) {
+      if(ev.key==='Escape') cancelCellEdit();
+    });
+    input.addEventListener('change', function() {
+      if(input.value === '__add__') {
+        input.value = val; // reset
+        cancelCellEdit();
+        // Open the appropriate modal
+        if(field==='site') { document.getElementById('f-new-site').value=''; document.getElementById('site-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-site').focus(),50); }
+        else if(field==='pay') { document.getElementById('pay-modal-type').value=isAco?'aco':'stock'; document.getElementById('pay-modal-title').textContent=isAco?'Nouveau paiement ACO':'Nouveau paiement Stock'; document.getElementById('f-new-pay').value=''; document.getElementById('pay-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-pay').focus(),50); }
+        else if(field==='status') { document.getElementById('f-new-status').value=''; document.getElementById('status-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-status').focus(),50); }
+        else if(field==='pos') { document.getElementById('f-new-pos').value=''; document.getElementById('pos-modal').style.display='flex'; setTimeout(()=>document.getElementById('f-new-pos').focus(),50); }
+      }
+    });
+  } else if(type === 'date') {
+    input = document.createElement('input');
+    input.type = 'date'; input.className = 'cell-input'; input.value = val;
+    input.style.minWidth = '130px';
+    input.addEventListener('keydown', cellKeydown);
+  } else if(type === 'number') {
+    input = document.createElement('input');
+    input.type = 'number'; input.step = '0.01'; input.className = 'cell-input'; input.value = val;
+    input.style.minWidth = '70px';
+    input.addEventListener('keydown', cellKeydown);
   } else {
-    // ACO inline edit
-    const etatOpts = (db.acoStatuses||['Pending','Completed','Cancelled']).map(s=>'<option value="'+esc(s)+'" '+(item.etat===s?'selected':'')+'>'+esc(tStatus(s))+'</option>').join('');
-    const siteOpts = db.sites.map(s=>'<option value="'+esc(s)+'" '+(item.site===s?'selected':'')+'>'+esc(s)+'</option>').join('');
-    const payOpts = db.acoPays.map(p=>'<option value="'+esc(p)+'" '+(item.pay===p?'selected':'')+'>'+esc(p)+'</option>').join('');
-    
-    targetRow.innerHTML =
-      '<td class="cb-col"></td>' +
-      '<td><input class="inline-input" id="ie-cat" value="'+esc(item.cat||'')+'" style="min-width:80px"></td>' +
-      '<td><input class="inline-input" id="ie-qty" type="number" value="'+esc(item.qty||1)+'" style="min-width:50px"></td>' +
-      '<td><input class="inline-input" id="ie-seat" value="'+esc(item.seat||'')+'" style="min-width:110px"></td>' +
-      '<td><input class="inline-input" id="ie-email" value="'+esc(item.email||'')+'" style="min-width:130px"></td>' +
-      '<td><input class="inline-input" id="ie-pwd" value="'+esc(item.pwd||'')+'" style="min-width:100px"></td>' +
-      '<td><input class="inline-input" id="ie-evdate" type="date" value="'+esc(item.evdate||'')+'" style="min-width:120px"></td>' +
-      '<td><input class="inline-input" id="ie-aco" type="number" step="0.01" value="'+esc(item.aco||0)+'" style="min-width:70px"></td>' +
-      '<td><select class="inline-select" id="ie-etat">'+etatOpts+'</select></td>' +
-      '<td><select class="inline-select" id="ie-pay">'+payOpts+'</select></td>' +
-      '<td><input class="inline-input" id="ie-client" value="'+esc(item.client||'')+'" style="min-width:90px"></td>' +
-      '<td><input class="inline-input" id="ie-acodate" type="date" value="'+esc(item.acodate||'')+'" style="min-width:120px"></td>' +
-      '<td><select class="inline-select" id="ie-site">'+siteOpts+'</select></td>' +
-      '<td><button class="inline-save-btn" onclick="saveInlineEdit()"><i class="ti ti-check"></i></button><button class="inline-cancel-btn" onclick="cancelInlineEdit()"><i class="ti ti-x"></i></button></td>';
+    input = document.createElement('input');
+    input.type = 'text'; input.className = 'cell-input'; input.value = val;
+    input.addEventListener('keydown', cellKeydown);
   }
-  
-  // Focus first input
-  setTimeout(()=>{ const f=targetRow.querySelector('.inline-input'); if(f) f.focus(); }, 30);
+
+  _editingCell.input = input;
+  input.addEventListener('click', function(ev) { ev.stopPropagation(); });
+
+  const confirmWrap = document.createElement('span');
+  confirmWrap.className = 'cell-confirm';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'cell-confirm-save';
+  saveBtn.title = 'Enregistrer';
+  saveBtn.innerHTML = '<i class="ti ti-check"></i>';
+  saveBtn.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); saveCellEdit(); });
+  saveBtn.addEventListener('mousedown', function(ev) { ev.stopPropagation(); ev.preventDefault(); });
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'cell-confirm-cancel';
+  cancelBtn.title = 'Annuler';
+  cancelBtn.innerHTML = '<i class="ti ti-x"></i>';
+  cancelBtn.addEventListener('click', function(ev) { ev.stopPropagation(); ev.preventDefault(); cancelCellEdit(); });
+  cancelBtn.addEventListener('mousedown', function(ev) { ev.stopPropagation(); ev.preventDefault(); });
+
+  confirmWrap.appendChild(saveBtn);
+  confirmWrap.appendChild(cancelBtn);
+
+  span.innerHTML = '';
+  span.appendChild(input);
+  span.appendChild(confirmWrap);
+  setTimeout(()=>{ input.focus(); if(input.type==='text') input.select(); }, 20);
 }
 
-async function saveInlineEdit() {
-  if(_inlineRow === null) return;
-  const {idx, isAco} = _inlineRow;
-  
-  const g = id => { const el=document.getElementById(id); return el?el.value:''; };
-  
-  if(!isAco) {
-    const payload = {
-      seat:g('ie-seat'), email:g('ie-email'), pwd:g('ie-pwd'),
-      evdate:g('ie-evdate')||null, qty:parseInt(g('ie-qty'))||1,
-      buy:parseFloat(g('ie-buy'))||0, sell:parseFloat(g('ie-sell'))||0,
-      status:g('ie-status'), pay:g('ie-pay'), client:g('ie-client'), site:g('ie-site')
-    };
-    const id = db.tickets[idx].id;
-    const {error} = await sb.from("tickets").eq("id",id).update(payload);
-    if(error){ toast("Erreur: "+error.message); return; }
-    Object.assign(db.tickets[idx], payload);
-    toast("Billet modifié ✓");
-  } else {
-    const payload = {
-      cat:g('ie-cat'), qty:parseInt(g('ie-qty'))||1, seat:g('ie-seat'),
-      email:g('ie-email'), pwd:g('ie-pwd'), evdate:g('ie-evdate')||null,
-      aco:parseFloat(g('ie-aco'))||0, etat:g('ie-etat'), pay:g('ie-pay'),
-      client:g('ie-client'), acodate:g('ie-acodate')||null, site:g('ie-site')
-    };
-    const id = db.acos[idx].id;
-    const {error} = await sb.from("acos").eq("id",id).update(payload);
-    if(error){ toast("Erreur: "+error.message); return; }
-    Object.assign(db.acos[idx], payload);
-    toast("ACO modifié ✓");
+function cellKeydown(e) {
+  if(e.key==='Enter') { e.preventDefault(); saveCellEdit(); }
+  if(e.key==='Escape') cancelCellEdit();
+}
+
+async function saveCellEdit() {
+  if(!_editingCell) return;
+  const {span, idx, isAco, field, original, input} = _editingCell;
+  _editingCell = null;
+  const val = input.value;
+
+  let parsed = val;
+  if(['buy','sell','aco'].includes(field)) parsed = parseFloat(val)||0;
+  if(field==='qty') parsed = parseInt(val)||1;
+  if(['evdate','acodate'].includes(field) && !val) parsed = null;
+
+  const item = isAco ? db.acos[idx] : db.tickets[idx];
+  item[field] = parsed;
+  const update = {}; update[field] = parsed;
+  // Auto: livraison=Livré → status=Completed
+  if(!isAco && field==='livraison' && parsed==='Livré') {
+    item.status = 'Completed';
+    update.status = 'Completed';
   }
-  
-  _inlineRow = null;
+  const {error} = await sb.from(isAco?'acos':'tickets').eq('id',item.id).update(update);
+  if(error) { item[field] = original; toast('Erreur: '+error.message); }
+  else toast('Modifié ✓');
   render();
 }
 
-function cancelInlineEdit() {
-  _inlineRow = null;
-  render();
+function cancelCellEdit() {
+  if(!_editingCell) return;
+  const {span, originalHTML} = _editingCell;
+  _editingCell = null;
+  span.innerHTML = originalHTML;
 }
 
-function downloadTemplate(type){
-  let csv, filename;
-  if(type === 'stock'){
-    csv = 'Événement,Siège,Email,Mot de passe,Date événement,Qté,Achat,Vente,Statut,Paiement,Client,Site\n';
-    csv += '"PSG vs Barcelone","Siège 113 – Rang 10","buyer@email.com","password123","2026-07-15","2","43","118.80","Pending","REVO","Kylian Mbappé","Ticketmaster"\n';
-    filename = 'tixsheet_template_stock.csv';
-  } else {
-    csv = 'Événement,Catégorie,Qté,Siège,Email,Mot de passe,Date événement,ACO (€),État,Paiement,Client,Date ACO,Site\n';
-    csv += '"PSG vs Barcelone","OR ALLEE","1","Siège 12 – Rang 3","email@icloud.com","password123","2026-07-15","180","Pending","Revolut","Client Name","2026-06-01","Ticketmaster"\n';
-    filename = 'tixsheet_template_aco.csv';
-  }
-  const bom = '\uFEFF';
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(bom + csv);
-  a.download = filename;
-  a.click();
-  toast('Template téléchargé ✓');
-}
 // ── Import CSV ──
 function importCSV(input){
   const file = input.files[0];
@@ -1961,8 +2359,8 @@ function exportCSV(){
 
 // ── Language ──
 const T={
-  fr:{ all_tickets:"Tous les billets",all_sub:"Vue globale de tous vos événements",add:"Ajouter",add_aco:"Ajouter ACO",add_ticket:"Ajouter billet",all_statuses:"Tous les statuts",all_payments:"Tous les paiements",stat_tickets:"Billets",stat_invested:"Investi",stat_revenue:"Revenus",stat_profit:"Profit net",stat_done:"Terminés",stat_pending:"En attente",stat_accounts:"Comptes",stat_total_aco:"Total ACO",stat_paid:"Payés",rename:"Renommer",delete:"Supprimer",col_event:"Événement / Siège",col_seat:"Siège",col_email:"Email",col_pwd:"Mot de passe",col_evdate:"Date événement",col_qty:"Qté",col_buy:"Achat",col_sell:"Vente",col_profit:"Profit",col_status:"Statut",col_payment:"Paiement",col_client:"Client",col_cat:"Catégorie",col_aco:"ACO (€)",col_etat:"État",col_acodate:"Date ACO",col_site:"Site",sur:"sur",events_label:"ÉVÉNEMENTS",new_event:"Nouvel événement",dashboard:"Dashboard",dash_all_ev:"Tous les événements",dash_total:"Total billets",dash_invested:"Investi",dash_revenue:"Revenus",dash_profit:"Profit net",dash_roi:"ROI %",dash_done:"Terminés",dash_aco:"Total ACO",dash_avg:"Moy. profit/billet",dash_profit_ev:"Profit par événement",dash_status:"Répartition des statuts",dash_top:"Top événements",dash_pay:"Méthodes de paiement",dash_recent:"Billets récents",dash_ev:"Événement",dash_seat:"Siège",dash_buy:"Achat",dash_sell:"Vente",dash_no_data:"Aucune donnée",csv_templates:"Modèles CSV",tpl_stock:"Template Stock",tpl_aco:"Template ACO" },
-  en:{ all_tickets:"All tickets",all_sub:"Global view of all your events",add:"Add",add_aco:"Add ACO",add_ticket:"Add ticket",all_statuses:"All statuses",all_payments:"All payments",stat_tickets:"Tickets",stat_invested:"Invested",stat_revenue:"Revenue",stat_profit:"Net profit",stat_done:"Completed",stat_pending:"Pending",stat_accounts:"Accounts",stat_total_aco:"Total ACO",stat_paid:"Paid",rename:"Rename",delete:"Delete",col_event:"Event / Seat",col_seat:"Seat",col_email:"Email",col_pwd:"Password",col_evdate:"Event date",col_qty:"Qty",col_buy:"Buy price",col_sell:"Sell price",col_profit:"Profit",col_status:"Status",col_payment:"Payment",col_client:"Client",col_cat:"Category",col_aco:"ACO (€)",col_etat:"Status",col_acodate:"ACO date",col_site:"Site",sur:"of",events_label:"EVENTS",new_event:"New event",dashboard:"Dashboard",dash_all_ev:"All events",dash_total:"Total tickets",dash_invested:"Invested",dash_revenue:"Revenue",dash_profit:"Net profit",dash_roi:"ROI %",dash_done:"Completed",dash_aco:"Total ACO",dash_avg:"Avg profit/ticket",dash_profit_ev:"Profit by event",dash_status:"Status breakdown",dash_top:"Top events",dash_pay:"Payment methods",dash_recent:"Recent tickets",dash_ev:"Event",dash_seat:"Seat",dash_buy:"Buy",dash_sell:"Sell",dash_no_data:"No data",csv_templates:"CSV Templates",tpl_stock:"Stock Template",tpl_aco:"ACO Template" }
+  fr:{ all_tickets:"Tous les billets",all_sub:"Vue globale de tous vos événements",add:"Ajouter",add_aco:"Ajouter ACO",add_ticket:"Ajouter billet",all_statuses:"Tous les statuts",all_payments:"Tous les paiements",stat_tickets:"Billets",stat_invested:"Investi",stat_revenue:"Revenus",stat_profit:"Profit net",stat_done:"Terminés",stat_pending:"En attente",stat_accounts:"Comptes",stat_total_aco:"Total ACO",stat_paid:"Payés",rename:"Renommer",delete:"Supprimer",col_event:"Événement / Siège",col_seat:"Siège",col_email:"Email",col_pwd:"Mot de passe",col_evdate:"Date événement",col_qty:"Qté",col_buy:"Achat",col_sell:"Vente",col_profit:"Profit",col_status:"Statut",col_payment:"Paiement",col_client:"Client",col_cat:"Catégorie",col_aco:"ACO (€)",col_etat:"État",col_acodate:"Date ACO",col_site:"Site",col_livraison:"Livraison",sur:"sur",events_label:"ÉVÉNEMENTS",new_event:"Nouvel événement",dashboard:"Dashboard",dash_all_ev:"Tous les événements",dash_total:"Total billets",dash_invested:"Investi",dash_revenue:"Revenus",dash_profit:"Profit net",dash_roi:"ROI %",dash_done:"Terminés",dash_aco:"Total ACO",dash_avg:"Moy. profit/billet",dash_profit_ev:"Profit par événement",dash_status:"Répartition des statuts",dash_top:"Top événements",dash_pay:"Méthodes de paiement",dash_recent:"Billets récents",dash_ev:"Événement",dash_seat:"Siège",dash_buy:"Achat",dash_sell:"Vente",dash_no_data:"Aucune donnée",csv_templates:"Modèles CSV",tpl_stock:"Template Stock",tpl_aco:"Template ACO" },
+  en:{ all_tickets:"All tickets",all_sub:"Global view of all your events",add:"Add",add_aco:"Add ACO",add_ticket:"Add ticket",all_statuses:"All statuses",all_payments:"All payments",stat_tickets:"Tickets",stat_invested:"Invested",stat_revenue:"Revenue",stat_profit:"Net profit",stat_done:"Completed",stat_pending:"Pending",stat_accounts:"Accounts",stat_total_aco:"Total ACO",stat_paid:"Paid",rename:"Rename",delete:"Delete",col_event:"Event / Seat",col_seat:"Seat",col_email:"Email",col_pwd:"Password",col_evdate:"Event date",col_qty:"Qty",col_buy:"Buy price",col_sell:"Sell price",col_profit:"Profit",col_status:"Status",col_payment:"Payment",col_client:"Client",col_cat:"Category",col_aco:"ACO (€)",col_etat:"Status",col_acodate:"ACO date",col_site:"Site",col_livraison:"Delivery",sur:"of",events_label:"EVENTS",new_event:"New event",dashboard:"Dashboard",dash_all_ev:"All events",dash_total:"Total tickets",dash_invested:"Invested",dash_revenue:"Revenue",dash_profit:"Net profit",dash_roi:"ROI %",dash_done:"Completed",dash_aco:"Total ACO",dash_avg:"Avg profit/ticket",dash_profit_ev:"Profit by event",dash_status:"Status breakdown",dash_top:"Top events",dash_pay:"Payment methods",dash_recent:"Recent tickets",dash_ev:"Event",dash_seat:"Seat",dash_buy:"Buy",dash_sell:"Sell",dash_no_data:"No data",csv_templates:"CSV Templates",tpl_stock:"Stock Template",tpl_aco:"ACO Template" }
 };
 
 function t_(k){ return T[lang][k]||T.fr[k]||k; }
@@ -1971,33 +2369,26 @@ function applyLang(){
   const sl=document.getElementById("sidebar-label"); if(sl) sl.textContent=t_("events_label");
   const ne=document.getElementById("new-ev-btn"); if(ne) ne.innerHTML='<i class="ti ti-plus"></i> '+t_("new_event");
   const srch=document.getElementById("search"); if(srch) srch.placeholder=lang==="fr"?"Rechercher…":"Search…";
+  const ll=document.getElementById("fe-livraison-label"); if(ll) ll.textContent=t_("col_livraison");
+  const ol=document.getElementById("opt-livre"); if(ol) ol.textContent=lang==="fr"?"Livré":"Delivered";
+  const onl=document.getElementById("opt-nonlivre"); if(onl) onl.textContent=lang==="fr"?"Non livré":"Not delivered";
 }
 
 // ── Delegated events ──
 document.addEventListener("click",function(e){
-  const dashItem=e.target.closest(".nav-item[data-page]"); if(dashItem&&dashItem.dataset.page==="dashboard"){ openDashboard(); return; }
+  
   const navItem=e.target.closest(".nav-item[data-ev]"); if(navItem){ openTicketsPage(); setEv(navItem.dataset.ev); return; }
   const modeTab=e.target.closest(".mode-tab[data-mode]"); if(modeTab){ setMode(modeTab.dataset.mode); return; }
-  const editBtn=e.target.closest(".edit-btn"); if(editBtn){ openInlineEdit(parseInt(editBtn.dataset.idx), false); return; }
-  // Click on table cell to edit inline
-  const tdCell=e.target.closest("td[data-idx]"); if(tdCell){ const idx=parseInt(tdCell.dataset.idx); const isAco=tdCell.dataset.type==="aco"; openInlineEdit(idx,isAco); return; }
+  const editBtn=e.target.closest(".edit-btn"); if(editBtn){ openTicketModal(parseInt(editBtn.dataset.idx)); return; }
   const delBtn=e.target.closest(".del-btn"); if(delBtn){ delTicket(parseInt(delBtn.dataset.idx)).catch(e=>console.error(e)); return; }
-  const acoEdit=e.target.closest(".aco-edit-btn"); if(acoEdit){ openInlineEdit(parseInt(acoEdit.dataset.idx), true); return; }
+  const acoEdit=e.target.closest(".aco-edit-btn"); if(acoEdit){ openAcoModal(parseInt(acoEdit.dataset.idx)); return; }
   const acoDel=e.target.closest(".aco-del-btn"); if(acoDel){ delAco(parseInt(acoDel.dataset.idx)).catch(e=>console.error(e)); return; }
 
 });  // end onAuthStateChange
 
 document.getElementById("fb-val").addEventListener("keydown",e=>{ if(e.key==="Enter") applyColFilter(); });
-document.addEventListener("keydown",function(e){
-  if(e.key==="Enter" && _inlineRow !== null && document.activeElement.classList.contains('inline-input')){
-    saveInlineEdit();
-  }
-  if(e.key==="Escape" && _inlineRow !== null){
-    cancelInlineEdit();
-  }
-});
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape") ["ticket-modal","aco-modal","event-modal","rename-modal","pay-modal","site-modal","status-modal"].forEach(id=>{
+  if(e.key==="Escape") ["ticket-modal","aco-modal","event-modal","rename-modal","pay-modal","site-modal","status-modal","pos-modal"].forEach(id=>{
     if(document.getElementById(id).style.display!=="none") closeModal(id);
   });
 });
@@ -2025,10 +2416,22 @@ document.addEventListener('click', function(e){
     if(d) d.style.display = 'none';
   }
 });
+
+function toggleSidebar() {
+  const collapsed = document.body.classList.toggle('sidebar-collapsed');
+
+  localStorage.setItem('sidebar_collapsed', collapsed ? '1' : '0');
+}
+
+// Restore sidebar state
+if(localStorage.getItem('sidebar_collapsed') === '1') {
+  document.body.classList.add('sidebar-collapsed');
+
+}
 // Theme system
 let currentTheme = localStorage.getItem('tix_theme') || 'dark';
 function applyTheme(){
-  document.body.classList.remove('theme-white','theme-cream','theme-arctic');
+  document.body.classList.remove('theme-white','theme-cream','theme-arctic','theme-forest','theme-neon');
   if(currentTheme !== 'dark') document.body.classList.add('theme-'+currentTheme);
   // Update active indicator in picker
   document.querySelectorAll('.theme-option').forEach(function(el){
@@ -2071,6 +2474,8 @@ window.doDeleteEv = doDeleteEv;
 window.doSaveNewPay = doSaveNewPay;
 window.doSaveNewSite = doSaveNewSite;
 window.doSaveNewStatus = doSaveNewStatus;
+window.doSaveNewPos = doSaveNewPos;
+window.saveNewPos = saveNewPos;
 window.saveNewPay = saveNewPay;
 window.saveNewSite = saveNewSite;
 window.saveNewStatus = saveNewStatus;
@@ -2082,12 +2487,16 @@ window.doLogout = doLogout;
 window.exportCSV = exportCSV;
 window.importCSV = importCSV;
 window.downloadTemplate = downloadTemplate;
+window.toggleSidebar = toggleSidebar;
 window.openDashboard = openDashboard;
 window.openTicketsPage = openTicketsPage;
 window.renderDashboard = renderDashboard;
-window.openInlineEdit = openInlineEdit;
-window.saveInlineEdit = saveInlineEdit;
-window.cancelInlineEdit = cancelInlineEdit;
+window.openInlineEdit = function(){};
+window.saveInlineEdit = function(){};
+window.cancelInlineEdit = function(){};
+window.editCell = editCell;
+window.saveCellEdit = saveCellEdit;
+window.cancelCellEdit = cancelCellEdit;
 window.rowClick = rowClick;
 window.copyVal = copyVal;
 window.tStatus = tStatus;
