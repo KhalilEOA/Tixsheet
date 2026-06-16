@@ -1150,7 +1150,7 @@ async function handleAuth(){
   } else {
     const { error } = await sb.auth.signUp({ email, password: pwd });
     if(error){ errEl.textContent = error.message; errEl.style.display = "block"; btn.disabled=false; btn.textContent="Créer un compte"; }
-    else { msgEl.textContent = "Compte créé ! Vérifiez votre email pour confirmer."; msgEl.style.display="block"; btn.disabled=false; btn.textContent="Créer un compte"; }
+    else { msgEl.textContent = "Compte créé ! Vous pouvez maintenant vous connecter."; msgEl.style.display="block"; btn.disabled=false; btn.textContent="Créer un compte"; }
   }
 }
 
@@ -1162,10 +1162,14 @@ function doLogout(){
   currentUser = null;
   db = { events:[], tickets:[], acos:[], stockPays:["REVO","SG"], acoPays:["Revolut","Were","SG"], sites:["Ticketmaster","Fnac","ParisLaDefenseArena"], statuses:["Pending","Completed","Cancelled","Available","Sold"],acoStatuses:["Pending","Completed","Cancelled"], pos:["Discord","Viagogo","Whatsapp"], livraison:["Livré","Non livré"] };
   document.getElementById("app").style.display = "none";
-  document.getElementById("auth-page").style.display = "block";
+  document.getElementById("loading-screen").style.display = "none";
   document.body.classList.add("logged-out");
+  document.getElementById("auth-page").style.display = "block";
   document.getElementById("auth-email").value = "";
   document.getElementById("auth-pwd").value = "";
+  const btn = document.getElementById("auth-btn");
+  if(btn){ btn.disabled = false; btn.textContent = lang==="fr" ? "Se connecter" : "Sign in"; }
+  document.getElementById("auth-error").style.display = "none";
 }
 
 // ── Init ──
