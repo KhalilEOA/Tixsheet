@@ -2342,6 +2342,21 @@ setInterval(async function() {
   }
 }, 4 * 60 * 1000);
 
+// Keep Supabase project alive (prevents auto-pause on free tier)
+// Pings every 3 days by doing a lightweight query
+(function keepAlive() {
+  const INTERVAL = 3 * 24 * 60 * 60 * 1000; // 3 days
+  async function ping() {
+    try {
+      await sb.from('events').select('id').limit(1);
+      console.log('[KeepAlive] Supabase ping OK', new Date().toISOString());
+    } catch(e) {
+      console.warn('[KeepAlive] Ping failed:', e);
+    }
+  }
+  setInterval(ping, INTERVAL);
+})();
+
 </script>
 </body>
 </html>
