@@ -1491,7 +1491,7 @@ function renderAcoTable(paged){
       '<td><div class="cell-with-copy"><div class="email-cell">'+esc(a.email||"—")+'</div>'+(a.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
       '<td><div class="cell-with-copy"><div class="pwd-cell">'+esc(a.pwd||"—")+'</div>'+(a.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'evdate\',\'date\')">'+fmtDate(a.evdate)+'</span></td>'+
-      '<td class="num c-gold"><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'aco\',\'number\')">'+fmt(a.aco)+'</span></td>'+
+      '<td class="num c-gold"><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'aco\',\'number\')">'+fmt(a.aco*a.qty)+'</span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'etat\',\'select\')"><span class="badge '+(a.etat||"")+'">'+esc(tStatus(a.etat)||"—")+'</span></span></td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(a.pay||"—")+'</td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(a.client||"—")+'</td>'+
@@ -1626,8 +1626,10 @@ async function saveAco(){
     db.acos[editAcoIdx]=Object.assign({},db.acos[editAcoIdx],payload);
     toast("ACO modifié ✓");
   } else {
-    const {data}=await sb.from("acos").insert(payload);
-    if(data) db.acos.unshift(data);
+    const {data,error}=await sb.from("acos").insert(payload);
+    if(error){ toast("Erreur: "+error.message); return; }
+    const newAco=Array.isArray(data)?data[0]:data;
+    if(newAco) db.acos.unshift(newAco);
     toast("ACO ajouté ✓");
   }
   closeModal("aco-modal"); render();
