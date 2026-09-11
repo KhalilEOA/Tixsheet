@@ -1336,7 +1336,7 @@ function updateStats(src){
       '<div class="stat"><i class="ti ti-circle-check stat-icon"></i><div class="stat-label">'+t_("stat_done")+'</div><div class="stat-val c-green">'+comp+'</div></div>'+
       '<div class="stat"><i class="ti ti-clock stat-icon"></i><div class="stat-label">'+t_("stat_pending")+'</div><div class="stat-val">'+pend+'</div></div>';
   } else {
-    const total=src.reduce((s,a)=>s+a.aco*a.qty,0);
+    const total=src.reduce((s,a)=>s+a.aco,0);
     const comp=src.filter(a=>a.etat==="Completed").length;
     const pend=src.filter(a=>a.etat==="Pending").length;
     html='<div class="stat"><i class="ti ti-user stat-icon"></i><div class="stat-label">'+t_("stat_accounts")+'</div><div class="stat-val c-blue">'+src.length+'</div></div>'+
@@ -1491,7 +1491,7 @@ function renderAcoTable(paged){
       '<td><div class="cell-with-copy"><div class="email-cell">'+esc(a.email||"—")+'</div>'+(a.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
       '<td><div class="cell-with-copy"><div class="pwd-cell">'+esc(a.pwd||"—")+'</div>'+(a.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'evdate\',\'date\')">'+fmtDate(a.evdate)+'</span></td>'+
-      '<td class="num c-gold"><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'aco\',\'number\')">'+fmt(a.aco*a.qty)+'</span></td>'+
+      '<td class="num c-gold"><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'aco\',\'number\')">'+fmt(a.aco)+'</span></td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'etat\',\'select\')"><span class="badge '+(a.etat||"")+'">'+esc(tStatus(a.etat)||"—")+'</span></span></td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(a.pay||"—")+'</td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(a.client||"—")+'</td>'+
@@ -1691,7 +1691,7 @@ function renderDashboard(){
   const roi = totalBuy>0?(profit/totalBuy*100):0;
   const completed = tickets.filter(t=>t.status==="Completed").length;
   const pending = tickets.filter(t=>t.status==="Pending").length;
-  const totalAco = acos.reduce((s,a)=>s+a.aco*a.qty,0);
+  const totalAco = acos.reduce((s,a)=>s+a.aco,0);
   const totalQty = tickets.reduce((s,t)=>s+t.qty,0);
   const avgProfit = (()=>{
     const sold = tickets.filter(t=>t.sell>0);
