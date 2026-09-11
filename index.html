@@ -735,7 +735,7 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
 
     <div class="stats" id="stats"></div>
 
-    <div class="bulk-bar" id="bulk-bar"><span class="bulk-count" id="bulk-count">0 sélectionné(s)</span><button class="btn ghost sm" onclick="selectAllVisible()"><i class="ti ti-checkbox"></i> Tout sélectionner</button><button class="btn danger-ghost sm" onclick="deleteSelected()"><i class="ti ti-trash"></i> Supprimer la sélection</button><button class="btn ghost sm" onclick="clearSelection()"><i class="ti ti-x"></i> Annuler</button></div>
+    <div class="bulk-bar" id="bulk-bar"><span class="bulk-count" id="bulk-count">0 sélectionné(s)</span><button class="btn ghost sm" onclick="selectAllVisible()"><i class="ti ti-checkbox"></i> Tout sélectionner</button><button class="btn ghost sm" onclick="openBulkUpdate()"><i class="ti ti-edit"></i> Modifier la sélection</button><button class="btn danger-ghost sm" onclick="deleteSelected()"><i class="ti ti-trash"></i> Supprimer la sélection</button><button class="btn ghost sm" onclick="clearSelection()"><i class="ti ti-x"></i> Annuler</button></div>
     <!-- Filter bar -->
     <div class="filter-bar" id="filter-bar"></div>
     <div class="filter-builder" id="filter-builder" style="display:none">
@@ -951,6 +951,22 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
   </div>
 </div>
 
+
+<!-- Bulk update modal -->
+<div class="modal-bg" id="bulk-modal" style="display:none" onclick="bgClose(event,'bulk-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2 id="bulk-modal-title">Modifier la sélection</h2>
+      <button class="icon-btn" onclick="closeModal('bulk-modal')"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Seuls les champs remplis seront mis à jour. Les champs vides seront ignorés.</p>
+    <div id="bulk-fields"></div>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('bulk-modal')">Annuler</button>
+      <button class="btn primary" onclick="applyBulkUpdate()">Appliquer</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 
@@ -1952,6 +1968,99 @@ function cancelCellEdit() {
   render();
 }
 
+
+// ── Bulk update ──
+function openBulkUpdate(){
+  if(!selectedIds.size){ toast('Sélectionnez des lignes d\'abord'); return; }
+  const showAco = activeEv!=='__all__' && activeMode==='aco';
+  document.getElementById('bulk-modal-title').textContent = 'Modifier '+selectedIds.size+' entrée(s)';
+  
+  const statusOpts = (showAco ? (db.acoStatuses||['Pending','Completed','Cancelled']) : db.statuses)
+    .map(s=>'<option value="'+esc(s)+'">'+esc(tStatus(s))+'</option>').join('');
+  const payOpts = (showAco ? db.acoPays : db.stockPays)
+    .map(p=>'<option value="'+esc(p)+'">'+esc(p)+'</option>').join('');
+  const siteOpts = db.sites.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('');
+
+  let fields = '';
+  if(showAco){
+    fields = `
+      <div class="form-group"><label>État</label>
+        <select id="bu-etat"><option value="">— Ne pas modifier —</option>${statusOpts}</select></div>
+      <div class="form-group"><label>Paiement</label>
+        <select id="bu-pay"><option value="">— Ne pas modifier —</option>${payOpts}</select></div>
+      <div class="form-group"><label>Site</label>
+        <select id="bu-site"><option value="">— Ne pas modifier —</option>${siteOpts}</select></div>
+      <div class="form-group"><label>Date événement</label>
+        <input id="bu-evdate" type="date"></div>
+      <div class="form-group"><label>Date ACO</label>
+        <input id="bu-acodate" type="date"></div>
+      <div class="form-group"><label>Client</label>
+        <input id="bu-client" type="text" placeholder="Laisser vide pour ne pas modifier"></div>
+    `;
+  } else {
+    fields = `
+      <div class="form-group"><label>Statut</label>
+        <select id="bu-status"><option value="">— Ne pas modifier —</option>${statusOpts}</select></div>
+      <div class="form-group"><label>Paiement</label>
+        <select id="bu-pay"><option value="">— Ne pas modifier —</option>${payOpts}</select></div>
+      <div class="form-group"><label>Site</label>
+        <select id="bu-site"><option value="">— Ne pas modifier —</option>${siteOpts}</select></div>
+      <div class="form-group"><label>Date événement</label>
+        <input id="bu-evdate" type="date"></div>
+      <div class="form-group"><label>Prix vente (€)</label>
+        <input id="bu-sell" type="number" step="0.01" placeholder="Laisser vide pour ne pas modifier"></div>
+      <div class="form-group"><label>Client</label>
+        <input id="bu-client" type="text" placeholder="Laisser vide pour ne pas modifier"></div>
+    `;
+  }
+  document.getElementById('bulk-fields').innerHTML = fields;
+  document.getElementById('bulk-modal').style.display = 'flex';
+}
+
+async function applyBulkUpdate(){
+  const showAco = activeEv!=='__all__' && activeMode==='aco';
+  const ids = [...selectedIds];
+  
+  // Build update payload - only include non-empty fields
+  const payload = {};
+  const g = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
+  
+  if(showAco){
+    if(g('bu-etat')) payload.etat = g('bu-etat');
+    if(g('bu-pay')) payload.pay = g('bu-pay');
+    if(g('bu-site')) payload.site = g('bu-site');
+    if(g('bu-evdate')) payload.evdate = g('bu-evdate');
+    if(g('bu-acodate')) payload.acodate = g('bu-acodate');
+    if(g('bu-client')) payload.client = g('bu-client');
+  } else {
+    if(g('bu-status')) payload.status = g('bu-status');
+    if(g('bu-pay')) payload.pay = g('bu-pay');
+    if(g('bu-site')) payload.site = g('bu-site');
+    if(g('bu-evdate')) payload.evdate = g('bu-evdate');
+    if(g('bu-sell')) payload.sell = parseFloat(g('bu-sell'));
+    if(g('bu-client')) payload.client = g('bu-client');
+  }
+  
+  if(!Object.keys(payload).length){ toast('Aucun champ rempli'); return; }
+  
+  // Update all selected rows
+  let updated = 0, errors = 0;
+  await Promise.all(ids.map(async id => {
+    const {error} = await sb.from(showAco?'acos':'tickets').eq('id',id).update(payload);
+    if(error){ errors++; }
+    else {
+      // Update local db
+      if(showAco){ const a=db.acos.find(a=>a.id===id); if(a) Object.assign(a,payload); }
+      else { const t=db.tickets.find(t=>t.id===id); if(t) Object.assign(t,payload); }
+      updated++;
+    }
+  }));
+  
+  closeModal('bulk-modal');
+  clearSelection();
+  render();
+  toast(updated+' entrée(s) mise(s) à jour'+(errors?' · '+errors+' erreur(s)':'')+'  ✓');
+}
 // ── Import CSV ──
 function importCSV(input){
   const file = input.files[0];
@@ -2079,7 +2188,7 @@ document.addEventListener("keydown",function(e){
   }
 });
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape") ["ticket-modal","aco-modal","event-modal","rename-modal","pay-modal","site-modal","status-modal"].forEach(id=>{
+  if(e.key==="Escape") ["ticket-modal","aco-modal","event-modal","rename-modal","pay-modal","site-modal","status-modal","bulk-modal"].forEach(id=>{
     if(document.getElementById(id).style.display!=="none") closeModal(id);
   });
 });
@@ -2193,6 +2302,8 @@ window.setTheme = setTheme;
 window.toggleUserMenu = toggleUserMenu;
 window.toggleThemePicker = toggleThemePicker;
 window.deleteSelected = deleteSelected;
+window.openBulkUpdate = openBulkUpdate;
+window.applyBulkUpdate = applyBulkUpdate;
 window.clearSelection = clearSelection;
 window.selectAllVisible = selectAllVisible;
 window.toggleSelectAll = toggleSelectAll;
