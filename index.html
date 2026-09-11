@@ -1158,6 +1158,7 @@ async function loadUserData(){
     db.acoPays = settings.aco_pays || db.acoPays;
     db.sites = settings.sites || db.sites;
     db.statuses = settings.statuses || db.statuses;
+    db.acoStatuses = settings.aco_statuses || db.acoStatuses || ["Pending","Completed","Cancelled"];
   } else {
     await sb.from("user_settings").insert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses });
   }
@@ -1174,7 +1175,9 @@ async function loadUserData(){
 
 async function saveSettings(){
   const uid = currentUser.id;
-  await sb.from("user_settings").upsert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses });
+  const {error} = await sb.from("user_settings").upsert({ user_id: uid, stock_pays: db.stockPays, aco_pays: db.acoPays, sites: db.sites, statuses: db.statuses, aco_statuses: db.acoStatuses||["Pending","Completed","Cancelled"] });
+  if(error) { console.error("saveSettings error:", JSON.stringify(error)); toast("Erreur sauvegarde: "+error.message); }
+  else console.log("Settings saved ✓", {sites: db.sites, statuses: db.statuses});
 }
 
 // ── Auth ──
