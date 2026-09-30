@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
+<!-- aco-dashboard v3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 /* ── Tixsheet design tokens (same values as tixsheet.app) ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -658,8 +659,12 @@ function demoData() {
 (async () => {
   window.addEventListener("resize", () => { if (state.tab === "overview" && DATA.claims.length) drawChart(filtered().claims); });
   if (DEMO) return refresh();
-  if (!window.supabase || SUPABASE_ANON_KEY.startsWith("PASTE")) {
+  if (SUPABASE_ANON_KEY.startsWith("PASTE")) {
     app.innerHTML = `<div class="card"><div class="empty"><h3>Configuration manquante</h3>Colle la clé anon Supabase en haut du fichier. Aperçu : <a href="?demo">?demo</a></div></div>`;
+    return;
+  }
+  if (!window.supabase) {
+    app.innerHTML = `<div class="card"><div class="empty"><h3>Connexion à Supabase impossible</h3>La librairie Supabase n'a pas pu se charger (bloqueur de pub ou réseau). Désactive le bloqueur sur tixsheet.app puis recharge la page (Ctrl+F5).</div></div>`;
     return;
   }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
