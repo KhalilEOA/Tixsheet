@@ -4,189 +4,215 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* ── Config tokens ─────────────────────────────── */
-  :root {
-    color-scheme: light;
-    --page: #f9f9f7;
-    --surface: #fcfcfb;
-    --surface-2: #f3f2ee;
-    --ink: #0b0b0b;
-    --ink-2: #52514e;
-    --muted: #898781;
-    --grid: #e1e0d9;
-    --axis: #c3c2b7;
-    --border: rgba(11,11,11,0.10);
-    --series-1: #2a78d6;
-    --series-1-hover: #256abf;
-    --good: #0ca30c;
-    --good-ink: #006300;
-    --warning: #fab219;
-    --critical: #d03b3b;
-    --critical-ink: #b52f2f;
-    --accent: #2a78d6;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --page: #0d0d0d; --surface: #1a1a19; --surface-2: #222220;
-      --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
-      --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-      --series-1: #3987e5; --series-1-hover: #5598e7;
-      --good-ink: #0ca30c; --critical-ink: #e66767; --accent: #3987e5;
-      --shadow: 0 1px 2px rgba(0,0,0,.4);
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #222220;
-    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
-    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-    --series-1: #3987e5; --series-1-hover: #5598e7;
-    --good-ink: #0ca30c; --critical-ink: #e66767; --accent: #3987e5;
-    --shadow: 0 1px 2px rgba(0,0,0,.4);
-  }
+/* ── Tixsheet design tokens (same values as tixsheet.app) ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-base:#0c0c1e; --bg-sidebar:#101028; --bg-card:#161630; --bg-card2:#1e1e3a; --bg-hover:#242448; --bg-input:#12122a;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14); --border3:rgba(255,255,255,0.24);
+  --text:#eceaf8; --text2:#9290b8; --text3:#5e5c80;
+  --gold:#f5c842; --gold2:#e8a800; --gold-dim:rgba(245,200,66,0.13); --gold-border:rgba(245,200,66,0.26);
+  --blue:#7aa3ff; --green:#2ecc71; --green-dim:rgba(46,204,113,0.12); --red:#f16060; --red-dim:rgba(241,96,96,0.12);
+  --amber:#f5a623; --amber-dim:rgba(245,166,35,0.12);
+  --radius:8px; --radius-lg:12px; --topbar-h:68px;
+  --on-gold:#08080f;
+}
+/* Soft Cream theme */
+body.theme-cream{
+  --bg-base:#faf8f4;--bg-sidebar:#ffffff;--bg-card:#ffffff;--bg-card2:#f5f2ec;
+  --bg-hover:#ede8e0;--bg-input:#f8f5f0;--border:rgba(0,0,0,0.07);
+  --border2:rgba(0,0,0,0.12);--border3:rgba(0,0,0,0.20);
+  --text:#1a1612;--text2:#8a8278;--text3:#b4afa8;
+  --gold:#c2a55a;--gold2:#a88a3a;--gold-dim:rgba(194,165,90,0.1);
+  --gold-border:rgba(194,165,90,0.28);--blue:#7c6030;--green:#5a7a3a;
+  --green-dim:rgba(90,122,58,0.1);--red:#c0392b;--red-dim:rgba(192,57,43,0.1);
+  --amber:#c2a55a;--amber-dim:rgba(194,165,90,0.1);
+  --on-gold:#ffffff;
+}
+/* Arctic theme */
+body.theme-arctic{
+  --bg-base:#f0f4f8;--bg-sidebar:#ffffff;--bg-card:#ffffff;--bg-card2:#e8f0f8;
+  --bg-hover:#dce8f4;--bg-input:#f4f8fc;--border:rgba(0,0,0,0.07);
+  --border2:rgba(0,0,0,0.11);--border3:rgba(0,0,0,0.18);
+  --text:#0f1f3d;--text2:#5a7a9a;--text3:#8aaac8;
+  --gold:#2563eb;--gold2:#1d4ed8;--gold-dim:rgba(37,99,235,0.08);
+  --gold-border:rgba(37,99,235,0.25);--blue:#2563eb;--green:#15803d;
+  --green-dim:rgba(21,128,61,0.08);--red:#b91c1c;--red-dim:rgba(185,28,28,0.08);
+  --amber:#d97706;--amber-dim:rgba(217,119,6,0.08);
+  --on-gold:#ffffff;
+}
 
-  * { box-sizing: border-box; }
-  html, body { margin: 0; }
-  body {
-    background: var(--page); color: var(--ink);
-    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
-  }
-  button, input, select { font: inherit; color: inherit; }
-  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
+body{font-family:"Inter",sans-serif;background:var(--bg-base);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden}
+button,input,select{font-family:"Inter",sans-serif}
 
-  /* Header */
-  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
-  .brand .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: #fff;
-    display: grid; place-items: center; font-weight: 700; }
-  .brand h1 { font-size: 18px; margin: 0; letter-spacing: -.01em; }
-  .brand .sub { font-size: 12px; color: var(--muted); }
-  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  select, input[type=search], .btn {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
-    padding: 7px 10px; min-height: 34px;
-  }
-  .btn { cursor: pointer; }
-  .btn:hover { background: var(--surface-2); }
-  .btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
-  .updated { font-size: 12px; color: var(--muted); }
+/* Topbar */
+.topbar{height:var(--topbar-h);background:var(--bg-sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand-logo{width:40px;height:40px;border-radius:9px;flex-shrink:0;border:1px solid var(--border2);display:grid;place-items:center;font-size:20px;background:var(--bg-card)}
+.brand-name{font-size:21px;font-weight:800;letter-spacing:-0.4px;background:linear-gradient(130deg,var(--text) 20%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.brand-tag{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);border:1px solid var(--gold-border);padding:2px 8px;border-radius:99px}
+.topbar-spacer{flex:1}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.back-link{color:var(--text2);text-decoration:none;font-size:13px;font-weight:500}
+.back-link:hover{color:var(--text)}
 
-  /* Tabs */
-  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; overflow-x: auto; }
-  .tab { padding: 9px 14px; border: 0; background: none; cursor: pointer; color: var(--ink-2);
-    border-bottom: 2px solid transparent; white-space: nowrap; }
-  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
-  .panel[hidden] { display: none; }
+.main{max-width:1320px;margin:0 auto;padding:30px 32px 60px}
+.page-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.page-top h1{font-size:22px;font-weight:700;letter-spacing:-0.6px;line-height:1.2}
+.page-top p{font-size:12px;color:var(--text2);margin-top:4px}
+.page-top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-  /* Cards */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
-  .card-h { display: flex; align-items: center; gap: 10px; padding: 14px 16px 0; flex-wrap: wrap; }
-  .card-h h2 { font-size: 14px; margin: 0; font-weight: 600; }
-  .card-h .hint { font-size: 12px; color: var(--muted); }
-  .card-b { padding: 14px 16px 16px; }
+/* Mode tabs (tixsheet style) */
+.mode-tabs{display:inline-flex;gap:4px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:22px;max-width:100%;overflow-x:auto}
+.mode-tab{height:40px;padding:0 20px;border-radius:9px;border:none;background:transparent;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.mode-tab:hover{color:var(--text)}
+.mode-tab.active{background:var(--gold);color:var(--on-gold);font-weight:700}
+.panel[hidden]{display:none}
 
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .kpi { padding: 14px 16px; }
-  .kpi .label { font-size: 12px; color: var(--ink-2); }
-  .kpi .value { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin-top: 4px; }
-  .kpi .foot { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .kpi .value.good { color: var(--good-ink); }
-  .kpi .value.bad { color: var(--critical-ink); }
+/* Inputs & buttons */
+select,input[type=search]{height:40px;padding:0 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:13px;outline:none}
+select:focus,input[type=search]:focus{border-color:var(--gold-border)}
+select option{background:var(--bg-card)}
+input::placeholder{color:var(--text3)}
+.btn{height:40px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-card);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .12s}
+.btn:hover{background:var(--bg-hover);color:var(--text);border-color:var(--border3)}
+.btn.primary{background:var(--gold);color:var(--on-gold);border-color:var(--gold);font-weight:700}
+.btn.sm{height:32px;padding:0 12px;font-size:12px}
 
-  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+/* Stats (tixsheet) */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 18px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s}
+.stat:hover{border-color:var(--border2);transform:translateY(-1px)}
+.stat-icon{position:absolute;right:14px;top:14px;font-size:20px;opacity:.15}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--text3);margin-bottom:10px}
+.stat-val{font-size:21px;font-weight:700;letter-spacing:-.5px}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:6px}
+.c-gold{color:var(--gold)} .c-green{color:var(--green)} .c-red{color:var(--red)} .c-blue{color:var(--blue)}
+.stat.featured{border-color:var(--gold-border);background:linear-gradient(140deg,var(--bg-card) 50%,var(--gold-dim))}
 
-  /* Chart */
-  .chart { position: relative; }
-  .chart svg { display: block; width: 100%; height: 240px; overflow: visible; }
-  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
-  .chart .baseline { stroke: var(--axis); stroke-width: 1; }
-  .chart .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-  .chart .bar { fill: var(--series-1); }
-  .chart .hit { fill: transparent; cursor: default; }
-  .chart .hit:hover + .bar, .chart .bar.on { fill: var(--series-1-hover); }
-  .tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
-    box-shadow: var(--shadow); border-radius: 8px; padding: 8px 10px; font-size: 12px; white-space: nowrap;
-    transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity .08s; z-index: 5; }
-  .tip b { display: block; font-size: 13px; color: var(--ink); }
-  .tip span { color: var(--ink-2); }
+/* Cards */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg)}
+.card-h{display:flex;align-items:center;gap:10px;padding:16px 18px 0;flex-wrap:wrap}
+.card-h h2{font-size:14px;font-weight:700}
+.card-h .hint{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.card-b{padding:14px 18px 18px}
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media (max-width:960px){.grid-2{grid-template-columns:1fr}}
 
-  /* Tables */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  th { font-size: 12px; font-weight: 600; color: var(--ink-2); position: sticky; top: 0; background: var(--surface); }
-  th.sortable { cursor: pointer; user-select: none; }
-  th.sortable:hover { color: var(--ink); }
-  th .arrow { color: var(--muted); font-size: 10px; }
-  td.num, th.num { text-align: right; }
-  tbody tr.click { cursor: pointer; }
-  tbody tr.click:hover td { background: var(--surface-2); }
-  .empty { padding: 28px; text-align: center; color: var(--muted); }
-  .wrapcell { white-space: normal; min-width: 180px; }
+/* Tables (tixsheet) */
+.table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto}
+.card .table-wrap{border:none;border-radius:0}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{background:var(--bg-card2);color:var(--text3);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.6px;padding:11px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+th .arrow{color:var(--gold);font-size:10px}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg-hover)}
+tbody tr.click{cursor:pointer}
+td{padding:11px 14px;vertical-align:middle;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.num{font-weight:500}
+.ev-name{font-weight:600;font-size:14px;line-height:1.3;white-space:normal;min-width:200px}
+.ev-seat{font-size:12px;color:var(--text3);margin-top:2px}
+.empty{padding:40px 20px;text-align:center;color:var(--text3)}
+.empty h3{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:5px}
 
-  .who { display: flex; align-items: center; gap: 8px; }
-  .who img, .who .av { width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); flex: none; object-fit: cover; }
-  .who .av { display: grid; place-items: center; font-size: 11px; color: var(--ink-2); }
-  .tag { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); }
+/* Badges (tixsheet) */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.badge::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.badge.good{background:var(--green-dim);color:var(--green)}
+.badge.pending{background:var(--amber-dim);color:var(--amber)}
+.badge.expired{background:var(--red-dim);color:var(--red)}
+.badge.gold{background:var(--gold-dim);color:var(--gold)}
+.badge.plain{background:var(--bg-card2);color:var(--text2)}
+.badge.plain::before{display:none}
 
-  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
-  .status i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .status.good i { background: var(--good); } .status.good { color: var(--good-ink); }
-  .status.expired i { background: var(--critical); } .status.expired { color: var(--critical-ink); }
-  .status.pending i { background: var(--warning); } .status.pending { color: var(--ink-2); }
-  .pos { color: var(--critical-ink); font-weight: 600; }
-  .zero { color: var(--muted); }
-  .credit { color: var(--good-ink); font-weight: 600; }
+.who{display:flex;align-items:center;gap:9px;font-weight:500}
+.who img,.who .av{width:26px;height:26px;border-radius:50%;flex:none;object-fit:cover;background:var(--bg-card2)}
+.who .av{display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--text2)}
 
-  /* Member detail */
-  .detail { margin-top: 16px; }
-  .detail-h { display: flex; align-items: center; gap: 12px; }
-  .detail-h img, .detail-h .av { width: 40px; height: 40px; border-radius: 50%; }
-  .detail-h .av { display: grid; place-items: center; background: var(--surface-2); }
-  .detail-h h2 { margin: 0; font-size: 16px; }
-  .detail-h .close { margin-left: auto; }
-  .sub-h { font-size: 13px; font-weight: 600; margin: 18px 0 8px; }
+/* Chart */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:240px;overflow:visible}
+.chart .gridline{stroke:var(--border);stroke-width:1}
+.chart .baseline{stroke:var(--border3);stroke-width:1}
+.chart .tick{fill:var(--text3);font-size:11px;font-variant-numeric:tabular-nums;font-family:"Inter",sans-serif}
+.chart .bar{fill:var(--gold);opacity:.85}
+.chart .bar.on{opacity:1}
+.chart .hit{fill:transparent}
+.tip{position:absolute;pointer-events:none;background:var(--bg-card2);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:12px;white-space:nowrap;transform:translate(-50%,calc(-100% - 10px));opacity:0;transition:opacity .08s;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.tip b{display:block;font-size:13px;color:var(--text)}
+.tip span{color:var(--text2)}
 
-  /* Queues */
-  .queues { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; }
-  .queue ol { margin: 0; padding: 0; list-style: none; }
-  .queue li { display: flex; align-items: center; gap: 6px 8px; padding: 7px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-  .queue li .stats { margin-left: auto; white-space: nowrap; font-size: 12px; color: var(--muted); font-weight: 400; }
-  .tag { white-space: nowrap; }
-  .queue li:last-child { border-bottom: 0; }
-  .queue li .n { width: 20px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .queue li.turn { font-weight: 600; }
-  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); }
-  .pill.on { color: var(--good-ink); }
+/* Detail */
+.detail{margin-top:16px}
+.detail-h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.detail-h img,.detail-h .av{width:44px;height:44px;border-radius:50%}
+.detail-h .av{display:grid;place-items:center;background:var(--bg-card2);font-weight:700}
+.detail-h h2{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.detail-h .id{font-size:11px;color:var(--text3)}
+.detail-h .btn{margin-left:auto}
+.sub-h{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--text3);margin:18px 0 10px}
 
-  /* Login */
-  .login { max-width: 360px; margin: 12vh auto; padding: 24px; }
-  .login h1 { font-size: 18px; margin: 0 0 4px; }
-  .login p { color: var(--ink-2); margin: 0 0 16px; font-size: 13px; }
-  .login input { width: 100%; margin-bottom: 10px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 9px 10px; }
-  .login .err { color: var(--critical-ink); font-size: 13px; min-height: 18px; }
-  .banner { padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 13px;
-    background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2); }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* Queues */
+.queues{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:12px}
+.queue ol{list-style:none}
+.queue li{display:flex;align-items:center;gap:6px 8px;padding:9px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.queue li:last-child{border-bottom:0}
+.queue li .n{width:20px;color:var(--text3);font-variant-numeric:tabular-nums;font-weight:600}
+.queue li.turn .who{color:var(--gold);font-weight:700}
+.queue li .stats-mini{margin-left:auto;white-space:nowrap;font-size:12px;color:var(--text3)}
+.queue .meta{font-size:11px;color:var(--text3);margin-top:10px}
+
+/* Login */
+.login{max-width:380px;margin:12vh auto;padding:28px}
+.login h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.login p{color:var(--text2);margin-bottom:22px}
+.login label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.login input{width:100%;height:44px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:14px;outline:none;margin-bottom:14px}
+.login input:focus{border-color:var(--gold-border)}
+.login .err{color:var(--red);font-size:13px;min-height:18px;margin-bottom:6px}
+.banner{padding:12px 16px;border-radius:var(--radius-lg);margin-bottom:18px;font-size:13px;background:var(--gold-dim);border:1px solid var(--gold-border);color:var(--text)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:700px){
+  .topbar{padding:0 16px}
+  .brand-tag,.back-link{display:none}
+  .main{padding:20px 16px 48px}
+  .mode-tab{padding:0 14px;font-size:13px}
+}
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<div class="topbar">
+  <a class="brand" href="/"><div class="brand-logo" aria-hidden="true">⚡</div><span class="brand-name">FlashACO</span></a>
+  <span class="brand-tag">Analytics</span>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <a class="back-link" href="/">← Tixsheet</a>
+    <button class="btn sm" id="logout" type="button" hidden>Déconnexion</button>
+  </div>
+</div>
+<div class="main" id="app"></div>
 
 <script>
-/* ═════════════ CONFIG — fill these 2 values ═════════════
-   Supabase → Project Settings → API
-   The anon key is public (it's already in your tixsheet page).
-   NEVER put the service_role key here. */
+/* ═════════════ CONFIG ═════════════
+   The anon key is public (same as in tixsheet). NEVER put the service_role / secret key here. */
 const SUPABASE_URL = "https://ahysgnekipugsuwbwzee.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoeXNnbmVraXB1Z3N1d2J3emVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjE5MjgsImV4cCI6MjA5NjkzNzkyOH0.dKnJDqbGQCNY64G5Mxu7vljMFmAK11uVo31eA9C1jrI";
-/* ═══════════════════════════════════════════════════════ */
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+/* ══════════════════════════════════ */
+
+// Same theme as tixsheet (dark / cream / arctic, saved by tixsheet in localStorage)
+(function applyTixTheme() {
+  let t = "dark";
+  try { t = localStorage.getItem("tix_theme") || "dark"; } catch {}
+  if (t !== "dark") document.body.classList.add("theme-" + t);
+})();
 
 const DEMO = new URLSearchParams(location.search).has("demo");
 const app = document.getElementById("app");
@@ -198,8 +224,8 @@ const fmtDate = d => d ? new Date(d).toLocaleString("fr-FR", { day: "2-digit", m
 const DAY = 86400000;
 
 let sb = null;
-let DATA = { claims: [], payments: [], events: [], queues: [], users: [] };
-const state = { tab: "overview", guild: "all", period: "30", memberSort: { key: "pasDue", dir: -1 }, memberSearch: "",
+let DATA = { claims: [], events: [], queues: [], users: [] };
+const state = { tab: "overview", guild: "all", period: "30", memberSort: { key: "good", dir: -1 }, memberSearch: "",
   selected: null, hist: { user: "all", status: "all", q: "" } };
 
 /* ───────── Data ───────── */
@@ -218,11 +244,10 @@ async function fetchAll(table, order) {
 
 async function loadData() {
   if (DEMO) { DATA = demoData(); return; }
-  const [claims, payments, events, queues, users] = await Promise.all([
-    fetchAll("aco_claims", "claimed_at"), fetchAll("aco_payments", "paid_at"), fetchAll("aco_queue_events", "at"),
-    fetchAll("aco_queues"), fetchAll("aco_users"),
+  const [claims, events, queues, users] = await Promise.all([
+    fetchAll("aco_claims", "claimed_at"), fetchAll("aco_queue_events", "at"), fetchAll("aco_queues"), fetchAll("aco_users"),
   ]);
-  DATA = { claims, payments, events, queues, users };
+  DATA = { claims, events, queues, users };
 }
 
 function userMap() {
@@ -232,130 +257,109 @@ function userMap() {
   return m;
 }
 const nameOf = (id, um) => um.get(id)?.username || `…${String(id).slice(-4)}`;
-function avatar(id, um, size = 24) {
+function avatar(id, um) {
   const u = um.get(id);
-  return u?.avatar ? `<img src="${esc(u.avatar)}" alt="" width="${size}" height="${size}" loading="lazy">`
+  return u?.avatar ? `<img src="${esc(u.avatar)}" alt="" loading="lazy">`
     : `<span class="av">${esc((u?.username || "?").slice(0, 1).toUpperCase())}</span>`;
 }
 
-/* Filters: server + period */
-function periodStart() {
-  if (state.period === "all") return 0;
-  return Date.now() - Number(state.period) * DAY;
-}
+function periodStart() { return state.period === "all" ? 0 : Date.now() - Number(state.period) * DAY; }
 function filtered() {
-  const since = periodStart();
-  const g = state.guild;
+  const since = periodStart(), g = state.guild;
   const inGuild = r => g === "all" || r.guild_id === g;
   return {
     claims: DATA.claims.filter(c => inGuild(c) && new Date(c.claimed_at).getTime() >= since),
-    payments: DATA.payments.filter(p => inGuild(p) && new Date(p.paid_at).getTime() >= since),
     events: DATA.events.filter(e => inGuild(e) && new Date(e.at).getTime() >= since),
     queues: DATA.queues.filter(q => inGuild(q)),
   };
 }
 
-/* Per-member stats */
+/* Per-member stats (no commission) */
 function memberStats(f) {
   const m = new Map();
   const get = id => {
-    if (!m.has(id)) m.set(id, { id, claims: 0, good: 0, expired: 0, pending: 0, pasDue: 0, pasPending: 0,
-      paid: 0, retail: 0, skips: 0, afk: 0, lastClaim: null });
+    if (!m.has(id)) m.set(id, { id, claims: 0, good: 0, expired: 0, pending: 0, seats: 0, retail: 0, skips: 0, afk: 0, lastClaim: null });
     return m.get(id);
   };
   for (const c of f.claims) {
     const s = get(c.user_id);
     s.claims++;
     s[c.status === "good" ? "good" : c.status === "expired" ? "expired" : "pending"]++;
-    if (c.status === "good") { s.pasDue += Number(c.pas) || 0; s.retail += Number(c.price) || 0; }
-    if (c.status === "pending") s.pasPending += Number(c.pas) || 0;
+    if (c.status === "good") { s.seats += Number(c.quantity) || 0; s.retail += Number(c.price) || 0; }
     if (!s.lastClaim || c.claimed_at > s.lastClaim) s.lastClaim = c.claimed_at;
   }
-  for (const p of f.payments) get(p.user_id).paid += Number(p.amount) || 0;
   for (const e of f.events) {
     if (e.type === "skip") get(e.user_id).skips++;
     if (e.type === "afk") get(e.user_id).afk++;
   }
-  // Queue members with no activity still appear
   for (const q of f.queues) for (const id of q.members || []) get(id);
-  for (const s of m.values()) {
-    s.rest = s.pasDue - s.paid;
-    s.rate = s.good + s.expired > 0 ? (s.good / (s.good + s.expired)) * 100 : null;
-  }
+  for (const s of m.values()) s.rate = s.good + s.expired > 0 ? (s.good / (s.good + s.expired)) * 100 : null;
   return [...m.values()];
 }
 
 /* ───────── Render ───────── */
+const TABS = [["overview", "Vue d'ensemble"], ["members", "Membres"], ["history", "Historique"], ["queues", "Files d'attente"]];
+
 function render() {
   const um = userMap();
   const f = filtered();
   const members = memberStats(f);
-  const guilds = [...new Map([...DATA.claims, ...DATA.queues].filter(r => r.guild_id)
-    .map(r => [r.guild_id, r.guild_name || r.guild_id])).entries()];
+  const guilds = [...new Map([...DATA.claims, ...DATA.queues].filter(r => r.guild_id).map(r => [r.guild_id, r.guild_name || r.guild_id])).entries()];
 
   app.innerHTML = `
-    ${DEMO ? `<div class="banner">Mode démo — données fictives. Retirez <b>?demo</b> de l'adresse pour voir vos vraies données.</div>` : ""}
-    <header>
-      <div class="brand">
-        <div class="logo" aria-hidden="true">⚡</div>
-        <div><h1>FlashACO Analytics</h1><div class="sub">Paniers, commissions et files d'attente</div></div>
-      </div>
-      <div class="controls">
+    ${DEMO ? `<div class="banner">Mode démo — données fictives. Retire <b>?demo</b> de l'adresse pour voir tes vraies données.</div>` : ""}
+    <div class="page-top">
+      <div><h1>Analytics ACO</h1><p>Paniers réclamés, résultats et files d'attente de ton équipe · mis à jour à ${new Date().toLocaleTimeString("fr-FR")}</p></div>
+      <div class="page-top-right">
         <label class="sr" for="f-guild">Serveur</label>
-        <select id="f-guild">
-          <option value="all">Tous les serveurs</option>
-          ${guilds.map(([id, n]) => `<option value="${esc(id)}" ${state.guild === id ? "selected" : ""}>${esc(n)}</option>`).join("")}
-        </select>
+        <select id="f-guild"><option value="all">Tous les serveurs</option>
+          ${guilds.map(([id, n]) => `<option value="${esc(id)}" ${state.guild === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
         <label class="sr" for="f-period">Période</label>
-        <select id="f-period">
-          ${[["7", "7 derniers jours"], ["30", "30 derniers jours"], ["90", "90 derniers jours"], ["all", "Tout l'historique"]]
-            .map(([v, l]) => `<option value="${v}" ${state.period === v ? "selected" : ""}>${l}</option>`).join("")}
-        </select>
-        <button class="btn" id="refresh" type="button">↻ Actualiser</button>
-        ${sb && !DEMO ? `<button class="btn" id="logout" type="button">Déconnexion</button>` : ""}
+        <select id="f-period">${[["7", "7 derniers jours"], ["30", "30 derniers jours"], ["90", "90 derniers jours"], ["all", "Tout l'historique"]]
+          .map(([v, l]) => `<option value="${v}" ${state.period === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <button class="btn primary" id="refresh" type="button">↻ Actualiser</button>
       </div>
-    </header>
-    <div class="updated" id="updated" style="margin:-8px 0 12px">Mis à jour à ${new Date().toLocaleTimeString("fr-FR")}</div>
-    <nav class="tabs" role="tablist">
-      ${[["overview", "Vue d'ensemble"], ["members", "Membres"], ["history", "Historique"], ["queues", "Files d'attente"]]
-        .map(([k, l]) => `<button class="tab" role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join("")}
-    </nav>
-    <section class="panel" data-panel="overview" ${state.tab !== "overview" ? "hidden" : ""}>${overview(f, members, um)}</section>
-    <section class="panel" data-panel="members" ${state.tab !== "members" ? "hidden" : ""}>${membersPanel(f, members, um)}</section>
-    <section class="panel" data-panel="history" ${state.tab !== "history" ? "hidden" : ""}>${historyPanel(f, members, um)}</section>
-    <section class="panel" data-panel="queues" ${state.tab !== "queues" ? "hidden" : ""}>${queuesPanel(f, members, um)}</section>
-  `;
+    </div>
+    <div class="mode-tabs" role="tablist">
+      ${TABS.map(([k, l]) => `<button class="mode-tab ${state.tab === k ? "active" : ""}" role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join("")}
+    </div>
+    <section class="panel" ${state.tab !== "overview" ? "hidden" : ""}>${overview(f, members, um)}</section>
+    <section class="panel" ${state.tab !== "members" ? "hidden" : ""}>${membersPanel(f, members, um)}</section>
+    <section class="panel" ${state.tab !== "history" ? "hidden" : ""}>${historyPanel(f, members, um)}</section>
+    <section class="panel" ${state.tab !== "queues" ? "hidden" : ""}>${queuesPanel(f, members, um)}</section>`;
   bind(f, um);
   if (state.tab === "overview") drawChart(f.claims);
 }
 
-function kpis(list) {
-  return `<div class="kpis">${list.map(k => `
-    <div class="card kpi"><div class="label">${k.label}</div>
-      <div class="value ${k.cls || ""}">${k.value}</div>${k.foot ? `<div class="foot">${k.foot}</div>` : ""}</div>`).join("")}</div>`;
+function stats(list) {
+  return `<div class="stats">${list.map(k => `
+    <div class="stat ${k.featured ? "featured" : ""}"><span class="stat-icon" aria-hidden="true">${k.icon || ""}</span>
+      <div class="stat-label">${k.label}</div><div class="stat-val ${k.cls || ""}">${k.value}</div>
+      ${k.sub ? `<div class="stat-sub">${k.sub}</div>` : ""}</div>`).join("")}</div>`;
 }
 
-function totals(f, members) {
-  const good = f.claims.filter(c => c.status === "good").length;
+function totals(f) {
+  const good = f.claims.filter(c => c.status === "good");
   const expired = f.claims.filter(c => c.status === "expired").length;
-  const pending = f.claims.length - good - expired;
-  const pasDue = members.reduce((a, s) => a + s.pasDue, 0);
-  const paid = members.reduce((a, s) => a + s.paid, 0);
-  const pasPending = members.reduce((a, s) => a + s.pasPending, 0);
-  return { good, expired, pending, pasDue, paid, pasPending, rest: pasDue - paid,
-    rate: good + expired ? (good / (good + expired)) * 100 : null };
+  return {
+    good: good.length, expired, pending: f.claims.length - good.length - expired,
+    seats: good.reduce((a, c) => a + (Number(c.quantity) || 0), 0),
+    retail: good.reduce((a, c) => a + (Number(c.price) || 0), 0),
+    rate: good.length + expired ? (good.length / (good.length + expired)) * 100 : null,
+  };
 }
 
 function overview(f, members, um) {
-  const t = totals(f, members);
-  const top = [...members].filter(s => s.claims > 0).sort((a, b) => b.pasDue - a.pasDue || b.claims - a.claims).slice(0, 6);
+  const t = totals(f);
+  const top = [...members].filter(s => s.claims > 0).sort((a, b) => b.good - a.good || b.claims - a.claims).slice(0, 6);
   return `
-    ${kpis([
-      { label: "Paniers réclamés", value: int(f.claims.length), foot: `${int(t.good)} good · ${int(t.expired)} expirés · ${int(t.pending)} en attente` },
-      { label: "Taux de réussite", value: pct(t.rate), foot: "good ÷ (good + expirés)" },
-      { label: "PAS dû (good)", value: eur(t.pasDue), foot: t.pasPending ? `+ ${eur(t.pasPending)} en attente` : "commissions validées" },
-      { label: "PAS payé", value: eur(t.paid), cls: "good" },
-      { label: "Reste à encaisser", value: eur(Math.max(0, t.rest)), cls: t.rest > 0 ? "bad" : "", foot: t.rest < 0 ? `${eur(-t.rest)} d'avance` : "" },
+    ${stats([
+      { label: "Paniers réclamés", value: int(f.claims.length), icon: "🛒", featured: true, cls: "c-gold", sub: `${int(t.pending)} en attente` },
+      { label: "Good", value: int(t.good), icon: "✅", cls: "c-green" },
+      { label: "Expirés", value: int(t.expired), icon: "⌛", cls: "c-red" },
+      { label: "Taux de réussite", value: pct(t.rate), icon: "🎯", sub: "good ÷ (good + expirés)" },
+      { label: "Places sécurisées", value: int(t.seats), icon: "🎟️", sub: "sur les paniers good" },
+      { label: "Valeur retail", value: eur(t.retail), icon: "💶", cls: "c-blue", sub: "paniers good" },
     ])}
     <div class="grid-2">
       <div class="card">
@@ -363,20 +367,19 @@ function overview(f, members, um) {
         <div class="card-b"><div class="chart" id="chart"></div></div>
       </div>
       <div class="card">
-        <div class="card-h"><h2>Top membres</h2><span class="hint">par PAS dû</span></div>
-        <div class="card-b table-wrap">
-          ${top.length ? `<table><thead><tr><th>Membre</th><th class="num">Paniers</th><th class="num">Reste</th></tr></thead><tbody>
+        <div class="card-h"><h2>Top membres</h2><span class="hint">par paniers good</span></div>
+        <div class="card-b" style="padding:12px 0 6px">
+          ${top.length ? `<div class="table-wrap"><table><thead><tr><th>Membre</th><th class="num">Good</th><th class="num">Réussite</th></tr></thead><tbody>
             ${top.map(s => `<tr class="click" data-user="${esc(s.id)}"><td><div class="who">${avatar(s.id, um)}${esc(nameOf(s.id, um))}</div></td>
-              <td class="num">${int(s.claims)}</td><td class="num">${restCell(s.rest)}</td></tr>`).join("")}
-          </tbody></table>` : `<div class="empty">Aucun panier sur la période.</div>`}
+              <td class="num">${int(s.good)}</td><td class="num">${pct(s.rate)}</td></tr>`).join("")}
+          </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>sur la période choisie</div>`}
         </div>
       </div>
     </div>`;
 }
 
-const restCell = r => r > 0.004 ? `<span class="pos">${eur(r)}</span>` : r < -0.004 ? `<span class="credit">−${eur(-r)}</span>` : `<span class="zero">${eur(0)}</span>`;
-const statusCell = s => s === "good" ? `<span class="status good"><i></i>✓ Good</span>`
-  : s === "expired" ? `<span class="status expired"><i></i>✕ Expiré</span>` : `<span class="status pending"><i></i>… En attente</span>`;
+const statusBadge = s => s === "good" ? `<span class="badge good">Good</span>`
+  : s === "expired" ? `<span class="badge expired">Expiré</span>` : `<span class="badge pending">En attente</span>`;
 
 function membersPanel(f, members, um) {
   const q = state.memberSearch.toLowerCase();
@@ -389,23 +392,23 @@ function membersPanel(f, members, um) {
       return va < vb ? -dir : va > vb ? dir : 0;
     });
   const cols = [["name", "Membre", ""], ["claims", "Paniers", "num"], ["good", "Good", "num"], ["expired", "Expirés", "num"],
-    ["pending", "En attente", "num"], ["rate", "Réussite", "num"], ["pasDue", "PAS dû", "num"], ["paid", "Payé", "num"],
-    ["rest", "Reste", "num"], ["skips", "Skips", "num"], ["afk", "AFK", "num"], ["lastClaim", "Dernier panier", ""]];
-  const arrow = k => k === key ? `<span class="arrow">${dir < 0 ? "▼" : "▲"}</span>` : "";
+    ["pending", "En attente", "num"], ["rate", "Réussite", "num"], ["seats", "Places", "num"], ["retail", "Valeur retail", "num"],
+    ["skips", "Skips", "num"], ["afk", "AFK", "num"], ["lastClaim", "Dernier panier", ""]];
+  const arrow = k => k === key ? ` <span class="arrow">${dir < 0 ? "▼" : "▲"}</span>` : "";
   return `
     <div class="card">
-      <div class="card-h"><h2>Membres</h2><span class="hint">${int(rows.length)} membres · cliquez une ligne pour le détail</span>
+      <div class="card-h"><h2>Membres</h2><span class="hint">${int(rows.length)} membres · clique une ligne pour le détail</span>
         <input type="search" id="m-search" placeholder="Rechercher un membre…" value="${esc(state.memberSearch)}" style="margin-left:auto;min-width:220px">
       </div>
-      <div class="card-b table-wrap">
-        ${rows.length ? `<table><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-sort="${k}">${l} ${arrow(k)}</th>`).join("")}</tr></thead>
+      <div class="card-b" style="padding:14px 0 0">
+        ${rows.length ? `<div class="table-wrap"><table><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-sort="${k}">${l}${arrow(k)}</th>`).join("")}</tr></thead>
         <tbody>${rows.map(s => `<tr class="click" data-user="${esc(s.id)}">
           <td><div class="who">${avatar(s.id, um)}${esc(nameOf(s.id, um))}</div></td>
-          <td class="num">${int(s.claims)}</td><td class="num">${int(s.good)}</td><td class="num">${int(s.expired)}</td>
-          <td class="num">${int(s.pending)}</td><td class="num">${pct(s.rate)}</td>
-          <td class="num">${eur(s.pasDue)}</td><td class="num">${eur(s.paid)}</td><td class="num">${restCell(s.rest)}</td>
+          <td class="num">${int(s.claims)}</td><td class="num c-green">${int(s.good)}</td>
+          <td class="num c-red">${int(s.expired)}</td><td class="num">${int(s.pending)}</td>
+          <td class="num">${pct(s.rate)}</td><td class="num">${int(s.seats)}</td><td class="num">${eur(s.retail)}</td>
           <td class="num">${int(s.skips)}</td><td class="num">${int(s.afk)}</td><td>${fmtDate(s.lastClaim)}</td></tr>`).join("")}
-        </tbody></table>` : `<div class="empty">Aucun membre trouvé.</div>`}
+        </tbody></table></div>` : `<div class="empty"><h3>Aucun membre</h3>Aucun résultat pour cette recherche</div>`}
       </div>
     </div>
     ${state.selected ? memberDetail(state.selected, f, members, um) : ""}`;
@@ -415,33 +418,27 @@ function memberDetail(id, f, members, um) {
   const s = members.find(m => m.id === id);
   if (!s) return "";
   const claims = f.claims.filter(c => c.user_id === id).sort((a, b) => b.claimed_at.localeCompare(a.claimed_at));
-  const pays = f.payments.filter(p => p.user_id === id).sort((a, b) => b.paid_at.localeCompare(a.paid_at));
   return `
-    <div class="card detail" id="detail">
-      <div class="card-b">
-        <div class="detail-h">${avatar(id, um, 40)}<div><h2>${esc(nameOf(id, um))}</h2><div class="updated">ID ${esc(id)}</div></div>
-          <button class="btn close" id="close-detail" type="button">Fermer</button></div>
-        <div style="margin-top:14px">${kpis([
-          { label: "Paniers", value: int(s.claims), foot: `${int(s.good)} good · ${int(s.expired)} expirés · ${int(s.pending)} en attente` },
-          { label: "Réussite", value: pct(s.rate) },
-          { label: "PAS dû", value: eur(s.pasDue), foot: s.pasPending ? `+ ${eur(s.pasPending)} en attente` : "" },
-          { label: "Payé", value: eur(s.paid), cls: "good" },
-          { label: "Reste", value: eur(Math.max(0, s.rest)), cls: s.rest > 0 ? "bad" : "", foot: s.rest < 0 ? `${eur(-s.rest)} d'avance` : "" },
-          { label: "Skips / AFK", value: `${int(s.skips)} / ${int(s.afk)}` },
-        ])}</div>
-        <div class="sub-h">Paniers réclamés</div>
-        <div class="table-wrap">${claims.length ? `<table><thead><tr><th>Date</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th>
-          <th>Sièges</th><th class="num">Prix</th><th class="num">PAS</th><th>Statut</th></tr></thead><tbody>
-          ${claims.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td class="wrapcell">${esc(c.event)}</td><td>${esc(c.category)}</td>
-            <td class="num">${c.quantity ?? "—"}</td><td>${esc(c.seats)}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
-            <td class="num">${eur(c.pas)}</td><td>${statusCell(c.status)}</td></tr>`).join("")}
-          </tbody></table>` : `<div class="empty">Aucun panier sur la période.</div>`}</div>
-        <div class="sub-h">Paiements PAS</div>
-        <div class="table-wrap">${pays.length ? `<table><thead><tr><th>Date</th><th class="num">Montant</th><th>Marqué par</th></tr></thead><tbody>
-          ${pays.map(p => `<tr><td>${fmtDate(p.paid_at)}</td><td class="num">${eur(p.amount)}</td><td>${p.marked_by ? esc(nameOf(p.marked_by, um)) : "—"}</td></tr>`).join("")}
-          </tbody></table>` : `<div class="empty">Aucun paiement sur la période.</div>`}</div>
-      </div>
-    </div>`;
+    <div class="card detail" id="detail"><div class="card-b">
+      <div class="detail-h">${avatar(id, um)}<div><h2>${esc(nameOf(id, um))}</h2><div class="id">ID ${esc(id)}</div></div>
+        <button class="btn sm" id="close-detail" type="button">Fermer</button></div>
+      ${stats([
+        { label: "Paniers", value: int(s.claims), cls: "c-gold", featured: true, sub: `${int(s.pending)} en attente` },
+        { label: "Good", value: int(s.good), cls: "c-green" },
+        { label: "Expirés", value: int(s.expired), cls: "c-red" },
+        { label: "Réussite", value: pct(s.rate) },
+        { label: "Places", value: int(s.seats), sub: `${eur(s.retail)} retail` },
+        { label: "Skips / AFK", value: `${int(s.skips)} / ${int(s.afk)}` },
+      ])}
+      <div class="sub-h">Paniers réclamés</div>
+      ${claims.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th>
+        <th class="num">Prix</th><th>Statut</th></tr></thead><tbody>
+        ${claims.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td>
+          <td><div class="ev-name">${esc(c.event)}</div><div class="ev-seat">${esc(c.seats || "")}${c.warning ? " · ⚠ non contigu" : ""}</div></td>
+          <td>${esc(c.category)}</td><td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
+          <td>${statusBadge(c.status)}</td></tr>`).join("")}
+        </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>sur la période choisie</div>`}
+    </div></div>`;
 }
 
 function historyRows(f) {
@@ -452,55 +449,49 @@ function historyRows(f) {
 }
 
 function historyPanel(f, members, um) {
-  const rows = historyRows(f);
-  const shown = rows.slice(0, 500);
-  const h = state.hist;
+  const rows = historyRows(f), shown = rows.slice(0, 500), h = state.hist;
   return `
     <div class="card">
-      <div class="card-h"><h2>Historique des paniers</h2><span class="hint">${int(rows.length)} paniers${rows.length > 500 ? " · 500 affichés (export CSV = tout)" : ""}</span>
-        <div class="controls" style="margin-left:auto">
+      <div class="card-h"><h2>Historique des paniers</h2><span class="hint">${int(rows.length)} paniers${rows.length > 500 ? " · 500 affichés" : ""}</span></div>
+      <div class="card-b">
+        <div class="page-top-right">
           <select id="h-user"><option value="all">Tous les membres</option>
             ${members.filter(s => s.claims).sort((a, b) => nameOf(a.id, um).localeCompare(nameOf(b.id, um)))
               .map(s => `<option value="${esc(s.id)}" ${h.user === s.id ? "selected" : ""}>${esc(nameOf(s.id, um))}</option>`).join("")}</select>
           <select id="h-status">${[["all", "Tous statuts"], ["good", "Good"], ["expired", "Expirés"], ["pending", "En attente"]]
             .map(([v, l]) => `<option value="${v}" ${h.status === v ? "selected" : ""}>${l}</option>`).join("")}</select>
-          <input type="search" id="h-q" placeholder="Événement, catégorie…" value="${esc(h.q)}">
+          <input type="search" id="h-q" placeholder="Événement, catégorie…" value="${esc(h.q)}" style="flex:1;min-width:200px">
           <button class="btn" id="csv" type="button">⬇ Export CSV</button>
         </div>
       </div>
-      <div class="card-b table-wrap">
-        ${shown.length ? `<table><thead><tr><th>Date</th><th>Membre</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th><th>Sièges</th>
-          <th class="num">Prix</th><th class="num">PAS</th><th>Statut</th><th>Serveur · salon</th></tr></thead><tbody>
-          ${shown.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td><div class="who">${avatar(c.user_id, um)}${esc(nameOf(c.user_id, um))}</div></td>
-            <td class="wrapcell">${esc(c.event)}${c.warning ? ` <span class="tag" title="${esc(c.warning)}">⚠ non contigu</span>` : ""}</td>
-            <td>${esc(c.category)}</td><td class="num">${c.quantity ?? "—"}</td><td>${esc(c.seats)}</td>
-            <td class="num">${c.price ? eur(c.price) : "—"}</td><td class="num">${eur(c.pas)}</td><td>${statusCell(c.status)}</td>
-            <td>${esc(c.guild_name || "—")}${c.channel_name ? ` · #${esc(c.channel_name)}` : ""}</td></tr>`).join("")}
-        </tbody></table>` : `<div class="empty">Aucun panier ne correspond aux filtres.</div>`}
-      </div>
+      ${shown.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Membre</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th>
+        <th class="num">Prix</th><th>Statut</th><th>Serveur · salon</th></tr></thead><tbody>
+        ${shown.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td><div class="who">${avatar(c.user_id, um)}${esc(nameOf(c.user_id, um))}</div></td>
+          <td><div class="ev-name">${esc(c.event)}</div><div class="ev-seat">${esc(c.seats || "")}${c.warning ? " · ⚠ non contigu" : ""}</div></td>
+          <td>${esc(c.category)}</td><td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
+          <td>${statusBadge(c.status)}</td><td>${esc(c.guild_name || "—")}${c.channel_name ? ` · #${esc(c.channel_name)}` : ""}</td></tr>`).join("")}
+      </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>Aucun panier ne correspond aux filtres</div>`}
     </div>`;
 }
 
 function queuesPanel(f, members, um) {
-  if (!f.queues.length) return `<div class="card"><div class="empty">Aucune file d'attente.</div></div>`;
+  if (!f.queues.length) return `<div class="card"><div class="empty"><h3>Aucune file d'attente</h3>Crée-en une avec /queue_add puis /queue_start</div></div>`;
   const byId = new Map(members.map(s => [s.id, s]));
-  return `<div class="queues">${f.queues.sort((a, b) => (b.active - a.active) || (a.channel_name || "").localeCompare(b.channel_name || "")).map(q => `
+  return `<div class="queues">${[...f.queues].sort((a, b) => (b.active - a.active) || (a.channel_name || "").localeCompare(b.channel_name || "")).map(q => `
     <div class="card queue">
       <div class="card-h"><h2>#${esc(q.channel_name || q.id)}</h2>
-        <span class="pill ${q.active ? "on" : ""}">${q.active ? "● Active" : "○ Inactive"}</span>
+        <span class="badge ${q.active ? "good" : "plain"}">${q.active ? "Active" : "Inactive"}</span>
         <span class="hint" style="width:100%">${esc(q.guild_name || "")}</span></div>
-      <div class="card-b">
-        <ol>${(q.members || []).map((id, i) => {
-          const s = byId.get(id);
-          return `<li class="${q.holder === id ? "turn" : ""}"><span class="n">${i + 1}</span>
-            <div class="who">${avatar(id, um)}${esc(nameOf(id, um))}</div>
-            ${q.runner === id ? `<span class="tag">RUNNER</span>` : ""}
-            ${q.holder === id ? `<span class="tag" style="background:var(--accent);color:#fff">🎯 son tour</span>` : ""}
-            ${(q.priority || []).includes(id) ? `<span class="tag" title="Tour gardé après AFK">⏪</span>` : ""}
-            <span class="stats">${s ? `${int(s.claims)} paniers · ${int(s.afk)} AFK` : ""}</span></li>`;
-        }).join("") || `<li class="empty">Aucun membre</li>`}</ol>
-        <div class="updated" style="margin-top:8px">Mis à jour ${fmtDate(q.updated_at)}</div>
-      </div>
+      <div class="card-b"><ol>${(q.members || []).map((id, i) => {
+        const s = byId.get(id);
+        return `<li class="${q.holder === id ? "turn" : ""}"><span class="n">${i + 1}</span>
+          <div class="who">${avatar(id, um)}${esc(nameOf(id, um))}</div>
+          ${q.runner === id ? `<span class="badge plain">Runner</span>` : ""}
+          ${q.holder === id ? `<span class="badge gold">Son tour</span>` : ""}
+          ${(q.priority || []).includes(id) ? `<span class="badge pending" title="Tour gardé après AFK">Tour gardé</span>` : ""}
+          <span class="stats-mini">${s ? `${int(s.good)} good · ${int(s.afk)} AFK` : ""}</span></li>`;
+      }).join("") || `<li class="empty">Aucun membre</li>`}</ol>
+      <div class="meta">Mis à jour ${fmtDate(q.updated_at)}</div></div>
     </div>`).join("")}</div>`;
 }
 
@@ -525,7 +516,7 @@ function drawChart(claims) {
   const W = el.clientWidth || 700, H = 240, L = 32, R = 8, T = 10, B = 26;
   const max = Math.max(1, ...buckets.map(b => b.v));
   const niceMax = max <= 4 ? max : Math.ceil(max / 5) * 5;
-  const ticks = niceMax <= 4 ? Array.from({ length: niceMax + 1 }, (_, i) => i) : [0, niceMax / 5 * 1, niceMax / 5 * 2, niceMax / 5 * 3, niceMax / 5 * 4, niceMax].map(Math.round);
+  const ticks = niceMax <= 4 ? Array.from({ length: niceMax + 1 }, (_, i) => i) : [0, 1, 2, 3, 4, 5].map(k => Math.round(niceMax / 5 * k));
   const pw = W - L - R, ph = H - T - B;
   const bw = pw / n, gap = Math.min(2 + bw * 0.2, 8), barW = Math.max(2, bw - gap);
   const y = v => T + ph - (v / niceMax) * ph;
@@ -539,9 +530,7 @@ function drawChart(claims) {
   };
   el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Paniers réclamés ${step === 7 ? "par semaine" : "par jour"}">
     ${ticks.map(v => `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="tick" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
-    ${buckets.map((b, i) => { const x = L + i * bw + gap / 2; return `
-      <rect class="hit" data-i="${i}" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}"/>
-      <path class="bar" d="${barPath(x, b.v)}"/>`; }).join("")}
+    ${buckets.map((b, i) => `<rect class="hit" data-i="${i}" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}"/><path class="bar" d="${barPath(L + i * bw + gap / 2, b.v)}"/>`).join("")}
     <line class="baseline" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>
     ${buckets.map((b, i) => i % lblEvery === 0 ? `<text class="tick" x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${fmtT(b.t)}</text>` : "").join("")}
   </svg><div class="tip" id="tip"></div>`;
@@ -564,11 +553,10 @@ function drawChart(claims) {
 /* ───────── Events ───────── */
 function bind(f, um) {
   const on = (id, ev, fn) => document.getElementById(id)?.addEventListener(ev, fn);
-  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => { state.tab = b.dataset.tab; render(); }));
+  document.querySelectorAll(".mode-tab").forEach(b => b.addEventListener("click", () => { state.tab = b.dataset.tab; render(); }));
   on("f-guild", "change", e => { state.guild = e.target.value; render(); });
   on("f-period", "change", e => { state.period = e.target.value; render(); });
   on("refresh", "click", () => refresh());
-  on("logout", "click", async () => { await sb.auth.signOut(); showLogin(); });
   document.querySelectorAll("tr.click").forEach(tr => tr.addEventListener("click", () => {
     state.selected = tr.dataset.user; state.tab = "members"; render();
     document.getElementById("detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -589,10 +577,10 @@ function bind(f, um) {
 }
 
 function exportCsv(rows, um) {
-  const head = ["date", "membre", "user_id", "evenement", "categorie", "quantite", "sieges", "prix", "pas", "statut", "serveur", "salon", "site", "date_evenement"];
+  const head = ["date", "membre", "user_id", "evenement", "categorie", "quantite", "sieges", "prix", "statut", "serveur", "salon", "site", "date_evenement"];
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [head.join(";"), ...rows.map(c => [fmtDate(c.claimed_at), nameOf(c.user_id, um), c.user_id, c.event, c.category, c.quantity,
-    c.seats, String(c.price ?? "").replace(".", ","), String(c.pas ?? "").replace(".", ","), c.status, c.guild_name, c.channel_name, c.site, c.event_date].map(q).join(";"))];
+    c.seats, String(c.price ?? "").replace(".", ","), c.status, c.guild_name, c.channel_name, c.site, c.event_date].map(q).join(";"))];
   const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `flashaco-paniers-${new Date().toISOString().slice(0, 10)}.csv` });
   a.click(); URL.revokeObjectURL(a.href);
@@ -600,14 +588,15 @@ function exportCsv(rows, um) {
 
 /* ───────── Auth ───────── */
 function showLogin(msg = "") {
+  document.getElementById("logout").hidden = true;
   app.innerHTML = `
     <form class="card login" id="login">
-      <h1>FlashACO Analytics</h1>
-      <p>Connectez-vous avec votre compte tixsheet.</p>
-      <label class="sr" for="email">Email</label><input id="email" type="email" placeholder="Email" autocomplete="username" required>
-      <label class="sr" for="pw">Mot de passe</label><input id="pw" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
+      <h1>Connexion</h1>
+      <p>Connecte-toi avec ton compte tixsheet pour voir les analytics ACO.</p>
+      <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
+      <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password" required>
       <div class="err" id="err">${esc(msg)}</div>
-      <button class="btn primary" type="submit" style="width:100%">Se connecter</button>
+      <button class="btn primary" type="submit" style="width:100%;justify-content:center">Se connecter</button>
     </form>`;
   document.getElementById("login").addEventListener("submit", async e => {
     e.preventDefault();
@@ -620,19 +609,21 @@ function showLogin(msg = "") {
 
 async function refresh() {
   try {
-    app.innerHTML = app.innerHTML || `<div class="empty">Chargement…</div>`;
+    if (!app.innerHTML) app.innerHTML = `<div class="empty">Chargement…</div>`;
     await loadData();
-    if (!DEMO && DATA.claims.length === 0 && DATA.queues.length === 0 && DATA.users.length === 0) {
-      // RLS returns nothing when this account isn't in aco_admins
-      const { data: { user } } = await sb.auth.getUser();
-      render();
-      app.insertAdjacentHTML("afterbegin", `<div class="banner">Aucune donnée visible pour <b>${esc(user?.email || "")}</b>. Si le bot a déjà synchronisé des paniers, ajoutez cet email dans la table <code>aco_admins</code>.</div>`);
-      return;
+    if (sb && !DEMO) {
+      const lo = document.getElementById("logout");
+      lo.hidden = false;
+      lo.onclick = async () => { await sb.auth.signOut(); showLogin(); };
     }
     render();
+    if (!DEMO && DATA.claims.length === 0 && DATA.queues.length === 0 && DATA.users.length === 0) {
+      const { data: { user } } = await sb.auth.getUser();
+      app.insertAdjacentHTML("afterbegin", `<div class="banner">Aucune donnée visible pour <b>${esc(user?.email || "")}</b>. Si le bot a déjà synchronisé des paniers, ajoute cet email dans la table <code>aco_admins</code>.</div>`);
+    }
   } catch (err) {
     console.error(err);
-    app.innerHTML = `<div class="card"><div class="empty">Impossible de charger les données : ${esc(err.message || err)}</div></div>`;
+    app.innerHTML = `<div class="card"><div class="empty"><h3>Impossible de charger les données</h3>${esc(err.message || err)}</div></div>`;
   }
 }
 
@@ -641,24 +632,21 @@ function demoData() {
   const names = [["111", "kzy"], ["222", "Erraih"], ["333", "Monstrdézane"], ["444", "Kappa"], ["555", "Coromboogi"]];
   const events = [["CELINE DION", "CATEGORIE 1", 200.25], ["A$AP Rocky - Don't Be Dumb World Tour", "CATEGORIE 2 VISIBILITE REDUITE", 68.5], ["Aya Nakamura", "FOSSE", 79], ["PNL", "CATEGORIE 1", 95]];
   let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const claims = [], payments = [], ev = [];
+  const claims = [], ev = [];
   for (let i = 0; i < 140; i++) {
     const [uid, uname] = names[Math.floor(rnd() * names.length)];
     const [e, cat, p] = events[Math.floor(rnd() * events.length)];
     const qty = 1 + Math.floor(rnd() * 4);
     const t = Date.now() - Math.floor(rnd() * 80 * DAY);
-    const age = Date.now() - t;
-    const st = age < 2 * DAY && rnd() < .6 ? "pending" : rnd() < .78 ? "good" : "expired";
+    const st = Date.now() - t < 2 * DAY && rnd() < .6 ? "pending" : rnd() < .78 ? "good" : "expired";
     claims.push({ id: "c" + i, claimed_at: new Date(t).toISOString(), user_id: uid, username: uname, guild_id: i % 3 ? "g1" : "g2",
       guild_name: i % 3 ? "FlashTICKET" : "A MOULA NOUBA", channel_name: i % 3 ? "claim-test" : "celine-module-nouba", event: e, category: cat,
-      quantity: qty, seats: Array.from({ length: qty }, (_, k) => 30 + k).join(" / "), price: +(p * qty).toFixed(2), pas: 10 * qty, status: st,
+      quantity: qty, seats: Array.from({ length: qty }, (_, k) => 30 + k).join(" / "), price: +(p * qty).toFixed(2), status: st,
       warning: rnd() < .12 ? "Seats are not contiguous" : null });
   }
-  for (const [uid] of names) for (let k = 0; k < 3; k++) payments.push({ id: uid + k, paid_at: new Date(Date.now() - rnd() * 70 * DAY).toISOString(), user_id: uid, amount: 40 + Math.round(rnd() * 120), guild_id: "g1", marked_by: "111" });
   for (let i = 0; i < 60; i++) ev.push({ id: "e" + i, at: new Date(Date.now() - rnd() * 60 * DAY).toISOString(), user_id: names[Math.floor(rnd() * names.length)][0], guild_id: "g1", type: rnd() < .5 ? "skip" : "afk" });
   return {
-    claims, payments, events: ev,
-    users: names.map(([id, username]) => ({ id, username })),
+    claims, events: ev, users: names.map(([id, username]) => ({ id, username })),
     queues: [
       { id: "q1", guild_id: "g1", guild_name: "FlashTICKET", channel_name: "claim-test", active: true, members: ["111", "222", "333", "444"], holder: "222", runner: "111", priority: ["444"], updated_at: new Date().toISOString() },
       { id: "q2", guild_id: "g2", guild_name: "A MOULA NOUBA", channel_name: "celine-module-nouba", active: true, members: ["333", "555", "111"], holder: "333", runner: "333", priority: [], updated_at: new Date().toISOString() },
@@ -671,7 +659,7 @@ function demoData() {
   window.addEventListener("resize", () => { if (state.tab === "overview" && DATA.claims.length) drawChart(filtered().claims); });
   if (DEMO) return refresh();
   if (!window.supabase || SUPABASE_ANON_KEY.startsWith("PASTE")) {
-    app.innerHTML = `<div class="card"><div class="empty">Configuration manquante : collez votre clé <b>anon</b> Supabase en haut du fichier (SUPABASE_ANON_KEY).<br>Aperçu possible avec <a href="?demo">?demo</a>.</div></div>`;
+    app.innerHTML = `<div class="card"><div class="empty"><h3>Configuration manquante</h3>Colle la clé anon Supabase en haut du fichier. Aperçu : <a href="?demo">?demo</a></div></div>`;
     return;
   }
   sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
