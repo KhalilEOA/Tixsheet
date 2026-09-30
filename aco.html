@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
-<!-- aco-dashboard v8 -->
+<!-- aco-dashboard v9 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -185,6 +185,10 @@ td.num{font-weight:500}
 .login input{width:100%;height:44px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:14px;outline:none;margin-bottom:14px}
 .login input:focus{border-color:var(--gold-border)}
 .login .err{color:var(--red);font-size:13px;min-height:18px;margin-bottom:6px}
+.live{display:inline-flex;align-items:center;gap:6px;margin-left:10px;vertical-align:middle;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--green);background:var(--green-dim);padding:3px 10px;border-radius:99px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 var(--green);animation:livepulse 1.8s infinite}
+.live.off{color:var(--text3);background:var(--bg-card2)} .live.off i{background:var(--text3);animation:none}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}70%{box-shadow:0 0 0 7px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
 .banner{padding:12px 16px;border-radius:var(--radius-lg);margin-bottom:18px;font-size:13px;background:var(--gold-dim);border:1px solid var(--gold-border);color:var(--text)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
@@ -345,7 +349,7 @@ function render() {
   app.innerHTML = `
     ${DEMO ? `<div class="banner">Mode démo — données fictives. Retire <b>?demo</b> de l'adresse pour voir tes vraies données.</div>` : ""}
     <div class="page-top">
-      <div><h1>Analytics ACO</h1><p>Paniers réclamés, résultats et files d'attente de ton équipe · mis à jour à ${new Date().toLocaleTimeString("fr-FR")}</p>
+      <div><h1>Analytics ACO ${!DEMO ? `<span class="live" id="live-dot" title="Mise à jour automatique toutes les ${LIVE_MS / 1000} s"><i></i>En direct</span>` : ""}</h1><p>Paniers réclamés, résultats et files d'attente de ton équipe · <span id="last-sync">mis à jour à ${new Date(lastSync || Date.now()).toLocaleTimeString("fr-FR")}</span></p>
         ${activeFilters.length ? `<div class="chips">${activeFilters.map(f => `<span class="chip">${f}</span>`).join("")}<button class="chip clear" id="f-clear" type="button">✕ Effacer les filtres</button></div>` : ""}</div>
       <div class="page-top-right">
         <label class="sr" for="f-guild">Serveur</label>
@@ -684,7 +688,9 @@ async function refresh() {
       lo.hidden = false;
       lo.onclick = async () => { await sb.auth.signOut(); showLogin(); };
     }
+    lastSync = Date.now(); lastSig = dataSig();
     render();
+    startLive();
     if (!DEMO && DATA.claims.length === 0 && DATA.queues.length === 0 && DATA.users.length === 0) {
       const { data: { user } } = await sb.auth.getUser();
       app.insertAdjacentHTML("afterbegin", `<div class="banner">Aucune donnée visible pour <b>${esc(user?.email || "")}</b>. Si le bot a déjà synchronisé des paniers, ajoute cet email dans la table <code>aco_admins</code>.</div>`);
@@ -721,6 +727,35 @@ function demoData() {
       { id: "q2", guild_id: "g2", guild_name: "A MOULA NOUBA", channel_name: "celine-module-nouba", active: true, members: ["333", "555", "111"], holder: "333", runner: "333", priority: [], updated_at: new Date().toISOString() },
     ],
   };
+}
+
+/* ───────── Live updates ─────────
+   Reloads the data every LIVE_MS while the tab is visible; re-renders only if something changed
+   and never while you're typing in a field. */
+const LIVE_MS = 10000;
+let lastSync = 0, lastSig = "", liveTimer = null;
+const dataSig = () => JSON.stringify([DATA.claims.length, DATA.events.length,
+  DATA.claims.map(c => c.id + c.status + (c.status_at || "")).join(), DATA.queues.map(q => q.updated_at + q.holder).join(), DATA.users.length]);
+async function liveTick() {
+  if (DEMO || !sb || document.hidden) return;
+  const el = document.activeElement;
+  if (el && ["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName) && el.id !== "refresh") return;
+  try {
+    await loadData();
+    lastSync = Date.now();
+    const sig = dataSig();
+    if (sig !== lastSig) { lastSig = sig; const y = window.scrollY; render(); window.scrollTo(0, y); }
+    else { const t = document.getElementById("last-sync"); if (t) t.textContent = "mis à jour à " + new Date(lastSync).toLocaleTimeString("fr-FR"); }
+    document.getElementById("live-dot")?.classList.remove("off");
+  } catch (err) {
+    console.warn("Live update failed:", err.message || err);
+    document.getElementById("live-dot")?.classList.add("off");
+  }
+}
+function startLive() {
+  if (DEMO || liveTimer) return;
+  liveTimer = setInterval(liveTick, LIVE_MS);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) liveTick(); });
 }
 
 /* ───────── Tixsheet session ─────────
