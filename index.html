@@ -182,7 +182,13 @@ tr.data-row:not(.inline-edit-row):hover td { background:var(--bg-hover); }
 .badge.Sold{background:rgba(139,92,246,0.12);color:#8b5cf6}
 .profit-pos{color:var(--green);font-weight:700}
 .profit-neg{color:var(--red);font-weight:700}
-.actions{display:flex;gap:3px;opacity:1}
+.actions{display:flex;gap:3px;opacity:1;flex-wrap:nowrap;justify-content:flex-end}
+/* Seat / event column never squeezed; action buttons pinned on the right */
+#tbody .ev-name,#tbody .ev-seat{min-width:210px}
+#thead-row th:last-child,#tbody td:last-child{position:sticky;right:0;z-index:1;box-shadow:-8px 0 12px -10px rgba(0,0,0,.45)}
+#thead-row th:last-child{background:var(--bg-card2)}
+#tbody td:last-child{background:var(--bg-card)}
+#tbody tr:hover td:last-child{background:var(--bg-hover)}
 .icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card2);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;transition:all 0.12s}
 .icon-btn:hover{background:var(--bg-hover);color:var(--text);border-color:var(--border2)}
 .icon-btn.del:hover{background:var(--red-dim);color:var(--red);border-color:rgba(239,68,68,0.3)}
@@ -851,8 +857,8 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
       <div class="form-group full"><label>Siège</label><input id="fe-seat" type="text" placeholder="Siège 113 – Rang 10"></div>
       <div class="form-group"><label>Email</label><input id="fe-email" type="email" placeholder="buyer@email.com"></div>
       <div class="form-group"><label>Mot de passe</label><input id="fe-pwd" type="text" placeholder="password@123"></div>
-      <div class="form-group"><label>Prix achat (€)</label><input id="fe-buy" type="number" min="0" step="0.01" placeholder="43"></div>
-      <div class="form-group"><label>Prix vente (€)</label><input id="fe-sell" type="number" min="0" step="0.01" placeholder="118.80"></div>
+      <div class="form-group"><label>Achat total (€)</label><input id="fe-buy" type="number" min="0" step="0.01" placeholder="Total payé pour tous les billets"></div>
+      <div class="form-group"><label>Vente total (€)</label><input id="fe-sell" type="number" min="0" step="0.01" placeholder="Total reçu pour tous les billets"></div>
       <div class="form-group"><label>Date événement</label><input id="fe-evdate" type="date"></div>
       <div class="form-group"><label>Quantité</label><input id="fe-qty" type="number" min="1" value="1"></div>
       <div class="form-group"><label>Statut</label><select id="fe-status" onchange="handleStatusSelect(this)"><option value="">—</option></select></div>
