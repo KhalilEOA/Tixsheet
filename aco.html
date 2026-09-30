@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
-<!-- aco-dashboard v6 -->
+<!-- aco-dashboard v8 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -230,6 +230,15 @@ const pct = n => (n == null ? "—" : `${Math.round(n)} %`);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtDate = d => d ? new Date(d).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
 const DAY = 86400000;
+function fmtEventDate(v) {
+  if (!v) return "—";
+  const m = String(v).match(/<t:(\d+)(?::\w)?>/);
+  if (m) return new Date(Number(m[1]) * 1000).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const d = new Date(v);
+  if (!isNaN(d) && /\d{4}/.test(v)) return d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(" 00:00", "");
+  return String(v);
+}
+const seatsCell = c => `${esc(c.seats || "—")}${c.warning ? `<div class="ev-seat" style="color:var(--amber)">⚠ non contigu</div>` : ""}`;
 
 let sb = null;
 let DATA = { claims: [], events: [], queues: [], users: [] };
@@ -469,12 +478,14 @@ function memberDetail(id, f, members, um) {
         { label: "Skips / AFK", value: `${int(s.skips)} / ${int(s.afk)}` },
       ])}
       <div class="sub-h">Paniers réclamés</div>
-      ${claims.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th>
-        <th class="num">Prix</th><th>Statut</th></tr></thead><tbody>
+      ${claims.length ? `<div class="table-wrap"><table><thead><tr><th>Réclamé le</th><th>Événement</th><th>Date événement</th><th>Catégorie</th><th>Sièges</th>
+        <th class="num">Qté</th><th class="num">Prix</th><th>Site</th><th>Statut</th></tr></thead><tbody>
         ${claims.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td>
-          <td><div class="ev-name">${esc(c.event)}</div><div class="ev-seat">${esc(c.seats || "")}${c.warning ? " · ⚠ non contigu" : ""}</div></td>
-          <td>${esc(c.category)}</td><td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
-          <td>${statusBadge(c.status)}</td></tr>`).join("")}
+          <td><div class="ev-name">${esc(c.event)}</div></td>
+          <td>${esc(fmtEventDate(c.event_date))}</td>
+          <td>${esc(c.category || "—")}</td><td>${seatsCell(c)}</td>
+          <td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
+          <td>${esc(c.site || "—")}</td><td>${statusBadge(c.status)}</td></tr>`).join("")}
         </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>sur la période choisie</div>`}
     </div></div>`;
 }
@@ -502,12 +513,15 @@ function historyPanel(f, members, um) {
           <button class="btn" id="csv" type="button">⬇ Export CSV</button>
         </div>
       </div>
-      ${shown.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Membre</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th>
-        <th class="num">Prix</th><th>Statut</th><th>Serveur · salon</th></tr></thead><tbody>
+      ${shown.length ? `<div class="table-wrap"><table><thead><tr><th>Réclamé le</th><th>Membre</th><th>Événement</th><th>Date événement</th><th>Catégorie</th><th>Sièges</th>
+        <th class="num">Qté</th><th class="num">Prix</th><th>Site</th><th>Statut</th><th>Serveur · salon</th></tr></thead><tbody>
         ${shown.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td><div class="who">${avatar(c.user_id, um)}${esc(nameOf(c.user_id, um))}</div></td>
-          <td><div class="ev-name">${esc(c.event)}</div><div class="ev-seat">${esc(c.seats || "")}${c.warning ? " · ⚠ non contigu" : ""}</div></td>
-          <td>${esc(c.category)}</td><td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
-          <td>${statusBadge(c.status)}</td><td>${esc(c.guild_name || "—")}${c.channel_name ? ` · #${esc(c.channel_name)}` : ""}</td></tr>`).join("")}
+          <td><div class="ev-name">${esc(c.event)}</div></td>
+          <td>${esc(fmtEventDate(c.event_date))}</td>
+          <td>${esc(c.category || "—")}</td><td>${seatsCell(c)}</td>
+          <td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
+          <td>${esc(c.site || "—")}</td><td>${statusBadge(c.status)}</td>
+          <td>${esc(c.guild_name || "—")}${c.channel_name ? ` · #${esc(c.channel_name)}` : ""}</td></tr>`).join("")}
       </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>Aucun panier ne correspond aux filtres</div>`}
     </div>`;
 }
@@ -633,7 +647,7 @@ function exportCsv(rows, um) {
   const head = ["date", "membre", "user_id", "evenement", "categorie", "quantite", "sieges", "prix", "statut", "serveur", "salon", "site", "date_evenement"];
   const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [head.join(";"), ...rows.map(c => [fmtDate(c.claimed_at), nameOf(c.user_id, um), c.user_id, c.event, c.category, c.quantity,
-    c.seats, String(c.price ?? "").replace(".", ","), c.status, c.guild_name, c.channel_name, c.site, c.event_date].map(q).join(";"))];
+    c.seats, String(c.price ?? "").replace(".", ","), c.status, c.guild_name, c.channel_name, c.site, fmtEventDate(c.event_date)].map(q).join(";"))];
   const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `flashaco-paniers-${new Date().toISOString().slice(0, 10)}.csv` });
   a.click(); URL.revokeObjectURL(a.href);
@@ -646,6 +660,7 @@ function showLogin(msg = "") {
     <form class="card login" id="login">
       <h1>Connexion</h1>
       <p>Connecte-toi avec ton compte tixsheet pour voir les analytics ACO.</p>
+      ${tixReason ? `<div class="banner" style="margin-bottom:18px;font-size:12px">ℹ️ ${esc(tixReason)} <a href="/" style="color:var(--gold)">Ouvrir tixsheet →</a></div>` : ""}
       <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
       <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password" required>
       <div class="err" id="err">${esc(msg)}</div>
@@ -695,7 +710,8 @@ function demoData() {
     claims.push({ id: "c" + i, claimed_at: new Date(t).toISOString(), user_id: uid, username: uname, guild_id: i % 3 ? "g1" : "g2",
       guild_name: i % 3 ? "FlashTICKET" : "A MOULA NOUBA", channel_name: i % 3 ? "claim-test" : "celine-module-nouba", event: e, category: cat,
       quantity: qty, seats: Array.from({ length: qty }, (_, k) => 30 + k).join(" / "), price: +(p * qty).toFixed(2), status: st,
-      warning: rnd() < .12 ? "Seats are not contiguous" : null });
+      warning: rnd() < .12 ? "Seats are not contiguous" : null,
+      site: rnd() < .5 ? "Ticketmaster FR" : "Accor Arena", event_date: "September 12, 2026 7:30 PM" });
   }
   for (let i = 0; i < 60; i++) ev.push({ id: "e" + i, at: new Date(Date.now() - rnd() * 60 * DAY).toISOString(), user_id: names[Math.floor(rnd() * names.length)][0], guild_id: "g1", type: rnd() < .5 ? "skip" : "afk" });
   return {
@@ -712,6 +728,7 @@ function demoData() {
    (and an older copy in "sb-<ref>-auth-token"). Tokens last 1h; refresh them like tixsheet does. */
 const SB_REF = new URL(SUPABASE_URL).hostname.split(".")[0];
 const jwtExp = t => { try { return JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp * 1000; } catch { return 0; } };
+let tixReason = "";
 async function getTixsheetSession() {
   let s = null;
   try { s = JSON.parse(localStorage.getItem("sb_session") || "null"); } catch {}
@@ -719,21 +736,21 @@ async function getTixsheetSession() {
   if (!token) {
     try { const o = JSON.parse(localStorage.getItem(`sb-${SB_REF}-auth-token`) || "null"); token = o?.access_token; user = o?.user; } catch {}
   }
-  if (!token) return null;
+  if (!token) { tixReason = "Aucune session tixsheet trouvée sur ce navigateur."; return null; }
   if (jwtExp(token) - 60000 > Date.now()) return { token, user };   // still valid (1 min margin)
-  if (!refreshToken) return null;
+  if (!refreshToken) { tixReason = "Ta session tixsheet a expiré et ne peut pas être renouvelée. Déconnecte-toi puis reconnecte-toi sur tixsheet.app (une seule fois) — ensuite ce ne sera plus nécessaire."; return null; }
   try {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
       method: "POST", headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
     const d = await r.json();
-    if (!r.ok || !d.access_token) return null;
+    if (!r.ok || !d.access_token) { tixReason = "Le renouvellement de ta session tixsheet a été refusé. Reconnecte-toi sur tixsheet.app."; return null; }
     // Save it exactly like tixsheet does, so tixsheet stays logged in too
     localStorage.setItem("sb_session", JSON.stringify({ token: d.access_token, refresh_token: d.refresh_token || refreshToken, user: d.user || user }));
     localStorage.setItem(`sb-${SB_REF}-auth-token`, JSON.stringify({ access_token: d.access_token, user: d.user || user }));
     return { token: d.access_token, user: d.user || user };
-  } catch { return null; }
+  } catch { tixReason = "Impossible de renouveler la session (réseau)."; return null; }
 }
 
 /* ───────── Start ───────── */
