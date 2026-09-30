@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
-<!-- aco-dashboard v9 -->
+<!-- aco-dashboard v12 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -185,6 +185,10 @@ td.num{font-weight:500}
 .login input{width:100%;height:44px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:14px;outline:none;margin-bottom:14px}
 .login input:focus{border-color:var(--gold-border)}
 .login .err{color:var(--red);font-size:13px;min-height:18px;margin-bottom:6px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,12px);background:var(--gold);color:var(--on-gold);padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:9999;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--red);color:#fff}
+.btn:disabled{opacity:.6;cursor:default}
 .live{display:inline-flex;align-items:center;gap:6px;margin-left:10px;vertical-align:middle;font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--green);background:var(--green-dim);padding:3px 10px;border-radius:99px}
 .live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 var(--green);animation:livepulse 1.8s infinite}
 .live.off{color:var(--text3);background:var(--bg-card2)} .live.off i{background:var(--text3);animation:none}
@@ -207,10 +211,12 @@ td.num{font-weight:500}
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
     <a class="back-link" href="/">← Tixsheet</a>
+    <button class="btn sm" id="lang-btn" type="button" onclick="setLang(LANG === 'fr' ? 'en' : 'fr')" title="Français / English">EN</button>
     <button class="btn sm" id="logout" type="button" hidden>Déconnexion</button>
   </div>
 </div>
 <div class="main" id="app"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ═════════════ CONFIG ═════════════
@@ -227,22 +233,113 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 })();
 
 const DEMO = new URLSearchParams(location.search).has("demo");
+
+/* ───────── Language (FR / EN) ───────── */
+const I18N = {
+  fr: {
+    overview: "Vue d'ensemble", members: "Membres", history: "Historique", queues: "Files d'attente",
+    demo: "Mode démo — données fictives. Retire <b>?demo</b> de l'adresse pour voir tes vraies données.",
+    live: "En direct", liveTitle: s => `Mise à jour automatique toutes les ${s} s`,
+    subtitle: "Paniers réclamés, résultats et files d'attente de ton équipe", updatedAt: "mis à jour à",
+    server: "Serveur", member: "Membre", event: "Événement", period: "Période",
+    allServers: "Tous les serveurs", allMembers: "Tous les membres", allEvents: "Tous les événements",
+    last7: "7 derniers jours", last30: "30 derniers jours", last90: "90 derniers jours", allTime: "Tout l'historique", custom: "Dates personnalisées…",
+    from: "Du", to: "Au", start: "début", today: "aujourd'hui", clearFilters: "✕ Effacer les filtres",
+    refresh: "↻ Actualiser", refreshing: "↻ Actualisation…", refreshed: "✓ Données actualisées", refreshFail: "Échec de l'actualisation",
+    claims: "Paniers réclamés", pendingN: n => `${n} en attente`, good: "Good", expired: "Expirés", expiredOne: "Expiré", pending: "En attente",
+    successRate: "Taux de réussite", rateSub: "good ÷ (good + expirés)", seatsSecured: "Paniers sécurisés", onGood: "paniers passés en good",
+    retailValue: "Valeur retail", goodCarts: "paniers good", perDay: "par jour", perWeek: "par semaine",
+    topMembers: "Top membres", byGood: "par paniers good", success: "Réussite",
+    noCarts: "Aucun panier", inPeriod: "sur la période choisie", noMatch: "Aucun panier ne correspond aux filtres",
+    carts: "Paniers", seats: "Places", skips: "Skips", afk: "AFK", lastCart: "Dernier panier",
+    nMembers: n => `${n} membres · clique une ligne pour le détail`, searchMember: "Rechercher un membre…",
+    noMember: "Aucun membre", noResult: "Aucun résultat pour cette recherche", close: "Fermer",
+    retailSuffix: "retail", skipsAfk: "Skips / AFK",
+    claimedOn: "Réclamé le", eventDate: "Date événement", category: "Catégorie", seatsCol: "Sièges", qty: "Qté", price: "Prix", site: "Site", status: "Statut", serverChannel: "Serveur · salon",
+    notContiguous: "⚠ non contigu", historyTitle: "Historique des paniers", nCarts: n => `${n} paniers`, shown500: " · 500 affichés",
+    allStatuses: "Tous statuts", searchEvent: "Événement, catégorie…", exportCsv: "⬇ Export CSV",
+    noQueue: "Aucune file d'attente", noQueueHint: "Crée-en une avec /queue_add puis /queue_start",
+    active: "Active", inactive: "Inactive", runner: "Runner", yourTurn: "Son tour", keptTurn: "Tour gardé", keptTurnTitle: "Tour gardé après AFK",
+    updated: "Mis à jour", queueStats: (g, a) => `${g} good · ${a} AFK`, weekOf: d => `Semaine du ${d}`, cartsN: n => `${n} panier${n > 1 ? "s" : ""}`,
+    login: "Connexion", loginSub: "Connecte-toi avec ton compte tixsheet pour voir les analytics ACO.", email: "Email", password: "Mot de passe",
+    signIn: "Se connecter", badLogin: "Email ou mot de passe incorrect.", openTix: "Ouvrir tixsheet →", logout: "Déconnexion",
+    loading: "Chargement…", noData: e => `Aucune donnée visible pour <b>${e}</b>. Si le bot a déjà synchronisé des paniers, ajoute cet email dans la table <code>aco_admins</code>.`,
+    loadError: "Impossible de charger les données",
+    rNoSession: "Aucune session tixsheet trouvée sur ce navigateur.",
+    rExpired: "Ta session tixsheet a expiré et ne peut pas être renouvelée. Déconnecte-toi puis reconnecte-toi sur tixsheet.app (une seule fois) — ensuite ce ne sera plus nécessaire.",
+    rRefused: "Le renouvellement de ta session tixsheet a été refusé. Reconnecte-toi sur tixsheet.app.", rNetwork: "Impossible de renouveler la session (réseau).",
+    cfgMissing: "Configuration manquante", cfgHint: "Colle la clé anon Supabase en haut du fichier. Aperçu :",
+    libFail: "Connexion à Supabase impossible", libFailHint: "La librairie Supabase n'a pas pu se charger (bloqueur de pub ou réseau). Désactive le bloqueur sur tixsheet.app puis recharge la page (Ctrl+F5).",
+    back: "← Tixsheet",
+  },
+  en: {
+    overview: "Overview", members: "Members", history: "History", queues: "Queues",
+    demo: "Demo mode — sample data. Remove <b>?demo</b> from the address to see your real data.",
+    live: "Live", liveTitle: s => `Auto-refresh every ${s} s`,
+    subtitle: "Carts claimed, results and queues for your team", updatedAt: "updated at",
+    server: "Server", member: "Member", event: "Event", period: "Period",
+    allServers: "All servers", allMembers: "All members", allEvents: "All events",
+    last7: "Last 7 days", last30: "Last 30 days", last90: "Last 90 days", allTime: "All time", custom: "Custom dates…",
+    from: "From", to: "To", start: "start", today: "today", clearFilters: "✕ Clear filters",
+    refresh: "↻ Refresh", refreshing: "↻ Refreshing…", refreshed: "✓ Data refreshed", refreshFail: "Refresh failed",
+    claims: "Carts claimed", pendingN: n => `${n} pending`, good: "Good", expired: "Expired", expiredOne: "Expired", pending: "Pending",
+    successRate: "Success rate", rateSub: "good ÷ (good + expired)", seatsSecured: "Carts secured", onGood: "carts marked good",
+    retailValue: "Retail value", goodCarts: "good carts", perDay: "per day", perWeek: "per week",
+    topMembers: "Top members", byGood: "by good carts", success: "Success",
+    noCarts: "No carts", inPeriod: "in the selected period", noMatch: "No cart matches the filters",
+    carts: "Carts", seats: "Seats", skips: "Skips", afk: "AFK", lastCart: "Last cart",
+    nMembers: n => `${n} members · click a row for details`, searchMember: "Search a member…",
+    noMember: "No members", noResult: "No result for this search", close: "Close",
+    retailSuffix: "retail", skipsAfk: "Skips / AFK",
+    claimedOn: "Claimed", eventDate: "Event date", category: "Category", seatsCol: "Seats", qty: "Qty", price: "Price", site: "Site", status: "Status", serverChannel: "Server · channel",
+    notContiguous: "⚠ not contiguous", historyTitle: "Cart history", nCarts: n => `${n} carts`, shown500: " · 500 shown",
+    allStatuses: "All statuses", searchEvent: "Event, category…", exportCsv: "⬇ Export CSV",
+    noQueue: "No queues", noQueueHint: "Create one with /queue_add then /queue_start",
+    active: "Active", inactive: "Inactive", runner: "Runner", yourTurn: "Their turn", keptTurn: "Turn kept", keptTurnTitle: "Turn kept after AFK",
+    updated: "Updated", queueStats: (g, a) => `${g} good · ${a} AFK`, weekOf: d => `Week of ${d}`, cartsN: n => `${n} cart${n > 1 ? "s" : ""}`,
+    login: "Sign in", loginSub: "Sign in with your tixsheet account to see ACO analytics.", email: "Email", password: "Password",
+    signIn: "Sign in", badLogin: "Wrong email or password.", openTix: "Open tixsheet →", logout: "Sign out",
+    loading: "Loading…", noData: e => `No data visible for <b>${e}</b>. If the bot already synced carts, add this email to the <code>aco_admins</code> table.`,
+    loadError: "Could not load the data",
+    rNoSession: "No tixsheet session found in this browser.",
+    rExpired: "Your tixsheet session expired and can't be renewed. Sign out and back in on tixsheet.app (once) — after that you won't need to.",
+    rRefused: "Renewing your tixsheet session was refused. Sign in again on tixsheet.app.", rNetwork: "Could not renew the session (network).",
+    cfgMissing: "Missing configuration", cfgHint: "Paste the Supabase anon key at the top of the file. Preview:",
+    libFail: "Can't connect to Supabase", libFailHint: "The Supabase library couldn't load (ad blocker or network). Disable the blocker on tixsheet.app and reload (Ctrl+F5).",
+    back: "← Tixsheet",
+  },
+};
+let LANG = "fr";
+try { LANG = localStorage.getItem("aco_lang") || (navigator.language || "fr").slice(0, 2); } catch {}
+if (!I18N[LANG]) LANG = "fr";
+const t = (k, ...a) => { const v = I18N[LANG][k] ?? I18N.fr[k] ?? k; return typeof v === "function" ? v(...a) : v; };
+const LOC = () => (LANG === "en" ? "en-GB" : "fr-FR");
+function setLang(l) {
+  LANG = l; try { localStorage.setItem("aco_lang", l); } catch {}
+  document.documentElement.lang = l; applyStaticText();
+  if (DATA.claims.length || DATA.queues.length || DEMO) render(); else if (document.getElementById("login")) showLogin();
+}
+function applyStaticText() {
+  const b = document.getElementById("lang-btn"); if (b) b.textContent = LANG === "fr" ? "EN" : "FR";
+  const back = document.querySelector(".back-link"); if (back) back.textContent = t("back");
+  const lo = document.getElementById("logout"); if (lo) lo.textContent = t("logout");
+}
 const app = document.getElementById("app");
-const eur = n => (Number(n) || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
-const int = n => (Number(n) || 0).toLocaleString("fr-FR");
+const eur = n => (Number(n) || 0).toLocaleString(LOC(), { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
+const int = n => (Number(n) || 0).toLocaleString(LOC());
 const pct = n => (n == null ? "—" : `${Math.round(n)} %`);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const fmtDate = d => d ? new Date(d).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+const fmtDate = d => d ? new Date(d).toLocaleString(LOC(), { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
 const DAY = 86400000;
 function fmtEventDate(v) {
   if (!v) return "—";
   const m = String(v).match(/<t:(\d+)(?::\w)?>/);
-  if (m) return new Date(Number(m[1]) * 1000).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  if (m) return new Date(Number(m[1]) * 1000).toLocaleString(LOC(), { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
   const d = new Date(v);
-  if (!isNaN(d) && /\d{4}/.test(v)) return d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(" 00:00", "");
+  if (!isNaN(d) && /\d{4}/.test(v)) return d.toLocaleString(LOC(), { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }).replace(" 00:00", "");
   return String(v);
 }
-const seatsCell = c => `${esc(c.seats || "—")}${c.warning ? `<div class="ev-seat" style="color:var(--amber)">⚠ non contigu</div>` : ""}`;
+const seatsCell = c => `${esc(c.seats || "—")}${c.warning ? `<div class="ev-seat" style="color:var(--amber)">${t("notContiguous")}</div>` : ""}`;
 
 let sb = null;
 let DATA = { claims: [], events: [], queues: [], users: [] };
@@ -330,7 +427,7 @@ function memberStats(f) {
 }
 
 /* ───────── Render ───────── */
-const TABS = [["overview", "Vue d'ensemble"], ["members", "Membres"], ["history", "Historique"], ["queues", "Files d'attente"]];
+const TABS = () => [["overview", t("overview")], ["members", t("members")], ["history", t("history")], ["queues", t("queues")]];
 
 function render() {
   const um = userMap();
@@ -344,35 +441,35 @@ function render() {
   for (const c of DATA.claims) if (state.guild === "all" || c.guild_id === state.guild) memberIds.add(c.user_id);
   for (const q of DATA.queues) if (state.guild === "all" || q.guild_id === state.guild) (q.members || []).forEach(id => memberIds.add(id));
   const membersList = [...memberIds].map(id => [id, nameOf(id, um)]).sort((a, b) => a[1].localeCompare(b[1]));
-  const activeFilters = [state.member !== "all" ? `👤 ${esc(nameOf(state.member, um))}` : "", state.event !== "all" ? `🎤 ${esc(state.event)}` : "", state.period === "custom" && (state.from || state.to) ? `📅 ${state.from ? new Date(state.from).toLocaleDateString("fr-FR") : "début"} → ${state.to ? new Date(state.to).toLocaleDateString("fr-FR") : "aujourd'hui"}` : ""].filter(Boolean);
+  const activeFilters = [state.member !== "all" ? `👤 ${esc(nameOf(state.member, um))}` : "", state.event !== "all" ? `🎤 ${esc(state.event)}` : "", state.period === "custom" && (state.from || state.to) ? `📅 ${state.from ? new Date(state.from).toLocaleDateString(LOC()) : t("start")} → ${state.to ? new Date(state.to).toLocaleDateString(LOC()) : t("today")}` : ""].filter(Boolean);
 
   app.innerHTML = `
-    ${DEMO ? `<div class="banner">Mode démo — données fictives. Retire <b>?demo</b> de l'adresse pour voir tes vraies données.</div>` : ""}
+    ${DEMO ? `<div class="banner">${t("demo")}</div>` : ""}
     <div class="page-top">
-      <div><h1>Analytics ACO ${!DEMO ? `<span class="live" id="live-dot" title="Mise à jour automatique toutes les ${LIVE_MS / 1000} s"><i></i>En direct</span>` : ""}</h1><p>Paniers réclamés, résultats et files d'attente de ton équipe · <span id="last-sync">mis à jour à ${new Date(lastSync || Date.now()).toLocaleTimeString("fr-FR")}</span></p>
-        ${activeFilters.length ? `<div class="chips">${activeFilters.map(f => `<span class="chip">${f}</span>`).join("")}<button class="chip clear" id="f-clear" type="button">✕ Effacer les filtres</button></div>` : ""}</div>
+      <div><h1>Analytics ACO ${!DEMO ? `<span class="live" id="live-dot" title="${t("liveTitle", LIVE_MS / 1000)}"><i></i>${t("live")}</span>` : ""}</h1><p>${t("subtitle")} · <span id="last-sync">${t("updatedAt")} ${new Date(lastSync || Date.now()).toLocaleTimeString(LOC())}</span></p>
+        ${activeFilters.length ? `<div class="chips">${activeFilters.map(f => `<span class="chip">${f}</span>`).join("")}<button class="chip clear" id="f-clear" type="button">${t("clearFilters")}</button></div>` : ""}</div>
       <div class="page-top-right">
-        <label class="sr" for="f-guild">Serveur</label>
-        <select id="f-guild"><option value="all">Tous les serveurs</option>
+        <label class="sr" for="f-guild">${t("server")}</label>
+        <select id="f-guild"><option value="all">${t("allServers")}</option>
           ${guilds.map(([id, n]) => `<option value="${esc(id)}" ${state.guild === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
-        <label class="sr" for="f-member">Membre</label>
-        <select id="f-member" style="max-width:200px"><option value="all">Tous les membres</option>
+        <label class="sr" for="f-member">${t("member")}</label>
+        <select id="f-member" style="max-width:200px"><option value="all">${t("allMembers")}</option>
           ${membersList.map(([id, n]) => `<option value="${esc(id)}" ${state.member === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
-        <label class="sr" for="f-event">Événement</label>
-        <select id="f-event" style="max-width:260px"><option value="all">Tous les événements</option>
+        <label class="sr" for="f-event">${t("event")}</label>
+        <select id="f-event" style="max-width:260px"><option value="all">${t("allEvents")}</option>
           ${eventsList.map(([n, c]) => `<option value="${esc(n)}" ${state.event === n ? "selected" : ""}>${esc(n)} (${c})</option>`).join("")}</select>
-        <label class="sr" for="f-period">Période</label>
-        <select id="f-period">${[["7", "7 derniers jours"], ["30", "30 derniers jours"], ["90", "90 derniers jours"], ["all", "Tout l'historique"], ["custom", "Dates personnalisées…"]]
+        <label class="sr" for="f-period">${t("period")}</label>
+        <select id="f-period">${[["7", t("last7")], ["30", t("last30")], ["90", t("last90")], ["all", t("allTime")], ["custom", t("custom")]]
           .map(([v, l]) => `<option value="${v}" ${state.period === v ? "selected" : ""}>${l}</option>`).join("")}</select>
         ${state.period === "custom" ? `
-          <label class="sr" for="f-from">Du</label><input type="date" id="f-from" value="${esc(state.from)}" max="${esc(state.to || "")}">
+          <label class="sr" for="f-from">${t("from")}</label><input type="date" id="f-from" value="${esc(state.from)}" max="${esc(state.to || "")}">
           <span style="color:var(--text3)">→</span>
-          <label class="sr" for="f-to">Au</label><input type="date" id="f-to" value="${esc(state.to)}" min="${esc(state.from || "")}">` : ""}
-        <button class="btn primary" id="refresh" type="button">↻ Actualiser</button>
+          <label class="sr" for="f-to">${t("to")}</label><input type="date" id="f-to" value="${esc(state.to)}" min="${esc(state.from || "")}">` : ""}
+        <button class="btn primary" id="refresh" type="button">${t("refresh")}</button>
       </div>
     </div>
     <div class="mode-tabs" role="tablist">
-      ${TABS.map(([k, l]) => `<button class="mode-tab ${state.tab === k ? "active" : ""}" role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join("")}
+      ${TABS().map(([k, l]) => `<button class="mode-tab ${state.tab === k ? "active" : ""}" role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join("")}
     </div>
     <section class="panel" ${state.tab !== "overview" ? "hidden" : ""}>${overview(f, members, um)}</section>
     <section class="panel" ${state.tab !== "members" ? "hidden" : ""}>${membersPanel(f, members, um)}</section>
@@ -401,36 +498,36 @@ function totals(f) {
 }
 
 function overview(f, members, um) {
-  const t = totals(f);
+  const tt = totals(f);
   const top = [...members].filter(s => s.claims > 0).sort((a, b) => b.good - a.good || b.claims - a.claims).slice(0, 6);
   return `
     ${stats([
-      { label: "Paniers réclamés", value: int(f.claims.length), icon: "🛒", featured: true, cls: "c-gold", sub: `${int(t.pending)} en attente` },
-      { label: "Good", value: int(t.good), icon: "✅", cls: "c-green" },
-      { label: "Expirés", value: int(t.expired), icon: "⌛", cls: "c-red" },
-      { label: "Taux de réussite", value: pct(t.rate), icon: "🎯", sub: "good ÷ (good + expirés)" },
-      { label: "Places sécurisées", value: int(t.seats), icon: "🎟️", sub: "sur les paniers good" },
-      { label: "Valeur retail", value: eur(t.retail), icon: "💶", cls: "c-blue", sub: "paniers good" },
+      { label: t("claims"), value: int(f.claims.length), icon: "🛒", featured: true, cls: "c-gold", sub: t("pendingN", int(tt.pending)) },
+      { label: t("good"), value: int(tt.good), icon: "✅", cls: "c-green" },
+      { label: t("expired"), value: int(tt.expired), icon: "⌛", cls: "c-red" },
+      { label: t("successRate"), value: pct(tt.rate), icon: "🎯", sub: t("rateSub") },
+      { label: t("seatsSecured"), value: int(tt.good), icon: "🎟️", sub: t("onGood") },
+      { label: t("retailValue"), value: eur(tt.retail), icon: "💶", cls: "c-blue", sub: t("goodCarts") },
     ])}
     <div class="grid-2">
       <div class="card">
-        <div class="card-h"><h2>Paniers réclamés</h2><span class="hint" id="chart-hint"></span></div>
+        <div class="card-h"><h2>${t("claims")}</h2><span class="hint" id="chart-hint"></span></div>
         <div class="card-b"><div class="chart" id="chart"></div></div>
       </div>
       <div class="card">
-        <div class="card-h"><h2>Top membres</h2><span class="hint">par paniers good</span></div>
+        <div class="card-h"><h2>${t("topMembers")}</h2><span class="hint">${t("byGood")}</span></div>
         <div class="card-b" style="padding:12px 0 6px">
-          ${top.length ? `<div class="table-wrap"><table><thead><tr><th>Membre</th><th class="num">Good</th><th class="num">Réussite</th></tr></thead><tbody>
+          ${top.length ? `<div class="table-wrap"><table><thead><tr><th>${t("member")}</th><th class="num">${t("good")}</th><th class="num">${t("success")}</th></tr></thead><tbody>
             ${top.map(s => `<tr class="click" data-user="${esc(s.id)}"><td><div class="who">${avatar(s.id, um)}${esc(nameOf(s.id, um))}</div></td>
               <td class="num">${int(s.good)}</td><td class="num">${pct(s.rate)}</td></tr>`).join("")}
-          </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>sur la période choisie</div>`}
+          </tbody></table></div>` : `<div class="empty"><h3>${t("noCarts")}</h3>${t("inPeriod")}</div>`}
         </div>
       </div>
     </div>`;
 }
 
-const statusBadge = s => s === "good" ? `<span class="badge good">Good</span>`
-  : s === "expired" ? `<span class="badge expired">Expiré</span>` : `<span class="badge pending">En attente</span>`;
+const statusBadge = s => s === "good" ? `<span class="badge good">${t("good")}</span>`
+  : s === "expired" ? `<span class="badge expired">${t("expiredOne")}</span>` : `<span class="badge pending">${t("pending")}</span>`;
 
 function membersPanel(f, members, um) {
   const q = state.memberSearch.toLowerCase();
@@ -442,14 +539,14 @@ function membersPanel(f, members, um) {
       const vb = key === "name" ? nameOf(b.id, um).toLowerCase() : b[key] ?? -1;
       return va < vb ? -dir : va > vb ? dir : 0;
     });
-  const cols = [["name", "Membre", ""], ["claims", "Paniers", "num"], ["good", "Good", "num"], ["expired", "Expirés", "num"],
-    ["pending", "En attente", "num"], ["rate", "Réussite", "num"], ["seats", "Places", "num"], ["retail", "Valeur retail", "num"],
-    ["skips", "Skips", "num"], ["afk", "AFK", "num"], ["lastClaim", "Dernier panier", ""]];
+  const cols = [["name", t("member"), ""], ["claims", t("carts"), "num"], ["good", t("good"), "num"], ["expired", t("expired"), "num"],
+    ["pending", t("pending"), "num"], ["rate", t("success"), "num"], ["retail", t("retailValue"), "num"],
+    ["skips", t("skips"), "num"], ["afk", t("afk"), "num"], ["lastClaim", t("lastCart"), ""]];
   const arrow = k => k === key ? ` <span class="arrow">${dir < 0 ? "▼" : "▲"}</span>` : "";
   return `
     <div class="card">
-      <div class="card-h"><h2>Membres</h2><span class="hint">${int(rows.length)} membres · clique une ligne pour le détail</span>
-        <input type="search" id="m-search" placeholder="Rechercher un membre…" value="${esc(state.memberSearch)}" style="margin-left:auto;min-width:220px">
+      <div class="card-h"><h2>${t("members")}</h2><span class="hint">${t("nMembers", int(rows.length))}</span>
+        <input type="search" id="m-search" placeholder="${t("searchMember")}" value="${esc(state.memberSearch)}" style="margin-left:auto;min-width:220px">
       </div>
       <div class="card-b" style="padding:14px 0 0">
         ${rows.length ? `<div class="table-wrap"><table><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-sort="${k}">${l}${arrow(k)}</th>`).join("")}</tr></thead>
@@ -457,9 +554,9 @@ function membersPanel(f, members, um) {
           <td><div class="who">${avatar(s.id, um)}${esc(nameOf(s.id, um))}</div></td>
           <td class="num">${int(s.claims)}</td><td class="num c-green">${int(s.good)}</td>
           <td class="num c-red">${int(s.expired)}</td><td class="num">${int(s.pending)}</td>
-          <td class="num">${pct(s.rate)}</td><td class="num">${int(s.seats)}</td><td class="num">${eur(s.retail)}</td>
+          <td class="num">${pct(s.rate)}</td><td class="num">${eur(s.retail)}</td>
           <td class="num">${int(s.skips)}</td><td class="num">${int(s.afk)}</td><td>${fmtDate(s.lastClaim)}</td></tr>`).join("")}
-        </tbody></table></div>` : `<div class="empty"><h3>Aucun membre</h3>Aucun résultat pour cette recherche</div>`}
+        </tbody></table></div>` : `<div class="empty"><h3>${t("noMember")}</h3>${t("noResult")}</div>`}
       </div>
     </div>
     ${state.selected ? memberDetail(state.selected, f, members, um) : ""}`;
@@ -472,25 +569,25 @@ function memberDetail(id, f, members, um) {
   return `
     <div class="card detail" id="detail"><div class="card-b">
       <div class="detail-h">${avatar(id, um)}<div><h2>${esc(nameOf(id, um))}</h2><div class="id">ID ${esc(id)}</div></div>
-        <button class="btn sm" id="close-detail" type="button">Fermer</button></div>
+        <button class="btn sm" id="close-detail" type="button">${t("close")}</button></div>
       ${stats([
-        { label: "Paniers", value: int(s.claims), cls: "c-gold", featured: true, sub: `${int(s.pending)} en attente` },
-        { label: "Good", value: int(s.good), cls: "c-green" },
-        { label: "Expirés", value: int(s.expired), cls: "c-red" },
-        { label: "Réussite", value: pct(s.rate) },
-        { label: "Places", value: int(s.seats), sub: `${eur(s.retail)} retail` },
-        { label: "Skips / AFK", value: `${int(s.skips)} / ${int(s.afk)}` },
+        { label: t("carts"), value: int(s.claims), cls: "c-gold", featured: true, sub: t("pendingN", int(s.pending)) },
+        { label: t("good"), value: int(s.good), cls: "c-green" },
+        { label: t("expired"), value: int(s.expired), cls: "c-red" },
+        { label: t("success"), value: pct(s.rate) },
+        { label: t("retailValue"), value: eur(s.retail), cls: "c-blue", sub: t("goodCarts") },
+        { label: t("skipsAfk"), value: `${int(s.skips)} / ${int(s.afk)}` },
       ])}
-      <div class="sub-h">Paniers réclamés</div>
-      ${claims.length ? `<div class="table-wrap"><table><thead><tr><th>Réclamé le</th><th>Événement</th><th>Date événement</th><th>Catégorie</th><th>Sièges</th>
-        <th class="num">Qté</th><th class="num">Prix</th><th>Site</th><th>Statut</th></tr></thead><tbody>
+      <div class="sub-h">${t("claims")}</div>
+      ${claims.length ? `<div class="table-wrap"><table><thead><tr><th>${t("claimedOn")}</th><th>${t("event")}</th><th>${t("eventDate")}</th><th>${t("category")}</th><th>${t("seatsCol")}</th>
+        <th class="num">${t("qty")}</th><th class="num">${t("price")}</th><th>${t("site")}</th><th>${t("status")}</th></tr></thead><tbody>
         ${claims.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td>
           <td><div class="ev-name">${esc(c.event)}</div></td>
           <td>${esc(fmtEventDate(c.event_date))}</td>
           <td>${esc(c.category || "—")}</td><td>${seatsCell(c)}</td>
           <td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
           <td>${esc(c.site || "—")}</td><td>${statusBadge(c.status)}</td></tr>`).join("")}
-        </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>sur la période choisie</div>`}
+        </tbody></table></div>` : `<div class="empty"><h3>${t("noCarts")}</h3>${t("inPeriod")}</div>`}
     </div></div>`;
 }
 
@@ -505,20 +602,20 @@ function historyPanel(f, members, um) {
   const rows = historyRows(f), shown = rows.slice(0, 500), h = state.hist;
   return `
     <div class="card">
-      <div class="card-h"><h2>Historique des paniers</h2><span class="hint">${int(rows.length)} paniers${rows.length > 500 ? " · 500 affichés" : ""}</span></div>
+      <div class="card-h"><h2>${t("historyTitle")}</h2><span class="hint">${t("nCarts", int(rows.length))}${rows.length > 500 ? t("shown500") : ""}</span></div>
       <div class="card-b">
         <div class="page-top-right">
-          <select id="h-user"><option value="all">Tous les membres</option>
+          <select id="h-user"><option value="all">${t("allMembers")}</option>
             ${members.filter(s => s.claims).sort((a, b) => nameOf(a.id, um).localeCompare(nameOf(b.id, um)))
               .map(s => `<option value="${esc(s.id)}" ${h.user === s.id ? "selected" : ""}>${esc(nameOf(s.id, um))}</option>`).join("")}</select>
-          <select id="h-status">${[["all", "Tous statuts"], ["good", "Good"], ["expired", "Expirés"], ["pending", "En attente"]]
+          <select id="h-status">${[["all", t("allStatuses")], ["good", t("good")], ["expired", t("expired")], ["pending", t("pending")]]
             .map(([v, l]) => `<option value="${v}" ${h.status === v ? "selected" : ""}>${l}</option>`).join("")}</select>
-          <input type="search" id="h-q" placeholder="Événement, catégorie…" value="${esc(h.q)}" style="flex:1;min-width:200px">
-          <button class="btn" id="csv" type="button">⬇ Export CSV</button>
+          <input type="search" id="h-q" placeholder="${t("searchEvent")}" value="${esc(h.q)}" style="flex:1;min-width:200px">
+          <button class="btn" id="csv" type="button">${t("exportCsv")}</button>
         </div>
       </div>
-      ${shown.length ? `<div class="table-wrap"><table><thead><tr><th>Réclamé le</th><th>Membre</th><th>Événement</th><th>Date événement</th><th>Catégorie</th><th>Sièges</th>
-        <th class="num">Qté</th><th class="num">Prix</th><th>Site</th><th>Statut</th><th>Serveur · salon</th></tr></thead><tbody>
+      ${shown.length ? `<div class="table-wrap"><table><thead><tr><th>${t("claimedOn")}</th><th>${t("member")}</th><th>${t("event")}</th><th>${t("eventDate")}</th><th>${t("category")}</th><th>${t("seatsCol")}</th>
+        <th class="num">${t("qty")}</th><th class="num">${t("price")}</th><th>${t("site")}</th><th>${t("status")}</th><th>${t("serverChannel")}</th></tr></thead><tbody>
         ${shown.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td><div class="who">${avatar(c.user_id, um)}${esc(nameOf(c.user_id, um))}</div></td>
           <td><div class="ev-name">${esc(c.event)}</div></td>
           <td>${esc(fmtEventDate(c.event_date))}</td>
@@ -526,28 +623,28 @@ function historyPanel(f, members, um) {
           <td class="num">${c.quantity ?? "—"}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
           <td>${esc(c.site || "—")}</td><td>${statusBadge(c.status)}</td>
           <td>${esc(c.guild_name || "—")}${c.channel_name ? ` · #${esc(c.channel_name)}` : ""}</td></tr>`).join("")}
-      </tbody></table></div>` : `<div class="empty"><h3>Aucun panier</h3>Aucun panier ne correspond aux filtres</div>`}
+      </tbody></table></div>` : `<div class="empty"><h3>${t("noCarts")}</h3>${t("noMatch")}</div>`}
     </div>`;
 }
 
 function queuesPanel(f, members, um) {
-  if (!f.queues.length) return `<div class="card"><div class="empty"><h3>Aucune file d'attente</h3>Crée-en une avec /queue_add puis /queue_start</div></div>`;
+  if (!f.queues.length) return `<div class="card"><div class="empty"><h3>${t("noQueue")}</h3>${t("noQueueHint")}</div></div>`;
   const byId = new Map(members.map(s => [s.id, s]));
   return `<div class="queues">${[...f.queues].sort((a, b) => (b.active - a.active) || (a.channel_name || "").localeCompare(b.channel_name || "")).map(q => `
     <div class="card queue">
       <div class="card-h"><h2>#${esc(q.channel_name || q.id)}</h2>
-        <span class="badge ${q.active ? "good" : "plain"}">${q.active ? "Active" : "Inactive"}</span>
+        <span class="badge ${q.active ? "good" : "plain"}">${q.active ? t("active") : t("inactive")}</span>
         <span class="hint" style="width:100%">${esc(q.guild_name || "")}</span></div>
       <div class="card-b"><ol>${(q.members || []).map((id, i) => {
         const s = byId.get(id);
         return `<li class="${q.holder === id ? "turn" : ""}"><span class="n">${i + 1}</span>
           <div class="who">${avatar(id, um)}${esc(nameOf(id, um))}</div>
-          ${q.runner === id ? `<span class="badge plain">Runner</span>` : ""}
-          ${q.holder === id ? `<span class="badge gold">Son tour</span>` : ""}
-          ${(q.priority || []).includes(id) ? `<span class="badge pending" title="Tour gardé après AFK">Tour gardé</span>` : ""}
-          <span class="stats-mini">${s ? `${int(s.good)} good · ${int(s.afk)} AFK` : ""}</span></li>`;
-      }).join("") || `<li class="empty">Aucun membre</li>`}</ol>
-      <div class="meta">Mis à jour ${fmtDate(q.updated_at)}</div></div>
+          ${q.runner === id ? `<span class="badge plain">${t("runner")}</span>` : ""}
+          ${q.holder === id ? `<span class="badge gold">${t("yourTurn")}</span>` : ""}
+          ${(q.priority || []).includes(id) ? `<span class="badge pending" title="${t("keptTurnTitle")}">${t("keptTurn")}</span>` : ""}
+          <span class="stats-mini">${s ? t("queueStats", int(s.good), int(s.afk)) : ""}</span></li>`;
+      }).join("") || `<li class="empty">${t("noMember")}</li>`}</ol>
+      <div class="meta">${t("updated")} ${fmtDate(q.updated_at)}</div></div>
     </div>`).join("")}</div>`;
 }
 
@@ -562,7 +659,7 @@ function drawChart(claims) {
   const end = Math.min(rEnd, now);
   const spanDays = Math.max(1, Math.ceil((end - start) / DAY));
   const step = spanDays > 120 ? 7 : 1;
-  document.getElementById("chart-hint").textContent = step === 7 ? "par semaine" : "par jour";
+  document.getElementById("chart-hint").textContent = step === 7 ? t("perWeek") : t("perDay");
   const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
   const s0 = dayStart(start);
   const n = Math.ceil((dayStart(end) - s0) / DAY / step) + 1;
@@ -579,14 +676,14 @@ function drawChart(claims) {
   const bw = pw / n, gap = Math.min(2 + bw * 0.2, 8), barW = Math.max(2, bw - gap);
   const y = v => T + ph - (v / niceMax) * ph;
   const lblEvery = Math.ceil(n / Math.max(2, Math.floor(pw / 64)));
-  const fmtT = t => new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+  const fmtT = t => new Date(t).toLocaleDateString(LOC(), { day: "2-digit", month: "2-digit" });
   const r = Math.min(4, barW / 2);
   const barPath = (x, v) => {
     if (!v) return "";
     const yt = y(v), yb = T + ph, h = yb - yt, rr = Math.min(r, h);
     return `M${x},${yb} V${yt + rr} Q${x},${yt} ${x + rr},${yt} H${x + barW - rr} Q${x + barW},${yt} ${x + barW},${yt + rr} V${yb} Z`;
   };
-  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Paniers réclamés ${step === 7 ? "par semaine" : "par jour"}">
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${t("claims")} ${step === 7 ? t("perWeek") : t("perDay")}">
     ${ticks.map(v => `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="tick" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
     ${buckets.map((b, i) => `<rect class="hit" data-i="${i}" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}"/><path class="bar" d="${barPath(L + i * bw + gap / 2, b.v)}"/>`).join("")}
     <line class="baseline" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>
@@ -596,8 +693,8 @@ function drawChart(claims) {
   el.querySelectorAll(".hit").forEach(h => {
     h.addEventListener("mouseenter", () => {
       const b = buckets[+h.dataset.i];
-      const label = step === 7 ? `Semaine du ${fmtT(b.t)}` : new Date(b.t).toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" });
-      tip.innerHTML = `<b>${b.v} panier${b.v > 1 ? "s" : ""}</b><span>${label}</span>`;
+      const label = step === 7 ? t("weekOf", fmtT(b.t)) : new Date(b.t).toLocaleDateString(LOC(), { weekday: "short", day: "2-digit", month: "short" });
+      tip.innerHTML = `<b>${t("cartsN", b.v)}</b><span>${label}</span>`;
       const box = el.getBoundingClientRect(), hb = h.getBoundingClientRect();
       tip.style.left = `${hb.left - box.left + hb.width / 2}px`;
       tip.style.top = `${(y(b.v) / H) * box.height}px`;
@@ -627,7 +724,12 @@ function bind(f, um) {
   on("f-from", "change", e => { state.from = e.target.value; render(); });
   on("f-to", "change", e => { state.to = e.target.value; render(); });
   on("f-clear", "click", () => { state.member = "all"; state.event = "all"; state.period = "30"; state.from = ""; state.to = ""; render(); });
-  on("refresh", "click", () => refresh());
+  on("refresh", "click", async e => {
+    const btn = e.currentTarget;
+    btn.disabled = true; btn.textContent = t("refreshing");
+    const ok = await refresh();
+    toast(ok ? `${t("refreshed")} · ${new Date().toLocaleTimeString(LOC())}` : t("refreshFail"), !ok);
+  });
   document.querySelectorAll("tr.click").forEach(tr => tr.addEventListener("click", () => {
     state.selected = tr.dataset.user; state.tab = "members"; render();
     document.getElementById("detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -662,26 +764,26 @@ function showLogin(msg = "") {
   document.getElementById("logout").hidden = true;
   app.innerHTML = `
     <form class="card login" id="login">
-      <h1>Connexion</h1>
-      <p>Connecte-toi avec ton compte tixsheet pour voir les analytics ACO.</p>
-      ${tixReason ? `<div class="banner" style="margin-bottom:18px;font-size:12px">ℹ️ ${esc(tixReason)} <a href="/" style="color:var(--gold)">Ouvrir tixsheet →</a></div>` : ""}
-      <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
-      <label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password" required>
+      <h1>${t("login")}</h1>
+      <p>${t("loginSub")}</p>
+      ${tixReason ? `<div class="banner" style="margin-bottom:18px;font-size:12px">ℹ️ ${esc(t(tixReason))} <a href="/" style="color:var(--gold)">${t("openTix")}</a></div>` : ""}
+      <label for="email">${t("email")}</label><input id="email" type="email" autocomplete="username" required>
+      <label for="pw">${t("password")}</label><input id="pw" type="password" autocomplete="current-password" required>
       <div class="err" id="err">${esc(msg)}</div>
-      <button class="btn primary" type="submit" style="width:100%;justify-content:center">Se connecter</button>
+      <button class="btn primary" type="submit" style="width:100%;justify-content:center">${t("signIn")}</button>
     </form>`;
   document.getElementById("login").addEventListener("submit", async e => {
     e.preventDefault();
     document.getElementById("err").textContent = "";
     const { error } = await sb.auth.signInWithPassword({ email: document.getElementById("email").value.trim(), password: document.getElementById("pw").value });
-    if (error) return (document.getElementById("err").textContent = "Email ou mot de passe incorrect.");
+    if (error) return (document.getElementById("err").textContent = t("badLogin"));
     refresh();
   });
 }
 
 async function refresh() {
   try {
-    if (!app.innerHTML) app.innerHTML = `<div class="empty">Chargement…</div>`;
+    if (!app.innerHTML) app.innerHTML = `<div class="empty">${t("loading")}</div>`;
     await loadData();
     if (sb && !DEMO) {
       const lo = document.getElementById("logout");
@@ -693,11 +795,13 @@ async function refresh() {
     startLive();
     if (!DEMO && DATA.claims.length === 0 && DATA.queues.length === 0 && DATA.users.length === 0) {
       const { data: { user } } = await sb.auth.getUser();
-      app.insertAdjacentHTML("afterbegin", `<div class="banner">Aucune donnée visible pour <b>${esc(user?.email || "")}</b>. Si le bot a déjà synchronisé des paniers, ajoute cet email dans la table <code>aco_admins</code>.</div>`);
+      app.insertAdjacentHTML("afterbegin", `<div class="banner">${t("noData", esc(user?.email || ""))}</div>`);
     }
+    return true;
   } catch (err) {
     console.error(err);
-    app.innerHTML = `<div class="card"><div class="empty"><h3>Impossible de charger les données</h3>${esc(err.message || err)}</div></div>`;
+    app.innerHTML = `<div class="card"><div class="empty"><h3>${t("loadError")}</h3>${esc(err.message || err)}</div></div>`;
+    return false;
   }
 }
 
@@ -729,6 +833,12 @@ function demoData() {
   };
 }
 
+function toast(msg, isErr = false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.toggle("err", isErr); t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
 /* ───────── Live updates ─────────
    Reloads the data every LIVE_MS while the tab is visible; re-renders only if something changed
    and never while you're typing in a field. */
@@ -745,7 +855,7 @@ async function liveTick() {
     lastSync = Date.now();
     const sig = dataSig();
     if (sig !== lastSig) { lastSig = sig; const y = window.scrollY; render(); window.scrollTo(0, y); }
-    else { const t = document.getElementById("last-sync"); if (t) t.textContent = "mis à jour à " + new Date(lastSync).toLocaleTimeString("fr-FR"); }
+    else { const ls = document.getElementById("last-sync"); if (ls) ls.textContent = t("updatedAt") + " " + new Date(lastSync).toLocaleTimeString(LOC()); }
     document.getElementById("live-dot")?.classList.remove("off");
   } catch (err) {
     console.warn("Live update failed:", err.message || err);
@@ -771,33 +881,34 @@ async function getTixsheetSession() {
   if (!token) {
     try { const o = JSON.parse(localStorage.getItem(`sb-${SB_REF}-auth-token`) || "null"); token = o?.access_token; user = o?.user; } catch {}
   }
-  if (!token) { tixReason = "Aucune session tixsheet trouvée sur ce navigateur."; return null; }
+  if (!token) { tixReason = "rNoSession"; return null; }
   if (jwtExp(token) - 60000 > Date.now()) return { token, user };   // still valid (1 min margin)
-  if (!refreshToken) { tixReason = "Ta session tixsheet a expiré et ne peut pas être renouvelée. Déconnecte-toi puis reconnecte-toi sur tixsheet.app (une seule fois) — ensuite ce ne sera plus nécessaire."; return null; }
+  if (!refreshToken) { tixReason = "rExpired"; return null; }
   try {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
       method: "POST", headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
     const d = await r.json();
-    if (!r.ok || !d.access_token) { tixReason = "Le renouvellement de ta session tixsheet a été refusé. Reconnecte-toi sur tixsheet.app."; return null; }
+    if (!r.ok || !d.access_token) { tixReason = "rRefused"; return null; }
     // Save it exactly like tixsheet does, so tixsheet stays logged in too
     localStorage.setItem("sb_session", JSON.stringify({ token: d.access_token, refresh_token: d.refresh_token || refreshToken, user: d.user || user }));
     localStorage.setItem(`sb-${SB_REF}-auth-token`, JSON.stringify({ access_token: d.access_token, user: d.user || user }));
     return { token: d.access_token, user: d.user || user };
-  } catch { tixReason = "Impossible de renouveler la session (réseau)."; return null; }
+  } catch { tixReason = "rNetwork"; return null; }
 }
 
 /* ───────── Start ───────── */
 (async () => {
+  document.documentElement.lang = LANG; applyStaticText();
   window.addEventListener("resize", () => { if (state.tab === "overview" && DATA.claims.length) drawChart(filtered().claims); });
   if (DEMO) return refresh();
   if (SUPABASE_ANON_KEY.startsWith("PASTE")) {
-    app.innerHTML = `<div class="card"><div class="empty"><h3>Configuration manquante</h3>Colle la clé anon Supabase en haut du fichier. Aperçu : <a href="?demo">?demo</a></div></div>`;
+    app.innerHTML = `<div class="card"><div class="empty"><h3>${t("cfgMissing")}</h3>${t("cfgHint")} <a href="?demo">?demo</a></div></div>`;
     return;
   }
   if (!window.supabase) {
-    app.innerHTML = `<div class="card"><div class="empty"><h3>Connexion à Supabase impossible</h3>La librairie Supabase n'a pas pu se charger (bloqueur de pub ou réseau). Désactive le bloqueur sur tixsheet.app puis recharge la page (Ctrl+F5).</div></div>`;
+    app.innerHTML = `<div class="card"><div class="empty"><h3>${t("libFail")}</h3>${t("libFailHint")}</div></div>`;
     return;
   }
   // 1) Reuse the tixsheet login (same site, same Supabase project) — no second login
