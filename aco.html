@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
-<!-- aco-dashboard v3 -->
+<!-- aco-dashboard v4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -77,6 +77,13 @@ button,input,select{font-family:"Inter",sans-serif}
 select,input[type=search]{height:40px;padding:0 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:13px;outline:none}
 select:focus,input[type=search]:focus{border-color:var(--gold-border)}
 select option{background:var(--bg-card)}
+input[type=date]{height:40px;padding:0 10px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:13px;outline:none;color-scheme:dark}
+body.theme-cream input[type=date],body.theme-arctic input[type=date]{color-scheme:light}
+input[type=date]:focus{border-color:var(--gold-border)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:99px;background:var(--gold-dim);border:1px solid var(--gold-border);font-size:12px;font-weight:500;color:var(--gold)}
+.chip.clear{cursor:pointer;background:transparent;border-color:var(--border2);color:var(--text2)}
+.chip.clear:hover{color:var(--text);border-color:var(--border3)}
 input::placeholder{color:var(--text3)}
 .btn{height:40px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-card);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .12s}
 .btn:hover{background:var(--bg-hover);color:var(--text);border-color:var(--border3)}
@@ -226,7 +233,7 @@ const DAY = 86400000;
 
 let sb = null;
 let DATA = { claims: [], events: [], queues: [], users: [] };
-const state = { tab: "overview", guild: "all", period: "30", memberSort: { key: "good", dir: -1 }, memberSearch: "",
+const state = { tab: "overview", guild: "all", period: "30", event: "all", from: "", to: "", memberSort: { key: "good", dir: -1 }, memberSearch: "",
   selected: null, hist: { user: "all", status: "all", q: "" } };
 
 /* ───────── Data ───────── */
@@ -264,13 +271,23 @@ function avatar(id, um) {
     : `<span class="av">${esc((u?.username || "?").slice(0, 1).toUpperCase())}</span>`;
 }
 
-function periodStart() { return state.period === "all" ? 0 : Date.now() - Number(state.period) * DAY; }
+// Date range [start, end] in ms from the period filter (custom = from/to date inputs)
+function range() {
+  if (state.period === "custom") {
+    const start = state.from ? new Date(state.from + "T00:00:00").getTime() : 0;
+    const end = state.to ? new Date(state.to + "T23:59:59.999").getTime() : Date.now();
+    return [start, end];
+  }
+  return [state.period === "all" ? 0 : Date.now() - Number(state.period) * DAY, Date.now()];
+}
+const inRange = (iso, [a, b]) => { const t = new Date(iso).getTime(); return t >= a && t <= b; };
 function filtered() {
-  const since = periodStart(), g = state.guild;
-  const inGuild = r => g === "all" || r.guild_id === g;
+  const r = range(), g = state.guild;
+  const inGuild = x => g === "all" || x.guild_id === g;
+  const inEvent = c => state.event === "all" || (c.event || "—") === state.event;
   return {
-    claims: DATA.claims.filter(c => inGuild(c) && new Date(c.claimed_at).getTime() >= since),
-    events: DATA.events.filter(e => inGuild(e) && new Date(e.at).getTime() >= since),
+    claims: DATA.claims.filter(c => inGuild(c) && inEvent(c) && inRange(c.claimed_at, r)),
+    events: DATA.events.filter(e => inGuild(e) && inRange(e.at, r)),
     queues: DATA.queues.filter(q => inGuild(q)),
   };
 }
@@ -306,18 +323,30 @@ function render() {
   const f = filtered();
   const members = memberStats(f);
   const guilds = [...new Map([...DATA.claims, ...DATA.queues].filter(r => r.guild_id).map(r => [r.guild_id, r.guild_name || r.guild_id])).entries()];
+  const evCount = new Map();
+  for (const c of DATA.claims) if (state.guild === "all" || c.guild_id === state.guild) evCount.set(c.event || "—", (evCount.get(c.event || "—") || 0) + 1);
+  const eventsList = [...evCount.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const activeFilters = [state.event !== "all" ? `🎤 ${esc(state.event)}` : "", state.period === "custom" && (state.from || state.to) ? `📅 ${state.from ? new Date(state.from).toLocaleDateString("fr-FR") : "début"} → ${state.to ? new Date(state.to).toLocaleDateString("fr-FR") : "aujourd'hui"}` : ""].filter(Boolean);
 
   app.innerHTML = `
     ${DEMO ? `<div class="banner">Mode démo — données fictives. Retire <b>?demo</b> de l'adresse pour voir tes vraies données.</div>` : ""}
     <div class="page-top">
-      <div><h1>Analytics ACO</h1><p>Paniers réclamés, résultats et files d'attente de ton équipe · mis à jour à ${new Date().toLocaleTimeString("fr-FR")}</p></div>
+      <div><h1>Analytics ACO</h1><p>Paniers réclamés, résultats et files d'attente de ton équipe · mis à jour à ${new Date().toLocaleTimeString("fr-FR")}</p>
+        ${activeFilters.length ? `<div class="chips">${activeFilters.map(f => `<span class="chip">${f}</span>`).join("")}<button class="chip clear" id="f-clear" type="button">✕ Effacer les filtres</button></div>` : ""}</div>
       <div class="page-top-right">
         <label class="sr" for="f-guild">Serveur</label>
         <select id="f-guild"><option value="all">Tous les serveurs</option>
           ${guilds.map(([id, n]) => `<option value="${esc(id)}" ${state.guild === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
+        <label class="sr" for="f-event">Événement</label>
+        <select id="f-event" style="max-width:260px"><option value="all">Tous les événements</option>
+          ${eventsList.map(([n, c]) => `<option value="${esc(n)}" ${state.event === n ? "selected" : ""}>${esc(n)} (${c})</option>`).join("")}</select>
         <label class="sr" for="f-period">Période</label>
-        <select id="f-period">${[["7", "7 derniers jours"], ["30", "30 derniers jours"], ["90", "90 derniers jours"], ["all", "Tout l'historique"]]
+        <select id="f-period">${[["7", "7 derniers jours"], ["30", "30 derniers jours"], ["90", "90 derniers jours"], ["all", "Tout l'historique"], ["custom", "Dates personnalisées…"]]
           .map(([v, l]) => `<option value="${v}" ${state.period === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+        ${state.period === "custom" ? `
+          <label class="sr" for="f-from">Du</label><input type="date" id="f-from" value="${esc(state.from)}" max="${esc(state.to || "")}">
+          <span style="color:var(--text3)">→</span>
+          <label class="sr" for="f-to">Au</label><input type="date" id="f-to" value="${esc(state.to)}" min="${esc(state.from || "")}">` : ""}
         <button class="btn primary" id="refresh" type="button">↻ Actualiser</button>
       </div>
     </div>
@@ -502,13 +531,15 @@ function drawChart(claims) {
   if (!el) return;
   const now = Date.now();
   const first = claims.length ? Math.min(...claims.map(c => new Date(c.claimed_at).getTime())) : now - 30 * DAY;
-  const start = state.period === "all" ? first : now - Number(state.period) * DAY;
-  const spanDays = Math.max(1, Math.ceil((now - start) / DAY));
+  const [rStart, rEnd] = range();
+  const start = rStart === 0 ? first : rStart;
+  const end = Math.min(rEnd, now);
+  const spanDays = Math.max(1, Math.ceil((end - start) / DAY));
   const step = spanDays > 120 ? 7 : 1;
   document.getElementById("chart-hint").textContent = step === 7 ? "par semaine" : "par jour";
   const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
   const s0 = dayStart(start);
-  const n = Math.ceil((dayStart(now) - s0) / DAY / step) + 1;
+  const n = Math.ceil((dayStart(end) - s0) / DAY / step) + 1;
   const buckets = Array.from({ length: n }, (_, i) => ({ t: s0 + i * step * DAY, v: 0 }));
   for (const c of claims) {
     const i = Math.floor((dayStart(new Date(c.claimed_at).getTime()) - s0) / DAY / step);
@@ -555,8 +586,20 @@ function drawChart(claims) {
 function bind(f, um) {
   const on = (id, ev, fn) => document.getElementById(id)?.addEventListener(ev, fn);
   document.querySelectorAll(".mode-tab").forEach(b => b.addEventListener("click", () => { state.tab = b.dataset.tab; render(); }));
-  on("f-guild", "change", e => { state.guild = e.target.value; render(); });
-  on("f-period", "change", e => { state.period = e.target.value; render(); });
+  on("f-guild", "change", e => { state.guild = e.target.value; state.event = "all"; render(); });
+  on("f-period", "change", e => {
+    state.period = e.target.value;
+    if (state.period === "custom" && !state.from) {
+      const d = new Date(Date.now() - 30 * DAY);
+      state.from = d.toISOString().slice(0, 10);
+      state.to = new Date().toISOString().slice(0, 10);
+    }
+    render();
+  });
+  on("f-event", "change", e => { state.event = e.target.value; render(); });
+  on("f-from", "change", e => { state.from = e.target.value; render(); });
+  on("f-to", "change", e => { state.to = e.target.value; render(); });
+  on("f-clear", "click", () => { state.event = "all"; state.period = "30"; state.from = ""; state.to = ""; render(); });
   on("refresh", "click", () => refresh());
   document.querySelectorAll("tr.click").forEach(tr => tr.addEventListener("click", () => {
     state.selected = tr.dataset.user; state.tab = "members"; render();
