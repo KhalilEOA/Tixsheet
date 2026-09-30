@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FlashACO Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* ── Config tokens ─────────────────────────────── */
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --surface-2: #f3f2ee;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --series-1-hover: #256abf;
+    --good: #0ca30c;
+    --good-ink: #006300;
+    --warning: #fab219;
+    --critical: #d03b3b;
+    --critical-ink: #b52f2f;
+    --accent: #2a78d6;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --surface-2: #222220;
+      --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5; --series-1-hover: #5598e7;
+      --good-ink: #0ca30c; --critical-ink: #e66767; --accent: #3987e5;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --surface-2: #222220;
+    --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-1-hover: #5598e7;
+    --good-ink: #0ca30c; --critical-ink: #e66767; --accent: #3987e5;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--page); color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  /* Header */
+  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+  .brand .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: #fff;
+    display: grid; place-items: center; font-weight: 700; }
+  .brand h1 { font-size: 18px; margin: 0; letter-spacing: -.01em; }
+  .brand .sub { font-size: 12px; color: var(--muted); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  select, input[type=search], .btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 10px; min-height: 34px;
+  }
+  .btn { cursor: pointer; }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+  .updated { font-size: 12px; color: var(--muted); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; overflow-x: auto; }
+  .tab { padding: 9px 14px; border: 0; background: none; cursor: pointer; color: var(--ink-2);
+    border-bottom: 2px solid transparent; white-space: nowrap; }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .panel[hidden] { display: none; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+  .card-h { display: flex; align-items: center; gap: 10px; padding: 14px 16px 0; flex-wrap: wrap; }
+  .card-h h2 { font-size: 14px; margin: 0; font-weight: 600; }
+  .card-h .hint { font-size: 12px; color: var(--muted); }
+  .card-b { padding: 14px 16px 16px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi { padding: 14px 16px; }
+  .kpi .label { font-size: 12px; color: var(--ink-2); }
+  .kpi .value { font-size: 26px; font-weight: 650; letter-spacing: -.02em; margin-top: 4px; }
+  .kpi .foot { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kpi .value.good { color: var(--good-ink); }
+  .kpi .value.bad { color: var(--critical-ink); }
+
+  .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Chart */
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: 240px; overflow: visible; }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .baseline { stroke: var(--axis); stroke-width: 1; }
+  .chart .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .chart .bar { fill: var(--series-1); }
+  .chart .hit { fill: transparent; cursor: default; }
+  .chart .hit:hover + .bar, .chart .bar.on { fill: var(--series-1-hover); }
+  .tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--border);
+    box-shadow: var(--shadow); border-radius: 8px; padding: 8px 10px; font-size: 12px; white-space: nowrap;
+    transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity .08s; z-index: 5; }
+  .tip b { display: block; font-size: 13px; color: var(--ink); }
+  .tip span { color: var(--ink-2); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { font-size: 12px; font-weight: 600; color: var(--ink-2); position: sticky; top: 0; background: var(--surface); }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--ink); }
+  th .arrow { color: var(--muted); font-size: 10px; }
+  td.num, th.num { text-align: right; }
+  tbody tr.click { cursor: pointer; }
+  tbody tr.click:hover td { background: var(--surface-2); }
+  .empty { padding: 28px; text-align: center; color: var(--muted); }
+  .wrapcell { white-space: normal; min-width: 180px; }
+
+  .who { display: flex; align-items: center; gap: 8px; }
+  .who img, .who .av { width: 24px; height: 24px; border-radius: 50%; background: var(--surface-2); flex: none; object-fit: cover; }
+  .who .av { display: grid; place-items: center; font-size: 11px; color: var(--ink-2); }
+  .tag { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); }
+
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+  .status i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .status.good i { background: var(--good); } .status.good { color: var(--good-ink); }
+  .status.expired i { background: var(--critical); } .status.expired { color: var(--critical-ink); }
+  .status.pending i { background: var(--warning); } .status.pending { color: var(--ink-2); }
+  .pos { color: var(--critical-ink); font-weight: 600; }
+  .zero { color: var(--muted); }
+  .credit { color: var(--good-ink); font-weight: 600; }
+
+  /* Member detail */
+  .detail { margin-top: 16px; }
+  .detail-h { display: flex; align-items: center; gap: 12px; }
+  .detail-h img, .detail-h .av { width: 40px; height: 40px; border-radius: 50%; }
+  .detail-h .av { display: grid; place-items: center; background: var(--surface-2); }
+  .detail-h h2 { margin: 0; font-size: 16px; }
+  .detail-h .close { margin-left: auto; }
+  .sub-h { font-size: 13px; font-weight: 600; margin: 18px 0 8px; }
+
+  /* Queues */
+  .queues { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 12px; }
+  .queue ol { margin: 0; padding: 0; list-style: none; }
+  .queue li { display: flex; align-items: center; gap: 6px 8px; padding: 7px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .queue li .stats { margin-left: auto; white-space: nowrap; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .tag { white-space: nowrap; }
+  .queue li:last-child { border-bottom: 0; }
+  .queue li .n { width: 20px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .queue li.turn { font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--ink-2); }
+  .pill.on { color: var(--good-ink); }
+
+  /* Login */
+  .login { max-width: 360px; margin: 12vh auto; padding: 24px; }
+  .login h1 { font-size: 18px; margin: 0 0 4px; }
+  .login p { color: var(--ink-2); margin: 0 0 16px; font-size: 13px; }
+  .login input { width: 100%; margin-bottom: 10px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 10px; }
+  .login .err { color: var(--critical-ink); font-size: 13px; min-height: 18px; }
+  .banner { padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 13px;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--ink-2); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ═════════════ CONFIG — fill these 2 values ═════════════
+   Supabase → Project Settings → API
+   The anon key is public (it's already in your tixsheet page).
+   NEVER put the service_role key here. */
+const SUPABASE_URL = "https://ahysgnekipugsuwbwzee.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoeXNnbmVraXB1Z3N1d2J3emVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjE5MjgsImV4cCI6MjA5NjkzNzkyOH0.dKnJDqbGQCNY64G5Mxu7vljMFmAK11uVo31eA9C1jrI";
+/* ═══════════════════════════════════════════════════════ */
+
+const DEMO = new URLSearchParams(location.search).has("demo");
+const app = document.getElementById("app");
+const eur = n => (Number(n) || 0).toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
+const int = n => (Number(n) || 0).toLocaleString("fr-FR");
+const pct = n => (n == null ? "—" : `${Math.round(n)} %`);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDate = d => d ? new Date(d).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+const DAY = 86400000;
+
+let sb = null;
+let DATA = { claims: [], payments: [], events: [], queues: [], users: [] };
+const state = { tab: "overview", guild: "all", period: "30", memberSort: { key: "pasDue", dir: -1 }, memberSearch: "",
+  selected: null, hist: { user: "all", status: "all", q: "" } };
+
+/* ───────── Data ───────── */
+async function fetchAll(table, order) {
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    let q = sb.from(table).select("*").range(from, from + 999);
+    if (order) q = q.order(order, { ascending: true });
+    const { data, error } = await q;
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  return rows;
+}
+
+async function loadData() {
+  if (DEMO) { DATA = demoData(); return; }
+  const [claims, payments, events, queues, users] = await Promise.all([
+    fetchAll("aco_claims", "claimed_at"), fetchAll("aco_payments", "paid_at"), fetchAll("aco_queue_events", "at"),
+    fetchAll("aco_queues"), fetchAll("aco_users"),
+  ]);
+  DATA = { claims, payments, events, queues, users };
+}
+
+function userMap() {
+  const m = new Map();
+  for (const u of DATA.users) m.set(u.id, u);
+  for (const c of DATA.claims) if (!m.has(c.user_id) && c.username) m.set(c.user_id, { id: c.user_id, username: c.username });
+  return m;
+}
+const nameOf = (id, um) => um.get(id)?.username || `…${String(id).slice(-4)}`;
+function avatar(id, um, size = 24) {
+  const u = um.get(id);
+  return u?.avatar ? `<img src="${esc(u.avatar)}" alt="" width="${size}" height="${size}" loading="lazy">`
+    : `<span class="av">${esc((u?.username || "?").slice(0, 1).toUpperCase())}</span>`;
+}
+
+/* Filters: server + period */
+function periodStart() {
+  if (state.period === "all") return 0;
+  return Date.now() - Number(state.period) * DAY;
+}
+function filtered() {
+  const since = periodStart();
+  const g = state.guild;
+  const inGuild = r => g === "all" || r.guild_id === g;
+  return {
+    claims: DATA.claims.filter(c => inGuild(c) && new Date(c.claimed_at).getTime() >= since),
+    payments: DATA.payments.filter(p => inGuild(p) && new Date(p.paid_at).getTime() >= since),
+    events: DATA.events.filter(e => inGuild(e) && new Date(e.at).getTime() >= since),
+    queues: DATA.queues.filter(q => inGuild(q)),
+  };
+}
+
+/* Per-member stats */
+function memberStats(f) {
+  const m = new Map();
+  const get = id => {
+    if (!m.has(id)) m.set(id, { id, claims: 0, good: 0, expired: 0, pending: 0, pasDue: 0, pasPending: 0,
+      paid: 0, retail: 0, skips: 0, afk: 0, lastClaim: null });
+    return m.get(id);
+  };
+  for (const c of f.claims) {
+    const s = get(c.user_id);
+    s.claims++;
+    s[c.status === "good" ? "good" : c.status === "expired" ? "expired" : "pending"]++;
+    if (c.status === "good") { s.pasDue += Number(c.pas) || 0; s.retail += Number(c.price) || 0; }
+    if (c.status === "pending") s.pasPending += Number(c.pas) || 0;
+    if (!s.lastClaim || c.claimed_at > s.lastClaim) s.lastClaim = c.claimed_at;
+  }
+  for (const p of f.payments) get(p.user_id).paid += Number(p.amount) || 0;
+  for (const e of f.events) {
+    if (e.type === "skip") get(e.user_id).skips++;
+    if (e.type === "afk") get(e.user_id).afk++;
+  }
+  // Queue members with no activity still appear
+  for (const q of f.queues) for (const id of q.members || []) get(id);
+  for (const s of m.values()) {
+    s.rest = s.pasDue - s.paid;
+    s.rate = s.good + s.expired > 0 ? (s.good / (s.good + s.expired)) * 100 : null;
+  }
+  return [...m.values()];
+}
+
+/* ───────── Render ───────── */
+function render() {
+  const um = userMap();
+  const f = filtered();
+  const members = memberStats(f);
+  const guilds = [...new Map([...DATA.claims, ...DATA.queues].filter(r => r.guild_id)
+    .map(r => [r.guild_id, r.guild_name || r.guild_id])).entries()];
+
+  app.innerHTML = `
+    ${DEMO ? `<div class="banner">Mode démo — données fictives. Retirez <b>?demo</b> de l'adresse pour voir vos vraies données.</div>` : ""}
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">⚡</div>
+        <div><h1>FlashACO Analytics</h1><div class="sub">Paniers, commissions et files d'attente</div></div>
+      </div>
+      <div class="controls">
+        <label class="sr" for="f-guild">Serveur</label>
+        <select id="f-guild">
+          <option value="all">Tous les serveurs</option>
+          ${guilds.map(([id, n]) => `<option value="${esc(id)}" ${state.guild === id ? "selected" : ""}>${esc(n)}</option>`).join("")}
+        </select>
+        <label class="sr" for="f-period">Période</label>
+        <select id="f-period">
+          ${[["7", "7 derniers jours"], ["30", "30 derniers jours"], ["90", "90 derniers jours"], ["all", "Tout l'historique"]]
+            .map(([v, l]) => `<option value="${v}" ${state.period === v ? "selected" : ""}>${l}</option>`).join("")}
+        </select>
+        <button class="btn" id="refresh" type="button">↻ Actualiser</button>
+        ${sb && !DEMO ? `<button class="btn" id="logout" type="button">Déconnexion</button>` : ""}
+      </div>
+    </header>
+    <div class="updated" id="updated" style="margin:-8px 0 12px">Mis à jour à ${new Date().toLocaleTimeString("fr-FR")}</div>
+    <nav class="tabs" role="tablist">
+      ${[["overview", "Vue d'ensemble"], ["members", "Membres"], ["history", "Historique"], ["queues", "Files d'attente"]]
+        .map(([k, l]) => `<button class="tab" role="tab" data-tab="${k}" aria-selected="${state.tab === k}">${l}</button>`).join("")}
+    </nav>
+    <section class="panel" data-panel="overview" ${state.tab !== "overview" ? "hidden" : ""}>${overview(f, members, um)}</section>
+    <section class="panel" data-panel="members" ${state.tab !== "members" ? "hidden" : ""}>${membersPanel(f, members, um)}</section>
+    <section class="panel" data-panel="history" ${state.tab !== "history" ? "hidden" : ""}>${historyPanel(f, members, um)}</section>
+    <section class="panel" data-panel="queues" ${state.tab !== "queues" ? "hidden" : ""}>${queuesPanel(f, members, um)}</section>
+  `;
+  bind(f, um);
+  if (state.tab === "overview") drawChart(f.claims);
+}
+
+function kpis(list) {
+  return `<div class="kpis">${list.map(k => `
+    <div class="card kpi"><div class="label">${k.label}</div>
+      <div class="value ${k.cls || ""}">${k.value}</div>${k.foot ? `<div class="foot">${k.foot}</div>` : ""}</div>`).join("")}</div>`;
+}
+
+function totals(f, members) {
+  const good = f.claims.filter(c => c.status === "good").length;
+  const expired = f.claims.filter(c => c.status === "expired").length;
+  const pending = f.claims.length - good - expired;
+  const pasDue = members.reduce((a, s) => a + s.pasDue, 0);
+  const paid = members.reduce((a, s) => a + s.paid, 0);
+  const pasPending = members.reduce((a, s) => a + s.pasPending, 0);
+  return { good, expired, pending, pasDue, paid, pasPending, rest: pasDue - paid,
+    rate: good + expired ? (good / (good + expired)) * 100 : null };
+}
+
+function overview(f, members, um) {
+  const t = totals(f, members);
+  const top = [...members].filter(s => s.claims > 0).sort((a, b) => b.pasDue - a.pasDue || b.claims - a.claims).slice(0, 6);
+  return `
+    ${kpis([
+      { label: "Paniers réclamés", value: int(f.claims.length), foot: `${int(t.good)} good · ${int(t.expired)} expirés · ${int(t.pending)} en attente` },
+      { label: "Taux de réussite", value: pct(t.rate), foot: "good ÷ (good + expirés)" },
+      { label: "PAS dû (good)", value: eur(t.pasDue), foot: t.pasPending ? `+ ${eur(t.pasPending)} en attente` : "commissions validées" },
+      { label: "PAS payé", value: eur(t.paid), cls: "good" },
+      { label: "Reste à encaisser", value: eur(Math.max(0, t.rest)), cls: t.rest > 0 ? "bad" : "", foot: t.rest < 0 ? `${eur(-t.rest)} d'avance` : "" },
+    ])}
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-h"><h2>Paniers réclamés</h2><span class="hint" id="chart-hint"></span></div>
+        <div class="card-b"><div class="chart" id="chart"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Top membres</h2><span class="hint">par PAS dû</span></div>
+        <div class="card-b table-wrap">
+          ${top.length ? `<table><thead><tr><th>Membre</th><th class="num">Paniers</th><th class="num">Reste</th></tr></thead><tbody>
+            ${top.map(s => `<tr class="click" data-user="${esc(s.id)}"><td><div class="who">${avatar(s.id, um)}${esc(nameOf(s.id, um))}</div></td>
+              <td class="num">${int(s.claims)}</td><td class="num">${restCell(s.rest)}</td></tr>`).join("")}
+          </tbody></table>` : `<div class="empty">Aucun panier sur la période.</div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+const restCell = r => r > 0.004 ? `<span class="pos">${eur(r)}</span>` : r < -0.004 ? `<span class="credit">−${eur(-r)}</span>` : `<span class="zero">${eur(0)}</span>`;
+const statusCell = s => s === "good" ? `<span class="status good"><i></i>✓ Good</span>`
+  : s === "expired" ? `<span class="status expired"><i></i>✕ Expiré</span>` : `<span class="status pending"><i></i>… En attente</span>`;
+
+function membersPanel(f, members, um) {
+  const q = state.memberSearch.toLowerCase();
+  const { key, dir } = state.memberSort;
+  const rows = members
+    .filter(s => !q || nameOf(s.id, um).toLowerCase().includes(q) || s.id.includes(q))
+    .sort((a, b) => {
+      const va = key === "name" ? nameOf(a.id, um).toLowerCase() : a[key] ?? -1;
+      const vb = key === "name" ? nameOf(b.id, um).toLowerCase() : b[key] ?? -1;
+      return va < vb ? -dir : va > vb ? dir : 0;
+    });
+  const cols = [["name", "Membre", ""], ["claims", "Paniers", "num"], ["good", "Good", "num"], ["expired", "Expirés", "num"],
+    ["pending", "En attente", "num"], ["rate", "Réussite", "num"], ["pasDue", "PAS dû", "num"], ["paid", "Payé", "num"],
+    ["rest", "Reste", "num"], ["skips", "Skips", "num"], ["afk", "AFK", "num"], ["lastClaim", "Dernier panier", ""]];
+  const arrow = k => k === key ? `<span class="arrow">${dir < 0 ? "▼" : "▲"}</span>` : "";
+  return `
+    <div class="card">
+      <div class="card-h"><h2>Membres</h2><span class="hint">${int(rows.length)} membres · cliquez une ligne pour le détail</span>
+        <input type="search" id="m-search" placeholder="Rechercher un membre…" value="${esc(state.memberSearch)}" style="margin-left:auto;min-width:220px">
+      </div>
+      <div class="card-b table-wrap">
+        ${rows.length ? `<table><thead><tr>${cols.map(([k, l, c]) => `<th class="sortable ${c}" data-sort="${k}">${l} ${arrow(k)}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(s => `<tr class="click" data-user="${esc(s.id)}">
+          <td><div class="who">${avatar(s.id, um)}${esc(nameOf(s.id, um))}</div></td>
+          <td class="num">${int(s.claims)}</td><td class="num">${int(s.good)}</td><td class="num">${int(s.expired)}</td>
+          <td class="num">${int(s.pending)}</td><td class="num">${pct(s.rate)}</td>
+          <td class="num">${eur(s.pasDue)}</td><td class="num">${eur(s.paid)}</td><td class="num">${restCell(s.rest)}</td>
+          <td class="num">${int(s.skips)}</td><td class="num">${int(s.afk)}</td><td>${fmtDate(s.lastClaim)}</td></tr>`).join("")}
+        </tbody></table>` : `<div class="empty">Aucun membre trouvé.</div>`}
+      </div>
+    </div>
+    ${state.selected ? memberDetail(state.selected, f, members, um) : ""}`;
+}
+
+function memberDetail(id, f, members, um) {
+  const s = members.find(m => m.id === id);
+  if (!s) return "";
+  const claims = f.claims.filter(c => c.user_id === id).sort((a, b) => b.claimed_at.localeCompare(a.claimed_at));
+  const pays = f.payments.filter(p => p.user_id === id).sort((a, b) => b.paid_at.localeCompare(a.paid_at));
+  return `
+    <div class="card detail" id="detail">
+      <div class="card-b">
+        <div class="detail-h">${avatar(id, um, 40)}<div><h2>${esc(nameOf(id, um))}</h2><div class="updated">ID ${esc(id)}</div></div>
+          <button class="btn close" id="close-detail" type="button">Fermer</button></div>
+        <div style="margin-top:14px">${kpis([
+          { label: "Paniers", value: int(s.claims), foot: `${int(s.good)} good · ${int(s.expired)} expirés · ${int(s.pending)} en attente` },
+          { label: "Réussite", value: pct(s.rate) },
+          { label: "PAS dû", value: eur(s.pasDue), foot: s.pasPending ? `+ ${eur(s.pasPending)} en attente` : "" },
+          { label: "Payé", value: eur(s.paid), cls: "good" },
+          { label: "Reste", value: eur(Math.max(0, s.rest)), cls: s.rest > 0 ? "bad" : "", foot: s.rest < 0 ? `${eur(-s.rest)} d'avance` : "" },
+          { label: "Skips / AFK", value: `${int(s.skips)} / ${int(s.afk)}` },
+        ])}</div>
+        <div class="sub-h">Paniers réclamés</div>
+        <div class="table-wrap">${claims.length ? `<table><thead><tr><th>Date</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th>
+          <th>Sièges</th><th class="num">Prix</th><th class="num">PAS</th><th>Statut</th></tr></thead><tbody>
+          ${claims.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td class="wrapcell">${esc(c.event)}</td><td>${esc(c.category)}</td>
+            <td class="num">${c.quantity ?? "—"}</td><td>${esc(c.seats)}</td><td class="num">${c.price ? eur(c.price) : "—"}</td>
+            <td class="num">${eur(c.pas)}</td><td>${statusCell(c.status)}</td></tr>`).join("")}
+          </tbody></table>` : `<div class="empty">Aucun panier sur la période.</div>`}</div>
+        <div class="sub-h">Paiements PAS</div>
+        <div class="table-wrap">${pays.length ? `<table><thead><tr><th>Date</th><th class="num">Montant</th><th>Marqué par</th></tr></thead><tbody>
+          ${pays.map(p => `<tr><td>${fmtDate(p.paid_at)}</td><td class="num">${eur(p.amount)}</td><td>${p.marked_by ? esc(nameOf(p.marked_by, um)) : "—"}</td></tr>`).join("")}
+          </tbody></table>` : `<div class="empty">Aucun paiement sur la période.</div>`}</div>
+      </div>
+    </div>`;
+}
+
+function historyRows(f) {
+  const h = state.hist, q = h.q.toLowerCase();
+  return f.claims.filter(c => (h.user === "all" || c.user_id === h.user) && (h.status === "all" || (c.status || "pending") === h.status)
+    && (!q || `${c.event} ${c.category} ${c.seats} ${c.site}`.toLowerCase().includes(q)))
+    .sort((a, b) => b.claimed_at.localeCompare(a.claimed_at));
+}
+
+function historyPanel(f, members, um) {
+  const rows = historyRows(f);
+  const shown = rows.slice(0, 500);
+  const h = state.hist;
+  return `
+    <div class="card">
+      <div class="card-h"><h2>Historique des paniers</h2><span class="hint">${int(rows.length)} paniers${rows.length > 500 ? " · 500 affichés (export CSV = tout)" : ""}</span>
+        <div class="controls" style="margin-left:auto">
+          <select id="h-user"><option value="all">Tous les membres</option>
+            ${members.filter(s => s.claims).sort((a, b) => nameOf(a.id, um).localeCompare(nameOf(b.id, um)))
+              .map(s => `<option value="${esc(s.id)}" ${h.user === s.id ? "selected" : ""}>${esc(nameOf(s.id, um))}</option>`).join("")}</select>
+          <select id="h-status">${[["all", "Tous statuts"], ["good", "Good"], ["expired", "Expirés"], ["pending", "En attente"]]
+            .map(([v, l]) => `<option value="${v}" ${h.status === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+          <input type="search" id="h-q" placeholder="Événement, catégorie…" value="${esc(h.q)}">
+          <button class="btn" id="csv" type="button">⬇ Export CSV</button>
+        </div>
+      </div>
+      <div class="card-b table-wrap">
+        ${shown.length ? `<table><thead><tr><th>Date</th><th>Membre</th><th>Événement</th><th>Catégorie</th><th class="num">Qté</th><th>Sièges</th>
+          <th class="num">Prix</th><th class="num">PAS</th><th>Statut</th><th>Serveur · salon</th></tr></thead><tbody>
+          ${shown.map(c => `<tr><td>${fmtDate(c.claimed_at)}</td><td><div class="who">${avatar(c.user_id, um)}${esc(nameOf(c.user_id, um))}</div></td>
+            <td class="wrapcell">${esc(c.event)}${c.warning ? ` <span class="tag" title="${esc(c.warning)}">⚠ non contigu</span>` : ""}</td>
+            <td>${esc(c.category)}</td><td class="num">${c.quantity ?? "—"}</td><td>${esc(c.seats)}</td>
+            <td class="num">${c.price ? eur(c.price) : "—"}</td><td class="num">${eur(c.pas)}</td><td>${statusCell(c.status)}</td>
+            <td>${esc(c.guild_name || "—")}${c.channel_name ? ` · #${esc(c.channel_name)}` : ""}</td></tr>`).join("")}
+        </tbody></table>` : `<div class="empty">Aucun panier ne correspond aux filtres.</div>`}
+      </div>
+    </div>`;
+}
+
+function queuesPanel(f, members, um) {
+  if (!f.queues.length) return `<div class="card"><div class="empty">Aucune file d'attente.</div></div>`;
+  const byId = new Map(members.map(s => [s.id, s]));
+  return `<div class="queues">${f.queues.sort((a, b) => (b.active - a.active) || (a.channel_name || "").localeCompare(b.channel_name || "")).map(q => `
+    <div class="card queue">
+      <div class="card-h"><h2>#${esc(q.channel_name || q.id)}</h2>
+        <span class="pill ${q.active ? "on" : ""}">${q.active ? "● Active" : "○ Inactive"}</span>
+        <span class="hint" style="width:100%">${esc(q.guild_name || "")}</span></div>
+      <div class="card-b">
+        <ol>${(q.members || []).map((id, i) => {
+          const s = byId.get(id);
+          return `<li class="${q.holder === id ? "turn" : ""}"><span class="n">${i + 1}</span>
+            <div class="who">${avatar(id, um)}${esc(nameOf(id, um))}</div>
+            ${q.runner === id ? `<span class="tag">RUNNER</span>` : ""}
+            ${q.holder === id ? `<span class="tag" style="background:var(--accent);color:#fff">🎯 son tour</span>` : ""}
+            ${(q.priority || []).includes(id) ? `<span class="tag" title="Tour gardé après AFK">⏪</span>` : ""}
+            <span class="stats">${s ? `${int(s.claims)} paniers · ${int(s.afk)} AFK` : ""}</span></li>`;
+        }).join("") || `<li class="empty">Aucun membre</li>`}</ol>
+        <div class="updated" style="margin-top:8px">Mis à jour ${fmtDate(q.updated_at)}</div>
+      </div>
+    </div>`).join("")}</div>`;
+}
+
+/* ───────── Chart: claims per day (per week for long ranges) ───────── */
+function drawChart(claims) {
+  const el = document.getElementById("chart");
+  if (!el) return;
+  const now = Date.now();
+  const first = claims.length ? Math.min(...claims.map(c => new Date(c.claimed_at).getTime())) : now - 30 * DAY;
+  const start = state.period === "all" ? first : now - Number(state.period) * DAY;
+  const spanDays = Math.max(1, Math.ceil((now - start) / DAY));
+  const step = spanDays > 120 ? 7 : 1;
+  document.getElementById("chart-hint").textContent = step === 7 ? "par semaine" : "par jour";
+  const dayStart = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+  const s0 = dayStart(start);
+  const n = Math.ceil((dayStart(now) - s0) / DAY / step) + 1;
+  const buckets = Array.from({ length: n }, (_, i) => ({ t: s0 + i * step * DAY, v: 0 }));
+  for (const c of claims) {
+    const i = Math.floor((dayStart(new Date(c.claimed_at).getTime()) - s0) / DAY / step);
+    if (buckets[i]) buckets[i].v++;
+  }
+  const W = el.clientWidth || 700, H = 240, L = 32, R = 8, T = 10, B = 26;
+  const max = Math.max(1, ...buckets.map(b => b.v));
+  const niceMax = max <= 4 ? max : Math.ceil(max / 5) * 5;
+  const ticks = niceMax <= 4 ? Array.from({ length: niceMax + 1 }, (_, i) => i) : [0, niceMax / 5 * 1, niceMax / 5 * 2, niceMax / 5 * 3, niceMax / 5 * 4, niceMax].map(Math.round);
+  const pw = W - L - R, ph = H - T - B;
+  const bw = pw / n, gap = Math.min(2 + bw * 0.2, 8), barW = Math.max(2, bw - gap);
+  const y = v => T + ph - (v / niceMax) * ph;
+  const lblEvery = Math.ceil(n / Math.max(2, Math.floor(pw / 64)));
+  const fmtT = t => new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+  const r = Math.min(4, barW / 2);
+  const barPath = (x, v) => {
+    if (!v) return "";
+    const yt = y(v), yb = T + ph, h = yb - yt, rr = Math.min(r, h);
+    return `M${x},${yb} V${yt + rr} Q${x},${yt} ${x + rr},${yt} H${x + barW - rr} Q${x + barW},${yt} ${x + barW},${yt + rr} V${yb} Z`;
+  };
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Paniers réclamés ${step === 7 ? "par semaine" : "par jour"}">
+    ${ticks.map(v => `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="tick" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("")}
+    ${buckets.map((b, i) => { const x = L + i * bw + gap / 2; return `
+      <rect class="hit" data-i="${i}" x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}"/>
+      <path class="bar" d="${barPath(x, b.v)}"/>`; }).join("")}
+    <line class="baseline" x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}"/>
+    ${buckets.map((b, i) => i % lblEvery === 0 ? `<text class="tick" x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${fmtT(b.t)}</text>` : "").join("")}
+  </svg><div class="tip" id="tip"></div>`;
+  const tip = el.querySelector("#tip");
+  el.querySelectorAll(".hit").forEach(h => {
+    h.addEventListener("mouseenter", () => {
+      const b = buckets[+h.dataset.i];
+      const label = step === 7 ? `Semaine du ${fmtT(b.t)}` : new Date(b.t).toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short" });
+      tip.innerHTML = `<b>${b.v} panier${b.v > 1 ? "s" : ""}</b><span>${label}</span>`;
+      const box = el.getBoundingClientRect(), hb = h.getBoundingClientRect();
+      tip.style.left = `${hb.left - box.left + hb.width / 2}px`;
+      tip.style.top = `${(y(b.v) / H) * box.height}px`;
+      tip.style.opacity = 1;
+      h.nextElementSibling?.classList.add("on");
+    });
+    h.addEventListener("mouseleave", () => { tip.style.opacity = 0; h.nextElementSibling?.classList.remove("on"); });
+  });
+}
+
+/* ───────── Events ───────── */
+function bind(f, um) {
+  const on = (id, ev, fn) => document.getElementById(id)?.addEventListener(ev, fn);
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => { state.tab = b.dataset.tab; render(); }));
+  on("f-guild", "change", e => { state.guild = e.target.value; render(); });
+  on("f-period", "change", e => { state.period = e.target.value; render(); });
+  on("refresh", "click", () => refresh());
+  on("logout", "click", async () => { await sb.auth.signOut(); showLogin(); });
+  document.querySelectorAll("tr.click").forEach(tr => tr.addEventListener("click", () => {
+    state.selected = tr.dataset.user; state.tab = "members"; render();
+    document.getElementById("detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+  on("close-detail", "click", () => { state.selected = null; render(); });
+  document.querySelectorAll("th[data-sort]").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.sort;
+    state.memberSort = { key: k, dir: state.memberSort.key === k ? -state.memberSort.dir : (k === "name" ? 1 : -1) };
+    render();
+  }));
+  const keepFocus = (id, fn) => on(id, "input", e => { fn(e.target.value); const pos = e.target.selectionStart; render();
+    const el = document.getElementById(id); el.focus(); el.setSelectionRange(pos, pos); });
+  keepFocus("m-search", v => state.memberSearch = v);
+  keepFocus("h-q", v => state.hist.q = v);
+  on("h-user", "change", e => { state.hist.user = e.target.value; render(); });
+  on("h-status", "change", e => { state.hist.status = e.target.value; render(); });
+  on("csv", "click", () => exportCsv(historyRows(f), um));
+}
+
+function exportCsv(rows, um) {
+  const head = ["date", "membre", "user_id", "evenement", "categorie", "quantite", "sieges", "prix", "pas", "statut", "serveur", "salon", "site", "date_evenement"];
+  const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const lines = [head.join(";"), ...rows.map(c => [fmtDate(c.claimed_at), nameOf(c.user_id, um), c.user_id, c.event, c.category, c.quantity,
+    c.seats, String(c.price ?? "").replace(".", ","), String(c.pas ?? "").replace(".", ","), c.status, c.guild_name, c.channel_name, c.site, c.event_date].map(q).join(";"))];
+  const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: `flashaco-paniers-${new Date().toISOString().slice(0, 10)}.csv` });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ───────── Auth ───────── */
+function showLogin(msg = "") {
+  app.innerHTML = `
+    <form class="card login" id="login">
+      <h1>FlashACO Analytics</h1>
+      <p>Connectez-vous avec votre compte tixsheet.</p>
+      <label class="sr" for="email">Email</label><input id="email" type="email" placeholder="Email" autocomplete="username" required>
+      <label class="sr" for="pw">Mot de passe</label><input id="pw" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
+      <div class="err" id="err">${esc(msg)}</div>
+      <button class="btn primary" type="submit" style="width:100%">Se connecter</button>
+    </form>`;
+  document.getElementById("login").addEventListener("submit", async e => {
+    e.preventDefault();
+    document.getElementById("err").textContent = "";
+    const { error } = await sb.auth.signInWithPassword({ email: document.getElementById("email").value.trim(), password: document.getElementById("pw").value });
+    if (error) return (document.getElementById("err").textContent = "Email ou mot de passe incorrect.");
+    refresh();
+  });
+}
+
+async function refresh() {
+  try {
+    app.innerHTML = app.innerHTML || `<div class="empty">Chargement…</div>`;
+    await loadData();
+    if (!DEMO && DATA.claims.length === 0 && DATA.queues.length === 0 && DATA.users.length === 0) {
+      // RLS returns nothing when this account isn't in aco_admins
+      const { data: { user } } = await sb.auth.getUser();
+      render();
+      app.insertAdjacentHTML("afterbegin", `<div class="banner">Aucune donnée visible pour <b>${esc(user?.email || "")}</b>. Si le bot a déjà synchronisé des paniers, ajoutez cet email dans la table <code>aco_admins</code>.</div>`);
+      return;
+    }
+    render();
+  } catch (err) {
+    console.error(err);
+    app.innerHTML = `<div class="card"><div class="empty">Impossible de charger les données : ${esc(err.message || err)}</div></div>`;
+  }
+}
+
+/* ───────── Demo data ───────── */
+function demoData() {
+  const names = [["111", "kzy"], ["222", "Erraih"], ["333", "Monstrdézane"], ["444", "Kappa"], ["555", "Coromboogi"]];
+  const events = [["CELINE DION", "CATEGORIE 1", 200.25], ["A$AP Rocky - Don't Be Dumb World Tour", "CATEGORIE 2 VISIBILITE REDUITE", 68.5], ["Aya Nakamura", "FOSSE", 79], ["PNL", "CATEGORIE 1", 95]];
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const claims = [], payments = [], ev = [];
+  for (let i = 0; i < 140; i++) {
+    const [uid, uname] = names[Math.floor(rnd() * names.length)];
+    const [e, cat, p] = events[Math.floor(rnd() * events.length)];
+    const qty = 1 + Math.floor(rnd() * 4);
+    const t = Date.now() - Math.floor(rnd() * 80 * DAY);
+    const age = Date.now() - t;
+    const st = age < 2 * DAY && rnd() < .6 ? "pending" : rnd() < .78 ? "good" : "expired";
+    claims.push({ id: "c" + i, claimed_at: new Date(t).toISOString(), user_id: uid, username: uname, guild_id: i % 3 ? "g1" : "g2",
+      guild_name: i % 3 ? "FlashTICKET" : "A MOULA NOUBA", channel_name: i % 3 ? "claim-test" : "celine-module-nouba", event: e, category: cat,
+      quantity: qty, seats: Array.from({ length: qty }, (_, k) => 30 + k).join(" / "), price: +(p * qty).toFixed(2), pas: 10 * qty, status: st,
+      warning: rnd() < .12 ? "Seats are not contiguous" : null });
+  }
+  for (const [uid] of names) for (let k = 0; k < 3; k++) payments.push({ id: uid + k, paid_at: new Date(Date.now() - rnd() * 70 * DAY).toISOString(), user_id: uid, amount: 40 + Math.round(rnd() * 120), guild_id: "g1", marked_by: "111" });
+  for (let i = 0; i < 60; i++) ev.push({ id: "e" + i, at: new Date(Date.now() - rnd() * 60 * DAY).toISOString(), user_id: names[Math.floor(rnd() * names.length)][0], guild_id: "g1", type: rnd() < .5 ? "skip" : "afk" });
+  return {
+    claims, payments, events: ev,
+    users: names.map(([id, username]) => ({ id, username })),
+    queues: [
+      { id: "q1", guild_id: "g1", guild_name: "FlashTICKET", channel_name: "claim-test", active: true, members: ["111", "222", "333", "444"], holder: "222", runner: "111", priority: ["444"], updated_at: new Date().toISOString() },
+      { id: "q2", guild_id: "g2", guild_name: "A MOULA NOUBA", channel_name: "celine-module-nouba", active: true, members: ["333", "555", "111"], holder: "333", runner: "333", priority: [], updated_at: new Date().toISOString() },
+    ],
+  };
+}
+
+/* ───────── Start ───────── */
+(async () => {
+  window.addEventListener("resize", () => { if (state.tab === "overview" && DATA.claims.length) drawChart(filtered().claims); });
+  if (DEMO) return refresh();
+  if (!window.supabase || SUPABASE_ANON_KEY.startsWith("PASTE")) {
+    app.innerHTML = `<div class="card"><div class="empty">Configuration manquante : collez votre clé <b>anon</b> Supabase en haut du fichier (SUPABASE_ANON_KEY).<br>Aperçu possible avec <a href="?demo">?demo</a>.</div></div>`;
+    return;
+  }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data: { session } } = await sb.auth.getSession().catch(() => ({ data: {} }));
+  if (session) return refresh();
+
+  // Reuse the tixsheet login (tixsheet stores { access_token, user } under the same key)
+  try {
+    const ref = new URL(SUPABASE_URL).hostname.split(".")[0];
+    const saved = JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`) || "null");
+    const token = saved?.access_token;
+    const exp = token ? JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp : 0;
+    if (token && exp * 1000 > Date.now()) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false, autoRefreshToken: false, storageKey: "aco-dashboard-unused" },
+      });
+      sb.auth.getUser = async () => ({ data: { user: saved.user || null } });
+      sb.auth.signOut = async () => { localStorage.removeItem(`sb-${ref}-auth-token`); };
+      return refresh();
+    }
+  } catch { /* fall through to the login form */ }
+  showLogin();
+})();
+</script>
+</body>
+</html>
