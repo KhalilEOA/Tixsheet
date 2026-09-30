@@ -847,6 +847,7 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
     </div>
     <div class="form-grid">
       <div class="form-group full"><label>Événement</label><select id="fe-ev"></select></div>
+      <div class="form-group full"><label>Catégorie</label><input id="fe-cat" type="text" placeholder="CATEGORIE 1, FOSSE, OR ALLEE…"></div>
       <div class="form-group full"><label>Siège</label><input id="fe-seat" type="text" placeholder="Siège 113 – Rang 10"></div>
       <div class="form-group"><label>Email</label><input id="fe-email" type="email" placeholder="buyer@email.com"></div>
       <div class="form-group"><label>Mot de passe</label><input id="fe-pwd" type="text" placeholder="password@123"></div>
@@ -890,6 +891,24 @@ body.theme-arctic .dash-card-title { color:#5a7a9a; }
     <div class="form-actions">
       <button class="btn ghost" onclick="closeModal('aco-modal')">Annuler</button>
       <button class="btn primary" onclick="doSaveAco()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Split modal -->
+<div class="modal-bg" id="split-modal" style="display:none" onclick="bgClose(event,'split-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header"><h2>Diviser le lot</h2><button class="icon-btn" onclick="closeModal('split-modal')"><i class="ti ti-x"></i></button></div>
+    <p id="split-info" style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:16px"></p>
+    <div class="form-grid">
+      <div class="form-group full"><label>Billets à séparer (nouvelle ligne)</label><input id="split-qty" type="number" min="1" step="1" oninput="updateSplitPreview()" onkeydown="if(event.key==='Enter') doSplit()"></div>
+      <div class="form-group full"><label>Sièges — lot restant</label><input id="split-seat-old" type="text"></div>
+      <div class="form-group full"><label>Sièges — nouveau lot</label><input id="split-seat-new" type="text"></div>
+    </div>
+    <p id="split-preview" style="font-size:12px;color:var(--text2);margin-top:14px;line-height:1.6"></p>
+    <div class="form-actions">
+      <button class="btn ghost" onclick="closeModal('split-modal')">Annuler</button>
+      <button class="btn primary" onclick="doSplit().catch(e=>toast('Erreur: '+e.message))"><i class="ti ti-cut"></i> Diviser</button>
     </div>
   </div>
 </div>
@@ -1345,8 +1364,8 @@ function updatePayFilter(){
 function updateStats(src){
   let html="";
   if(activeMode==="stock"||activeEv==="__all__"){
-    const buy=src.reduce((s,t)=>s+t.buy*t.qty,0);
-    const sell=src.reduce((s,t)=>s+(t.sell>0?t.sell*t.qty:0),0);
+    const buy=src.reduce((s,t)=>s+(Number(t.buy)||0),0); // prices are totals per row
+    const sell=src.reduce((s,t)=>s+(t.sell>0?Number(t.sell):0),0);
     const profit=sell-buy; const roi=buy>0?(profit/buy*100):0;
     const roiStr=(roi>=0?"+":"")+roi.toFixed(1)+"%";
     const comp=src.filter(t=>t.status==="Completed").length;
@@ -1379,7 +1398,7 @@ function updateStats(src){
 }
 
 // ── Filter builder ──
-const STOCK_COLS=[{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"qty",label:"Quantité"},{key:"buy",label:"Prix achat"},{key:"sell",label:"Prix vente"},{key:"status",label:"Statut"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"site",label:"Site"}];
+const STOCK_COLS=[{key:"cat",label:"Catégorie"},{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"qty",label:"Quantité"},{key:"buy",label:"Prix achat"},{key:"sell",label:"Prix vente"},{key:"status",label:"Statut"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"site",label:"Site"}];
 const ACO_COLS=[{key:"cat",label:"Catégorie"},{key:"qty",label:"Quantité"},{key:"seat",label:"Siège"},{key:"email",label:"Email"},{key:"pwd",label:"Mot de passe"},{key:"evdate",label:"Date événement"},{key:"aco",label:"ACO (€)"},{key:"etat",label:"État"},{key:"pay",label:"Paiement"},{key:"client",label:"Client"},{key:"acodate",label:"Date ACO"},{key:"site",label:"Site"}];
 
 function openFilterBuilder(){
@@ -1425,14 +1444,14 @@ function filteredStock(){
   const so="date";
   let l=db.tickets.map((t,i)=>Object.assign({},t,{_i:i})).filter(t=>{
     if(activeEv!=="__all__"&&t.event!==activeEv) return false;
-    if(q&&![t.event,t.seat,t.email,t.client,t.pwd].join(" ").toLowerCase().includes(q)) return false;
+    if(q&&![t.event,t.cat,t.seat,t.email,t.client,t.pwd].join(" ").toLowerCase().includes(q)) return false;
     if(fs&&t.status!==fs) return false;
     if(fp&&t.pay!==fp) return false;
     return true;
   });
   l=applyColFilters(l);
-  if(so==="profit") l.sort((a,b)=>(b.sell-b.buy)*b.qty-(a.sell-a.buy)*a.qty);
-  else if(so==="amount") l.sort((a,b)=>b.sell*b.qty-a.sell*a.qty);
+  if(so==="profit") l.sort((a,b)=>(b.sell-b.buy)-(a.sell-a.buy));
+  else if(so==="amount") l.sort((a,b)=>b.sell-a.sell);
   return l;
 }
 function filteredAco(){
@@ -1469,17 +1488,19 @@ function renderStockTable(paged,showEv){
   var th='<tr>';
   th+='<th class="cb-col"><input type="checkbox" class="row-cb" id="select-all-cb" onchange="toggleSelectAll(this)"></th>';
   th+='<th>'+(showEv?t_("col_event"):t_("col_seat"))+'</th>';
+  th+='<th>'+t_("col_cat")+'</th>';
   th+='<th>'+t_("col_email")+'</th><th>'+t_("col_pwd")+'</th><th>'+t_("col_evdate")+'</th>';
   th+='<th>'+t_("col_qty")+'</th><th>'+t_("col_buy")+'</th><th>'+t_("col_sell")+'</th>';
   th+='<th>'+t_("col_profit")+'</th><th>'+t_("col_status")+'</th><th>'+t_("col_payment")+'</th>';
   th+='<th>'+t_("col_client")+'</th><th>Site</th><th></th></tr>';
   document.getElementById("thead-row").innerHTML=th;
   document.getElementById("tbody").innerHTML=paged.map(t=>{
-    const pr=(t.sell-t.buy)*t.qty, cls=pr>=0?"profit-pos":"profit-neg", sign=pr>=0?"+":"";
+    const pr=(t.sell-t.buy), cls=pr>=0?"profit-pos":"profit-neg", sign=pr>=0?"+":"";
     const rid=t.id||t._i;
     return '<tr class="data-row">'+
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
       '<td>'+(showEv?'<div class="ev-name">'+esc(t.event)+'</div>':'')+'<div class="'+(showEv?"ev-seat":"ev-name")+'">'+esc(t.seat)+'</div></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'cat\',\'text\')"><span style="font-size:11px;font-weight:700;color:var(--gold)">'+esc(t.cat||"—")+'</span></span></td>'+
       '<td><div class="cell-with-copy"><div class="email-cell">'+esc(t.email||"—")+'</div>'+(t.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
       '<td><div class="cell-with-copy"><div class="pwd-cell">'+esc(t.pwd||"—")+'</div>'+(t.pwd?'<button class="copy-icon" onclick="copyVal(event,\''+esc(t.pwd)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
       '<td><span class="editable-cell" onclick="editCell(event,'+t._i+',false,\'evdate\',\'date\')">'+fmtDate(t.evdate)+'</span></td>'+
@@ -1491,7 +1512,7 @@ function renderStockTable(paged,showEv){
       '<td style="font-size:11px;color:var(--text2)">'+esc(t.pay||"—")+'</td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(t.client||"—")+'</td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(t.site||"—")+'</td>'+
-      '<td><div class="actions"><button class="icon-btn edit-btn" data-idx="'+t._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del del-btn" data-idx="'+t._i+'"><i class="ti ti-trash"></i></button></div></td>'+
+      '<td><div class="actions">'+rowTools(false,t)+'<button class="icon-btn edit-btn" data-idx="'+t._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del del-btn" data-idx="'+t._i+'"><i class="ti ti-trash"></i></button></div></td>'+
       '</tr>';
   }).join("");
 }
@@ -1508,7 +1529,7 @@ function renderAcoTable(paged){
     const rid=a.id||a._i;
     return '<tr>'+
       '<td class="cb-col"><input type="checkbox" class="row-cb sel-cb" data-id="'+rid+'" '+(selectedIds.has(String(rid))?'checked':'')+' onchange="toggleRow(this)"></td>'+
-      '<td><span style="font-size:11px;font-weight:700;color:var(--gold)">'+esc(a.cat||"—")+'</span></td>'+
+      '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'cat\',\'text\')"><span style="font-size:11px;font-weight:700;color:var(--gold)">'+esc(a.cat||"—")+'</span></span></td>'+
       '<td class="num" style="text-align:center">'+a.qty+'</td>'+
       '<td><span class="editable-cell" onclick="editCell(event,'+a._i+',true,\'seat\',\'text\')">'+esc(a.seat||"—")+'</span></td>'+
       '<td><div class="cell-with-copy"><div class="email-cell">'+esc(a.email||"—")+'</div>'+(a.email?'<button class="copy-icon" onclick="copyVal(event,\''+esc(a.email)+'\')" title="Copier"><i class="ti ti-copy"></i></button>':'')+"</div></td>"+
@@ -1520,7 +1541,7 @@ function renderAcoTable(paged){
       '<td style="font-size:11px;color:var(--text2)">'+esc(a.client||"—")+'</td>'+
       '<td style="font-size:12px;color:var(--text2)">'+fmtDate(a.acodate)+'</td>'+
       '<td style="font-size:11px;color:var(--text2)">'+esc(a.site||"—")+'</td>'+
-      '<td><div class="actions"><button class="icon-btn aco-edit-btn" data-idx="'+a._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del aco-del-btn" data-idx="'+a._i+'"><i class="ti ti-trash"></i></button></div></td>'+
+      '<td><div class="actions">'+rowTools(true,a)+'<button class="icon-btn aco-edit-btn" data-idx="'+a._i+'"><i class="ti ti-edit"></i></button><button class="icon-btn del aco-del-btn" data-idx="'+a._i+'"><i class="ti ti-trash"></i></button></div></td>'+
       '</tr>';
   }).join("");
 }
@@ -1562,6 +1583,7 @@ function openTicketModal(idx){
   const sel=document.getElementById("fe-ev");
   sel.innerHTML=db.events.map(ev=>'<option value="'+esc(ev)+'" '+(t&&t.event===ev?"selected":"")+'>'+esc(ev)+'</option>').join("");
   if(!t&&activeEv!=="__all__") sel.value=activeEv;
+  document.getElementById("fe-cat").value=t?(t.cat||""):"";
   document.getElementById("fe-seat").value=t?t.seat:"";
   document.getElementById("fe-email").value=t?t.email:"";
   document.getElementById("fe-pwd").value=t?t.pwd:"";
@@ -1581,6 +1603,7 @@ function openTicketModal(idx){
 async function saveTicket(){
   const payload={
     user_id:currentUser.id, event:document.getElementById("fe-ev").value,
+    cat:document.getElementById("fe-cat").value.trim(),
     seat:document.getElementById("fe-seat").value.trim(), email:document.getElementById("fe-email").value.trim(),
     pwd:document.getElementById("fe-pwd").value.trim(), buy:parseFloat(document.getElementById("fe-buy").value)||0,
     sell:parseFloat(document.getElementById("fe-sell").value)||0, qty:parseInt(document.getElementById("fe-qty").value)||1,
@@ -1665,6 +1688,107 @@ async function delAco(idx){
   db.acos.splice(idx,1); toast("Supprimé"); render();
 }
 
+// ── Duplicate / split rows ──
+function rowTools(isAco, r){
+  const kind = isAco ? "aco" : "stock";
+  return '<button class="icon-btn dup-btn" data-kind="'+kind+'" data-idx="'+r._i+'" title="Dupliquer la ligne"><i class="ti ti-files"></i></button>'+
+    ((parseInt(r.qty)||1) > 1 ? '<button class="icon-btn split-btn" data-kind="'+kind+'" data-idx="'+r._i+'" title="Diviser le lot (ex : vendre 2 sur 4)"><i class="ti ti-cut"></i></button>' : '');
+}
+function rowCopy(item){
+  const c = Object.assign({}, item);
+  delete c.id; delete c.created_at; delete c.updated_at; delete c._i;
+  c.user_id = currentUser.id;
+  return c;
+}
+async function duplicateRow(isAco, idx){
+  const list = isAco ? db.acos : db.tickets;
+  const {data, error} = await sb.from(isAco?"acos":"tickets").insert(rowCopy(list[idx]));
+  if(error){ toast("Erreur: "+error.message); return; }
+  const row = Array.isArray(data) ? data[0] : data;
+  if(row) list.splice(idx + 1, 0, row);
+  toast("Ligne dupliquée ✓"); render();
+}
+let splitCtx = null;
+function openSplit(isAco, idx){
+  const item = (isAco ? db.acos : db.tickets)[idx];
+  const qty = parseInt(item.qty) || 1;
+  if(qty < 2){ toast("Il faut au moins 2 billets pour diviser"); return; }
+  splitCtx = {isAco, idx};
+  document.getElementById("split-info").innerHTML = '<b>'+esc(item.event||"")+'</b>'+(item.cat?' · '+esc(item.cat):'')+'<br>'+esc(item.seat||"")+' — <b>'+qty+' billets</b>';
+  const n = document.getElementById("split-qty");
+  n.max = qty - 1; n.value = Math.floor(qty / 2);
+  document.getElementById("split-seat-old").value = item.seat || "";
+  document.getElementById("split-seat-new").value = item.seat || "";
+  updateSplitPreview();
+  document.getElementById("split-modal").style.display = "flex";
+  setTimeout(()=>{ n.focus(); n.select(); }, 50);
+}
+function updateSplitPreview(){
+  if(!splitCtx) return;
+  const item = (splitCtx.isAco ? db.acos : db.tickets)[splitCtx.idx];
+  const qty = parseInt(item.qty) || 1;
+  const n = Math.max(1, Math.min(qty - 1, parseInt(document.getElementById("split-qty").value) || 1));
+  let txt = 'Lot actuel : <b>'+(qty - n)+'</b> billet(s) · Nouveau lot : <b>'+n+'</b> billet(s)';
+  const share = f => { const total = parseFloat(item[f]) || 0; const part = Math.round(total * n / qty * 100) / 100; return [total - part, part]; };
+  if(splitCtx.isAco){
+    const [a, b] = share("aco");
+    txt += '<br>ACO : <b>'+fmt(a)+'</b> / <b>'+fmt(b)+'</b>';
+  } else {
+    const [b1, b2] = share("buy"), [s1, s2] = share("sell");
+    txt += '<br>Achat : <b>'+fmt(b1)+'</b> / <b>'+fmt(b2)+'</b>';
+    if ((parseFloat(item.sell) || 0) > 0) txt += '<br>Vente : <b>'+fmt(s1)+'</b> / <b>'+fmt(s2)+'</b>';
+    txt += '<br><span style="color:var(--text3)">Tu pourras modifier le prix de vente du nouveau lot ensuite.</span>';
+  }
+  document.getElementById("split-preview").innerHTML = txt;
+}
+async function doSplit(){
+  if(!splitCtx) return;
+  const {isAco, idx} = splitCtx;
+  const list = isAco ? db.acos : db.tickets;
+  const item = list[idx];
+  const qty = parseInt(item.qty) || 1;
+  const n = parseInt(document.getElementById("split-qty").value) || 0;
+  if(n < 1 || n >= qty){ toast("Choisis entre 1 et "+(qty - 1)+" billet(s)"); return; }
+  const seatOld = document.getElementById("split-seat-old").value.trim();
+  const seatNew = document.getElementById("split-seat-new").value.trim();
+  const upd = {qty: qty - n, seat: seatOld};
+  const copy = rowCopy(item); copy.qty = n; copy.seat = seatNew;
+  // Amounts are totals for the row → share them by quantity
+  const fields = isAco ? ["aco"] : ["buy", "sell"];
+  for (const f of fields) {
+    const total = parseFloat(item[f]) || 0;
+    const part = Math.round(total * n / qty * 100) / 100;
+    copy[f] = part; upd[f] = Math.round((total - part) * 100) / 100;
+  }
+  const table = isAco ? "acos" : "tickets";
+  const ins = await sb.from(table).insert(copy);
+  if(ins.error){ toast("Erreur: "+ins.error.message); return; }
+  const up = await sb.from(table).eq("id", item.id).update(upd);
+  if(up.error){ toast("Erreur: "+up.error.message); return; }
+  Object.assign(item, upd);
+  const row = Array.isArray(ins.data) ? ins.data[0] : ins.data;
+  if(row) list.splice(idx + 1, 0, row);
+  closeModal("split-modal"); splitCtx = null;
+  toast("Lot divisé ✓ ("+(qty - n)+" + "+n+")"); render();
+}
+
+// ── CSV templates ──
+function downloadTemplate(type){
+  let headers, example;
+  if(type === "aco"){
+    headers = ["Événement","Catégorie","Qté","Siège","Email","Mot de passe","Date événement","ACO","État","Paiement","Client","Date ACO","Site"];
+    example = ["CELINE DION","CATEGORIE 1","2","Bloc 106 - Rang 9 - 7/8","email@icloud.com","password123","2026-09-12","180","Pending","Revolut","Client","2026-09-01","Ticketmaster"];
+  } else {
+    headers = ["Événement","Catégorie","Siège","Email","Mot de passe","Date événement","Qté","Achat","Vente","Statut","Paiement","Client","Site"];
+    example = ["CELINE DION","CATEGORIE 1","Bloc 106 - Rang 9 - 7/8","email@icloud.com","password123","2026-09-12","2","150","320","Pending","Revolut","Client","Ticketmaster"];
+  }
+  const line = arr => arr.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(",");
+  const csv = [line(headers), line(example)].join("\n");
+  const a = document.createElement("a");
+  a.href = "data:text/csv;charset=utf-8,\uFEFF" + encodeURIComponent(csv);
+  a.download = "template_" + (type === "aco" ? "aco" : "stock") + ".csv"; a.click();
+}
+
 // ── CRUD: Events ──
 
 function openDashboard(){
@@ -1708,8 +1832,8 @@ function renderDashboard(){
   const acos = filterEv === "__all__" ? db.acos : db.acos.filter(a=>a.event===filterEv);
 
   // KPI
-  const totalBuy = tickets.reduce((s,t)=>s+t.buy*t.qty,0);
-  const totalSell = tickets.reduce((s,t)=>s+(t.sell>0?t.sell*t.qty:0),0);
+  const totalBuy = tickets.reduce((s,t)=>s+(Number(t.buy)||0),0);
+  const totalSell = tickets.reduce((s,t)=>s+(t.sell>0?Number(t.sell):0),0);
   const profit = totalSell - totalBuy;
   const roi = totalBuy>0?(profit/totalBuy*100):0;
   const completed = tickets.filter(t=>t.status==="Completed").length;
@@ -1719,7 +1843,7 @@ function renderDashboard(){
   const avgProfit = (()=>{
     const sold = tickets.filter(t=>t.sell>0);
     if(!sold.length) return 0;
-    const totalProfit = sold.reduce((s,t)=>s+(t.sell-t.buy)*t.qty,0);
+    const totalProfit = sold.reduce((s,t)=>s+(t.sell-t.buy),0);
     const totalQtyS = sold.reduce((s,t)=>s+t.qty,0);
     return totalQtyS>0 ? totalProfit/totalQtyS : 0;
   })();
@@ -1736,7 +1860,7 @@ function renderDashboard(){
 
   // Profit by event bar chart
   const evProfits = {};
-  tickets.forEach(t=>{ const p=(t.sell-t.buy)*t.qty; evProfits[t.event]=(evProfits[t.event]||0)+p; });
+  tickets.forEach(t=>{ const p=(t.sell-t.buy); evProfits[t.event]=(evProfits[t.event]||0)+p; });
   const evEntries = Object.entries(evProfits).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const maxProfit = Math.max(...evEntries.map(e=>Math.abs(e[1])),1);
   document.getElementById("dash-profit-chart").innerHTML = evEntries.length ? evEntries.map(([ev,p])=>{
@@ -1761,7 +1885,7 @@ function renderDashboard(){
 
   // Payment method bar chart
   const payCount = {};
-  tickets.forEach(t=>{ if(t.pay) payCount[t.pay]=(payCount[t.pay]||0)+(t.sell-t.buy)*t.qty; });
+  tickets.forEach(t=>{ if(t.pay) payCount[t.pay]=(payCount[t.pay]||0)+(t.sell-t.buy); });
   const payEntries = Object.entries(payCount).sort((a,b)=>b[1]-a[1]);
   const maxPay = Math.max(...payEntries.map(e=>Math.abs(e[1])),1);
   document.getElementById("dash-pay-chart").innerHTML = payEntries.length ? payEntries.map(([pay,p])=>{
@@ -1774,8 +1898,8 @@ function renderDashboard(){
   document.getElementById("dash-recent").innerHTML = recent.length ?
     '<table class="dash-recent-table"><thead><tr><th>'+t_("dash_ev")+'</th><th>'+t_("dash_seat")+'</th><th>'+t_("dash_buy")+'</th><th>'+t_("dash_sell")+'</th><th>'+t_("dash_profit")+'</th><th>'+t_("col_status")+'</th></tr></thead><tbody>'+
     recent.map(t=>{
-      const p=(t.sell-t.buy)*t.qty;
-      return '<tr><td>'+esc(t.event)+'</td><td>'+esc(t.seat||"—")+'</td><td>'+fmt(t.buy*t.qty)+'</td><td>'+(t.sell>0?fmt(t.sell*t.qty):"—")+'</td><td class="'+(p>=0?"c-green":"c-red")+'">'+fmt(p)+'</td><td><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></td></tr>';
+      const p=(t.sell-t.buy);
+      return '<tr><td>'+esc(t.event)+'</td><td>'+esc(t.seat||"—")+'</td><td>'+fmt(t.buy)+'</td><td>'+(t.sell>0?fmt(t.sell):"—")+'</td><td class="'+(p>=0?"c-green":"c-red")+'">'+fmt(p)+'</td><td><span class="badge '+(t.status||"")+'">'+esc(tStatus(t.status)||"—")+'</span></td></tr>';
     }).join("")+'</tbody></table>'
     : '<div style="color:var(--text3);padding:20px 0">'+t_("dash_no_data")+'</div>';
 }
@@ -2129,7 +2253,7 @@ function importCSV(input){
         const payload={user_id:currentUser.id,event:evName,cat:row.cat||'',qty:parseInt(row.qty)||1,seat:row.seat||'',email:row.email||'',pwd:row.pwd||'',evdate:row.evdate||null,aco:parseFloat(row.aco)||0,etat:row.etat||row.status||'Pending',pay:row.pay||'',client:row.client||'',acodate:row.acodate||null,site:row.site||''};
         promises.push(sb.from("acos").insert(payload).then(r=>{ if(r.error)errors++; else{ if(r.data) db.acos.unshift(Array.isArray(r.data)?r.data[0]:r.data); imported++; } }));
       } else {
-        const payload={user_id:currentUser.id,event:evName,seat:row.seat||'',email:row.email||'',pwd:row.pwd||'',buy:parseFloat(row.buy)||0,sell:parseFloat(row.sell)||0,qty:parseInt(row.qty)||1,status:row.status||'Pending',pay:row.pay||'',client:row.client||'',evdate:row.evdate||null,site:row.site||''};
+        const payload={user_id:currentUser.id,event:evName,cat:row.cat||'',seat:row.seat||'',email:row.email||'',pwd:row.pwd||'',buy:parseFloat(row.buy)||0,sell:parseFloat(row.sell)||0,qty:parseInt(row.qty)||1,status:row.status||'Pending',pay:row.pay||'',client:row.client||'',evdate:row.evdate||null,site:row.site||''};
         promises.push(sb.from("tickets").insert(payload).then(r=>{ if(r.error)errors++; else{ if(r.data) db.tickets.unshift(Array.isArray(r.data)?r.data[0]:r.data); imported++; } }));
       }
     }
@@ -2149,8 +2273,8 @@ function exportCSV(){
     headers=["Événement","Catégorie","Qté","Siège","Email","Mot de passe","Date événement","ACO","État","Paiement","Client","Date ACO","Site"];
     rows=src.map(a=>[a.event,a.cat,a.qty,a.seat,a.email,a.pwd,a.evdate,a.aco,a.etat,a.pay,a.client,a.acodate,a.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
   } else {
-    headers=["Événement","Siège","Email","Mot de passe","Date événement","Qté","Achat","Vente","Profit","Statut","Paiement","Client","Site"];
-    rows=src.map(t=>[t.event,t.seat,t.email,t.pwd,t.evdate,t.qty,t.buy,t.sell,((t.sell-t.buy)*t.qty).toFixed(2),t.status,t.pay,t.client,t.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
+    headers=["Événement","Catégorie","Siège","Email","Mot de passe","Date événement","Qté","Achat","Vente","Profit","Statut","Paiement","Client","Site"];
+    rows=src.map(t=>[t.event,t.cat,t.seat,t.email,t.pwd,t.evdate,t.qty,t.buy,t.sell,(t.sell-t.buy).toFixed(2),t.status,t.pay,t.client,t.site].map(v=>'"'+String(v||"").replace(/"/g,'""')+'"').join(","));
   }
   const csv=[headers.join(",")].concat(rows).join("\n");
   const a=document.createElement("a"); a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(csv);
@@ -2176,9 +2300,11 @@ document.addEventListener("click",function(e){
   
   const navItem=e.target.closest(".nav-item[data-ev]"); if(navItem){ openTicketsPage(); setEv(navItem.dataset.ev); return; }
   const modeTab=e.target.closest(".mode-tab[data-mode]"); if(modeTab){ setMode(modeTab.dataset.mode); return; }
+  const dupBtn=e.target.closest(".dup-btn"); if(dupBtn){ duplicateRow(dupBtn.dataset.kind==="aco", parseInt(dupBtn.dataset.idx)).catch(err=>toast("Erreur: "+err.message)); return; }
+  const splitBtn=e.target.closest(".split-btn"); if(splitBtn){ openSplit(splitBtn.dataset.kind==="aco", parseInt(splitBtn.dataset.idx)); return; }
   const editBtn=e.target.closest(".edit-btn"); if(editBtn){ openTicketModal(parseInt(editBtn.dataset.idx)); return; }
   // Click on table cell to edit inline
-  const tdCell=e.target.closest("td[data-idx]"); if(tdCell){ const idx=parseInt(tdCell.dataset.idx); const isAco=tdCell.dataset.type==="aco"; openInlineEdit(idx,isAco); return; }
+  const tdCell=e.target.closest("td[data-idx]"); if(tdCell && typeof openInlineEdit==="function"){ const idx=parseInt(tdCell.dataset.idx); const isAco=tdCell.dataset.type==="aco"; openInlineEdit(idx,isAco); return; }
   const delBtn=e.target.closest(".del-btn"); if(delBtn){ delTicket(parseInt(delBtn.dataset.idx)).catch(e=>console.error(e)); return; }
   const acoEdit=e.target.closest(".aco-edit-btn"); if(acoEdit){ openAcoModal(parseInt(acoEdit.dataset.idx)); return; }
   const acoDel=e.target.closest(".aco-del-btn"); if(acoDel){ delAco(parseInt(acoDel.dataset.idx)).catch(e=>console.error(e)); return; }
@@ -2292,17 +2418,17 @@ window.doLogout = doLogout;
 window.exportCSV = exportCSV;
 window.importCSV = importCSV;
 window.downloadTemplate = downloadTemplate;
+window.openSplit = openSplit;
+window.doSplit = doSplit;
+window.updateSplitPreview = updateSplitPreview;
+window.duplicateRow = duplicateRow;
 window.toggleSidebar = toggleSidebar;
 window.openDashboard = openDashboard;
 window.openTicketsPage = openTicketsPage;
 window.renderDashboard = renderDashboard;
-window.openInlineEdit = openInlineEdit;
-window.saveInlineEdit = saveInlineEdit;
-window.cancelInlineEdit = cancelInlineEdit;
 window.editCell = editCell;
 window.saveCellEdit = saveCellEdit;
 window.cancelCellEdit = cancelCellEdit;
-window.rowClick = rowClick;
 window.copyVal = copyVal;
 window.tStatus = tStatus;
 window.setTheme = setTheme;
