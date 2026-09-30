@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
-<!-- aco-dashboard v4 -->
+<!-- aco-dashboard v5 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -233,7 +233,7 @@ const DAY = 86400000;
 
 let sb = null;
 let DATA = { claims: [], events: [], queues: [], users: [] };
-const state = { tab: "overview", guild: "all", period: "30", event: "all", from: "", to: "", memberSort: { key: "good", dir: -1 }, memberSearch: "",
+const state = { tab: "overview", guild: "all", period: "30", event: "all", member: "all", from: "", to: "", memberSort: { key: "good", dir: -1 }, memberSearch: "",
   selected: null, hist: { user: "all", status: "all", q: "" } };
 
 /* ───────── Data ───────── */
@@ -285,9 +285,10 @@ function filtered() {
   const r = range(), g = state.guild;
   const inGuild = x => g === "all" || x.guild_id === g;
   const inEvent = c => state.event === "all" || (c.event || "—") === state.event;
+  const inMember = x => state.member === "all" || x.user_id === state.member;
   return {
-    claims: DATA.claims.filter(c => inGuild(c) && inEvent(c) && inRange(c.claimed_at, r)),
-    events: DATA.events.filter(e => inGuild(e) && inRange(e.at, r)),
+    claims: DATA.claims.filter(c => inGuild(c) && inEvent(c) && inMember(c) && inRange(c.claimed_at, r)),
+    events: DATA.events.filter(e => inGuild(e) && inMember(e) && inRange(e.at, r)),
     queues: DATA.queues.filter(q => inGuild(q)),
   };
 }
@@ -310,7 +311,7 @@ function memberStats(f) {
     if (e.type === "skip") get(e.user_id).skips++;
     if (e.type === "afk") get(e.user_id).afk++;
   }
-  for (const q of f.queues) for (const id of q.members || []) get(id);
+  for (const q of f.queues) for (const id of q.members || []) if (state.member === "all" || id === state.member) get(id);
   for (const s of m.values()) s.rate = s.good + s.expired > 0 ? (s.good / (s.good + s.expired)) * 100 : null;
   return [...m.values()];
 }
@@ -326,7 +327,11 @@ function render() {
   const evCount = new Map();
   for (const c of DATA.claims) if (state.guild === "all" || c.guild_id === state.guild) evCount.set(c.event || "—", (evCount.get(c.event || "—") || 0) + 1);
   const eventsList = [...evCount.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  const activeFilters = [state.event !== "all" ? `🎤 ${esc(state.event)}` : "", state.period === "custom" && (state.from || state.to) ? `📅 ${state.from ? new Date(state.from).toLocaleDateString("fr-FR") : "début"} → ${state.to ? new Date(state.to).toLocaleDateString("fr-FR") : "aujourd'hui"}` : ""].filter(Boolean);
+  const memberIds = new Set();
+  for (const c of DATA.claims) if (state.guild === "all" || c.guild_id === state.guild) memberIds.add(c.user_id);
+  for (const q of DATA.queues) if (state.guild === "all" || q.guild_id === state.guild) (q.members || []).forEach(id => memberIds.add(id));
+  const membersList = [...memberIds].map(id => [id, nameOf(id, um)]).sort((a, b) => a[1].localeCompare(b[1]));
+  const activeFilters = [state.member !== "all" ? `👤 ${esc(nameOf(state.member, um))}` : "", state.event !== "all" ? `🎤 ${esc(state.event)}` : "", state.period === "custom" && (state.from || state.to) ? `📅 ${state.from ? new Date(state.from).toLocaleDateString("fr-FR") : "début"} → ${state.to ? new Date(state.to).toLocaleDateString("fr-FR") : "aujourd'hui"}` : ""].filter(Boolean);
 
   app.innerHTML = `
     ${DEMO ? `<div class="banner">Mode démo — données fictives. Retire <b>?demo</b> de l'adresse pour voir tes vraies données.</div>` : ""}
@@ -337,6 +342,9 @@ function render() {
         <label class="sr" for="f-guild">Serveur</label>
         <select id="f-guild"><option value="all">Tous les serveurs</option>
           ${guilds.map(([id, n]) => `<option value="${esc(id)}" ${state.guild === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
+        <label class="sr" for="f-member">Membre</label>
+        <select id="f-member" style="max-width:200px"><option value="all">Tous les membres</option>
+          ${membersList.map(([id, n]) => `<option value="${esc(id)}" ${state.member === id ? "selected" : ""}>${esc(n)}</option>`).join("")}</select>
         <label class="sr" for="f-event">Événement</label>
         <select id="f-event" style="max-width:260px"><option value="all">Tous les événements</option>
           ${eventsList.map(([n, c]) => `<option value="${esc(n)}" ${state.event === n ? "selected" : ""}>${esc(n)} (${c})</option>`).join("")}</select>
@@ -586,7 +594,7 @@ function drawChart(claims) {
 function bind(f, um) {
   const on = (id, ev, fn) => document.getElementById(id)?.addEventListener(ev, fn);
   document.querySelectorAll(".mode-tab").forEach(b => b.addEventListener("click", () => { state.tab = b.dataset.tab; render(); }));
-  on("f-guild", "change", e => { state.guild = e.target.value; state.event = "all"; render(); });
+  on("f-guild", "change", e => { state.guild = e.target.value; state.event = "all"; state.member = "all"; render(); });
   on("f-period", "change", e => {
     state.period = e.target.value;
     if (state.period === "custom" && !state.from) {
@@ -597,9 +605,10 @@ function bind(f, um) {
     render();
   });
   on("f-event", "change", e => { state.event = e.target.value; render(); });
+  on("f-member", "change", e => { state.member = e.target.value; state.hist.user = "all"; render(); });
   on("f-from", "change", e => { state.from = e.target.value; render(); });
   on("f-to", "change", e => { state.to = e.target.value; render(); });
-  on("f-clear", "click", () => { state.event = "all"; state.period = "30"; state.from = ""; state.to = ""; render(); });
+  on("f-clear", "click", () => { state.member = "all"; state.event = "all"; state.period = "30"; state.from = ""; state.to = ""; render(); });
   on("refresh", "click", () => refresh());
   document.querySelectorAll("tr.click").forEach(tr => tr.addEventListener("click", () => {
     state.selected = tr.dataset.user; state.tab = "members"; render();
