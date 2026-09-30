@@ -70,7 +70,7 @@ button,input,select{font-family:"Inter",sans-serif}
 .mode-tab{height:40px;padding:0 20px;border-radius:9px;border:none;background:transparent;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
 .mode-tab:hover{color:var(--text)}
 .mode-tab.active{background:var(--gold);color:var(--on-gold);font-weight:700}
-.panel[hidden]{display:none}
+[hidden]{display:none !important}
 
 /* Inputs & buttons */
 select,input[type=search]{height:40px;padding:0 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg-input);color:var(--text);font-size:13px;outline:none}
@@ -204,7 +204,7 @@ td.num{font-weight:500}
 /* ═════════════ CONFIG ═════════════
    The anon key is public (same as in tixsheet). NEVER put the service_role / secret key here. */
 const SUPABASE_URL = "https://ahysgnekipugsuwbwzee.supabase.co";
-const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoeXNnbmVraXB1Z3N1d2J3emVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjE5MjgsImV4cCI6MjA5NjkzNzkyOH0.dKnJDqbGQCNY64G5Mxu7vljMFmAK11uVo31eA9C1jrI";
 /* ══════════════════════════════════ */
 
 // Same theme as tixsheet (dark / cream / arctic, saved by tixsheet in localStorage)
