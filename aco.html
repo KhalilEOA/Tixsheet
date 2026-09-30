@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlashACO Analytics</title>
-<!-- aco-dashboard v5 -->
+<!-- aco-dashboard v6 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -707,6 +707,35 @@ function demoData() {
   };
 }
 
+/* ───────── Tixsheet session ─────────
+   tixsheet keeps its login in localStorage "sb_session" = { token, refresh_token, user }
+   (and an older copy in "sb-<ref>-auth-token"). Tokens last 1h; refresh them like tixsheet does. */
+const SB_REF = new URL(SUPABASE_URL).hostname.split(".")[0];
+const jwtExp = t => { try { return JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp * 1000; } catch { return 0; } };
+async function getTixsheetSession() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem("sb_session") || "null"); } catch {}
+  let token = s?.token, refreshToken = s?.refresh_token, user = s?.user;
+  if (!token) {
+    try { const o = JSON.parse(localStorage.getItem(`sb-${SB_REF}-auth-token`) || "null"); token = o?.access_token; user = o?.user; } catch {}
+  }
+  if (!token) return null;
+  if (jwtExp(token) - 60000 > Date.now()) return { token, user };   // still valid (1 min margin)
+  if (!refreshToken) return null;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST", headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    const d = await r.json();
+    if (!r.ok || !d.access_token) return null;
+    // Save it exactly like tixsheet does, so tixsheet stays logged in too
+    localStorage.setItem("sb_session", JSON.stringify({ token: d.access_token, refresh_token: d.refresh_token || refreshToken, user: d.user || user }));
+    localStorage.setItem(`sb-${SB_REF}-auth-token`, JSON.stringify({ access_token: d.access_token, user: d.user || user }));
+    return { token: d.access_token, user: d.user || user };
+  } catch { return null; }
+}
+
 /* ───────── Start ───────── */
 (async () => {
   window.addEventListener("resize", () => { if (state.tab === "overview" && DATA.claims.length) drawChart(filtered().claims); });
@@ -719,26 +748,21 @@ function demoData() {
     app.innerHTML = `<div class="card"><div class="empty"><h3>Connexion à Supabase impossible</h3>La librairie Supabase n'a pas pu se charger (bloqueur de pub ou réseau). Désactive le bloqueur sur tixsheet.app puis recharge la page (Ctrl+F5).</div></div>`;
     return;
   }
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // 1) Reuse the tixsheet login (same site, same Supabase project) — no second login
+  const tix = await getTixsheetSession();
+  if (tix) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${tix.token}` } },
+      auth: { persistSession: false, autoRefreshToken: false, storageKey: "aco-dashboard-unused" },
+    });
+    sb.auth.getUser = async () => ({ data: { user: tix.user || null } });
+    sb.auth.signOut = async () => { localStorage.removeItem("sb_session"); localStorage.removeItem(`sb-${SB_REF}-auth-token`); };
+    return refresh();
+  }
+  // 2) Otherwise our own session (kept apart so it never interferes with tixsheet)
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storageKey: "aco-dashboard-auth" } });
   const { data: { session } } = await sb.auth.getSession().catch(() => ({ data: {} }));
   if (session) return refresh();
-
-  // Reuse the tixsheet login (tixsheet stores { access_token, user } under the same key)
-  try {
-    const ref = new URL(SUPABASE_URL).hostname.split(".")[0];
-    const saved = JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`) || "null");
-    const token = saved?.access_token;
-    const exp = token ? JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).exp : 0;
-    if (token && exp * 1000 > Date.now()) {
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        global: { headers: { Authorization: `Bearer ${token}` } },
-        auth: { persistSession: false, autoRefreshToken: false, storageKey: "aco-dashboard-unused" },
-      });
-      sb.auth.getUser = async () => ({ data: { user: saved.user || null } });
-      sb.auth.signOut = async () => { localStorage.removeItem(`sb-${ref}-auth-token`); };
-      return refresh();
-    }
-  } catch { /* fall through to the login form */ }
   showLogin();
 })();
 </script>
